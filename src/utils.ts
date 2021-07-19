@@ -1,6 +1,4 @@
 import {MsgStoreCode, Msg, StdSignMsg, MsgSwap, Numeric, BlockTxBroadcastResult, StdFee, Coins, Coin, BankAPI, MsgExecuteContract, Wallet, LCDClient} from '@terra-money/terra.js';
-import {LiquidatorConfig} from '../config/cfg';
-import {fabricateCw20Transfer,fabricateTerraswapSwapLuna,queryHubState,fabricateOverseerUnlockCollateral,fabricateOverseerLockCollateral,fabricateCustodyDepositCollateral,queryMarketEpochState, queryMarketState, queryOverseerBorrowLimit, fabricateMarketRedeemStable, fabricateMarketDepositStableCoin, fabricateMarketRepay, fabricateMarketBorrow, fabricateTerraswapSwapbLuna, AddressProvider, queryTokenBalance, Anchor, BLuna, queryMarketBorrowerInfos, fabricateLiquidationSubmitBid, fabricateLiquidationRetractBid, queryMarketBorrowerInfo, BorrowInfoResponse, BidResponse, queryLiquidationBidsByUser, queryLiquidationLiquidationAmount, queryOverseerCollaterals, queryOraclePrices, queryLiquidationConfig, queryOraclePrice, fabricateOverseerLiquidateCollateral, MARKET_DENOMS} from '@anchor-protocol/anchor.js';
 import  axios, { AxiosRequestConfig } from 'axios';
 
 export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[]): Promise<BlockTxBroadcastResult> {
@@ -26,9 +24,9 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[]): Promise<StdFee | undefined> {
 	try {
 		const estimated_fee_res = await lcd_client.tx.estimateFee(sender.key.accAddress, msgs, {
-			gasPrices: new Coins([new Coin(MARKET_DENOMS.UUSD, 0.15)]),
+			gasPrices: new Coins([new Coin("uusd", 0.15)]),
 			gasAdjustment: 1.3,
-			feeDenoms: [MARKET_DENOMS.UUSD],
+			feeDenoms: ["uusd"],
 		});
 		return estimated_fee_res;
 	} catch (err) {
