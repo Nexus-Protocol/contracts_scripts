@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "src/upload_contracts.ts",
 	"scripts": {
-		"upload-contracts": "ts-node src/upload_contracts.ts"
+		"upload-contracts": "ts-node src/upload_contracts.ts",
+		"upload-contracts-test": "ts-node src/upload_contracts_test.ts"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.11",

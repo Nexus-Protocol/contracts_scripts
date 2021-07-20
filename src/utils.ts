@@ -1,5 +1,38 @@
-import {MsgStoreCode, Msg, StdSignMsg, MsgSwap, Numeric, BlockTxBroadcastResult, StdFee, Coins, Coin, BankAPI, MsgExecuteContract, Wallet, LCDClient} from '@terra-money/terra.js';
-import  axios, { AxiosRequestConfig } from 'axios';
+import { readFileSync } from 'fs';
+import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, LCDClient, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
+
+export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm_path: string): Promise<string> {
+	let contract_wasm = readFileSync(wasm_path, {encoding: 'base64'});
+	const messages: Msg[] = [new MsgStoreCode(sender.key.accAddress, contract_wasm)];
+	let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
+	return getCodeId(result)
+}
+
+export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: string, init_msg: object): Promise<string> {
+	const messages: Msg[] = [new MsgInstantiateContract(
+		sender.key.accAddress,
+		 	admin,
+			parseInt(code_id),
+			init_msg
+	)];
+
+	let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
+	return getContractAddress(result)
+}
+
+export async function execute_contract(lcd_client: LCDClient, sender: Wallet, contract_addr: string, execute_msg: object) {
+	const messages: Msg[] = [new MsgExecuteContract(
+		sender.key.accAddress,
+		contract_addr,
+		execute_msg
+	)];
+	let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
+	return result
+}
+
+// ============================================================
+// ============================================================
+// ============================================================
 
 export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[]): Promise<BlockTxBroadcastResult> {
 	try {
