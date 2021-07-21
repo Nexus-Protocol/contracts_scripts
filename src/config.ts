@@ -1,3 +1,5 @@
+import {IS_PROD} from "./upload_basset_vault"
+
 export interface Cw20Coin {
 	address: string,
 	amount: string,
@@ -14,6 +16,61 @@ export interface TokenConfig {
 	decimals: number,
 	initial_balances: Cw20Coin[],
 	mint?: MinterResponse,
+}
+
+export function prod_TokenConfig(governance_contract_addr: string, initial_psi_tokens_owner: string): TokenConfig {
+	return {
+		name: "Nexus Token",
+		symbol: "PSi",
+		decimals: 6,
+		initial_balances: [
+			{
+			address: initial_psi_tokens_owner,
+			amount: "10000000000"
+			}
+		],
+		mint: {
+		  minter: governance_contract_addr,
+		}
+	}
+}
+
+export function testnet_TokenConfig(governance_contract_addr: string, initial_psi_tokens_owner: string): TokenConfig {
+	return {
+		name: "Nexus Token",
+		symbol: "PSi",
+		decimals: 6,
+		initial_balances: [
+			{
+			address: initial_psi_tokens_owner,
+			amount: "10000000000"
+			}
+		],
+		mint: {
+		  minter: governance_contract_addr,
+		}
+	}
+}
+
+export function TokenConfig(governance_contract_addr: string, initial_psi_tokens_owner: string): TokenConfig {
+	if (IS_PROD) {
+		return prod_TokenConfig(governance_contract_addr, initial_psi_tokens_owner);
+	} else {
+		return testnet_TokenConfig(governance_contract_addr, initial_psi_tokens_owner);
+	}
+}
+
+// ================================================
+
+const terraswap_factory_contract_addr_prod = "terra1ulgw0td86nvs4wtpsc80thv6xelk76ut7a7apj";
+const terraswap_factory_contract_addr_testnet = "terra18qpjm4zkvqnpjpw0zn0tdr8gdzvt8au35v45xf";
+
+export function terraswap_factory_contract_addr(): string {
+	if (IS_PROD) {
+		return terraswap_factory_contract_addr_prod;
+	} else {
+		return terraswap_factory_contract_addr_testnet;
+	}
 }
 
 // ================================================
@@ -49,6 +106,14 @@ export function test_GovernanceConfig(): GovernanceConfig {
 		expiration_period: 13443,
 		proposal_deposit: "1000000000",
 		snapshot_period: 13443,
+	}
+}
+
+export function GovernanceConfig(): GovernanceConfig {
+	if (IS_PROD) {
+		return prod_GovernanceConfig();
+	} else {
+		return test_GovernanceConfig();
 	}
 }
 
@@ -96,6 +161,15 @@ export function testnet_BassetVaultStrategyConfig(governance_contract_addr: stri
 		price_timeframe: 50,
 	}
 }
+
+export function BassetVaultStrategyConfig(governance_contract_addr: string): BassetVaultStrategyConfig {
+	if (IS_PROD) {
+		return prod_BassetVaultStrategyConfig(governance_contract_addr);
+	} else {
+		return testnet_BassetVaultStrategyConfig(governance_contract_addr);
+	}
+}
+
 
 // ================================================
 
@@ -156,6 +230,13 @@ export function testnet_BassetVaultConfigHolderConfig(governance_contract_addr: 
 	}
 }
 
+export function BassetVaultConfigHolderConfig(governance_contract_addr: string, psi_token_addr: string, psi_stable_swap_contract_addr: string, basset_vault_strategy_contract_addr: string): BassetVaultConfigHolderConfig {
+	if (IS_PROD) {
+		return prod_BassetVaultConfigHolderConfig(governance_contract_addr, psi_stable_swap_contract_addr, psi_token_addr, basset_vault_strategy_contract_addr);
+	} else {
+		return testnet_BassetVaultConfigHolderConfig(governance_contract_addr, psi_stable_swap_contract_addr, psi_token_addr, basset_vault_strategy_contract_addr);
+	}
+}
 // ================================================
 
 export interface BassetVaultConfig {
@@ -196,5 +277,13 @@ export function testnet_BassetVaultConfig(governance_contract_addr: string, conf
 		collateral_token_symbol: "Luna",
 		nasset_token_holders_psi_rewards_share: 70,
 		governance_contract_psi_rewards_share: 30,
+	}
+}
+
+export function BassetVaultConfig(governance_contract_addr: string, config_holder_addr: string, nasset_token_code_id: number, nasset_token_config_holder_code_id: number, nasset_token_rewards_code_id: number, psi_distributor_code_id: number): BassetVaultConfig {
+	if (IS_PROD) {
+		return prod_BassetVaultConfig(governance_contract_addr, config_holder_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id);
+	} else {
+		return testnet_BassetVaultConfig(governance_contract_addr, config_holder_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id);
 	}
 }
