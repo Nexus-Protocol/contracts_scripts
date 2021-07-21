@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "src/upload_contracts.ts",
 	"scripts": {
-		"upload-contracts": "ts-node src/upload_contracts.ts",
+		"upload-basset-vault": "ts-node src/upload_basset_vault.ts",
 		"upload-contracts-test": "ts-node src/upload_contracts_test.ts"
 	},
 	"devDependencies": {
