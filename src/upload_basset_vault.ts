@@ -1,11 +1,13 @@
 import {LCDClient, LocalTerra, Wallet} from '@terra-money/terra.js';
-import {BassetVaultConfig, BassetVaultConfigHolderConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, terraswap_factory_contract_addr} from './config';
+import {BassetVaultConfig, BassetVaultConfigHolderConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, terraswap_factory_contract_addr, Cw20CodeId} from './config';
 import {store_contract, instantiate_contract, execute_contract, create_contract, create_psi_usd_terraswap_pair} from './utils';
 
 // ===================================================
+const path_to_cosmwasm_artifacts = "/Users/pronvis/terra/cosmwasm-plus/artifacts"
 const path_to_basset_vault_artifacts = "/Users/pronvis/terra/nexus/yield-optimizer-contracts/artifacts"
 const path_to_services_contracts_artifacts = "/Users/pronvis/terra/nexus/services-contracts/artifacts"
 // ===================================================
+export const cw20_contract_wasm = `${path_to_cosmwasm_artifacts}/cw20_base.wasm`;
 const governance_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_governance.wasm`;
 const basset_vault_strategy_contract_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault_strategy.wasm`;
 const basset_vault_config_holder_contract_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault_config_holder.wasm`;
@@ -25,8 +27,8 @@ const deployer = lcd_client.wallets["test1"];
 // ==================== IMPORTANT ====================
 // ===================================================
 export const IS_PROD = false;
-const cw20_code_id = 4;
-const initial_psi_tokens_owner = "multisig account";
+export const CW20_CODE_ID = 4;
+const INITIAL_PSI_TOKENS_OWNER = "multisig account";
 // ===================================================
 // ===================================================
 // ===================================================
@@ -66,13 +68,17 @@ async function init_basset_vault(init_msg: BassetVaultConfig): Promise<string> {
 // 6. instantiate basset_vault_config_holder
 // 7. instantiate basset_vault
 async function main() {
+	//get cw20_code_id
+	let cw20_code_id = await Cw20CodeId(lcd_client, deployer);
+	console.log(`=======================`);
+
 	// instantiate governance contract_addr
 	let governance_config = GovernanceConfig();
 	let governance_contract_addr = await init_governance_contract(governance_config);
 	console.log(`=======================`);
 
 	// instantiate psi_token
-	let token_config = TokenConfig(governance_contract_addr, initial_psi_tokens_owner);
+	let token_config = TokenConfig(governance_contract_addr, INITIAL_PSI_TOKENS_OWNER);
 	let psi_token_addr = await init_psi_token(lcd_client, deployer, cw20_code_id, token_config);
 	console.log(`=======================`);
 

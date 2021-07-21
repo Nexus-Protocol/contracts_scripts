@@ -1,5 +1,20 @@
-import {IS_PROD} from "./upload_basset_vault"
+import {LCDClient, Wallet} from '@terra-money/terra.js';
+import {CW20_CODE_ID, cw20_contract_wasm, IS_PROD} from "./upload_basset_vault"
+import {store_contract} from './utils';
 
+// ================================================
+
+export async function Cw20CodeId(lcd_client: LCDClient, sender: Wallet): Promise<number> {
+	if (lcd_client.config.chainID === "localterra") {
+		let cw20_code_id = await store_contract(lcd_client, sender, cw20_contract_wasm);
+		console.log(`cw20_base uploaded; code_id: ${cw20_code_id}`);
+		return cw20_code_id;
+	} else {
+		return CW20_CODE_ID;
+	}
+}
+
+// ================================================
 export interface Cw20Coin {
 	address: string,
 	amount: string,
