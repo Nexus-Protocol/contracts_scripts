@@ -1,11 +1,22 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
-import {CW20_CODE_ID, cw20_contract_wasm, IS_PROD} from "./upload_basset_vault"
-import {store_contract} from './utils';
+import {CW20_CODE_ID, cw20_contract_wasm, INITIAL_PSI_TOKENS_OWNER, terraswap_factory_wasm, terraswap_pair_wasm, IS_PROD} from "./upload_basset_vault"
+import {instantiate_contract, store_contract} from './utils';
+
+// ================================================
+
+export function PSiTokensOwner(sender: Wallet): string {
+	if (IS_PROD) {
+		return INITIAL_PSI_TOKENS_OWNER;
+	} else {
+		return sender.key.accAddress;
+	}
+}
 
 // ================================================
 
 export async function Cw20CodeId(lcd_client: LCDClient, sender: Wallet): Promise<number> {
 	if (lcd_client.config.chainID === "localterra") {
+		console.log(`in localterra, so storing our own cw20`);
 		let cw20_code_id = await store_contract(lcd_client, sender, cw20_contract_wasm);
 		console.log(`cw20_base uploaded; code_id: ${cw20_code_id}`);
 		return cw20_code_id;
@@ -15,6 +26,28 @@ export async function Cw20CodeId(lcd_client: LCDClient, sender: Wallet): Promise
 }
 
 // ================================================
+
+export async function init_terraswap_factory(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number): Promise<string> {
+	if (lcd_client.config.chainID === "localterra") {
+		console.log(`in localterra, so storing our own terraswap contracts`);
+		let terraswap_factory_code_id = await store_contract(lcd_client, sender, terraswap_factory_wasm);
+		console.log(`terraswap_factory uploaded; code_id: ${terraswap_factory_code_id}`);
+		let terraswap_pair_code_id = await store_contract(lcd_client, sender, terraswap_pair_wasm);
+		console.log(`terraswap_pair uploaded; code_id: ${terraswap_pair_code_id}`);
+		let terraswap_factory_init_msg = {
+			 pair_code_id: terraswap_pair_code_id,
+			 token_code_id: cw20_code_id,
+		};
+		let terraswap_factory_contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, terraswap_factory_code_id, terraswap_factory_init_msg);
+		console.log(`terraswap_factory instantiated; address: ${terraswap_factory_contract_addr}`);
+		return terraswap_factory_contract_addr;
+	} else {
+		return terraswap_factory_contract_addr();
+	}
+}
+
+// ================================================
+
 export interface Cw20Coin {
 	address: string,
 	amount: string,

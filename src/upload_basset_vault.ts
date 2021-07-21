@@ -1,13 +1,17 @@
 import {LCDClient, LocalTerra, Wallet} from '@terra-money/terra.js';
-import {BassetVaultConfig, BassetVaultConfigHolderConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, terraswap_factory_contract_addr, Cw20CodeId} from './config';
+import {BassetVaultConfig, BassetVaultConfigHolderConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, terraswap_factory_contract_addr, Cw20CodeId, init_terraswap_factory, PSiTokensOwner} from './config';
 import {store_contract, instantiate_contract, execute_contract, create_contract, create_psi_usd_terraswap_pair} from './utils';
 
 // ===================================================
 const path_to_cosmwasm_artifacts = "/Users/pronvis/terra/cosmwasm-plus/artifacts"
 const path_to_basset_vault_artifacts = "/Users/pronvis/terra/nexus/yield-optimizer-contracts/artifacts"
 const path_to_services_contracts_artifacts = "/Users/pronvis/terra/nexus/services-contracts/artifacts"
+const path_to_terraswap_contracts_artifacts = "/Users/pronvis/terra/terraswap/artifacts"
 // ===================================================
 export const cw20_contract_wasm = `${path_to_cosmwasm_artifacts}/cw20_base.wasm`;
+export const terraswap_factory_wasm = `${path_to_terraswap_contracts_artifacts}/terraswap_factory.wasm`;
+export const terraswap_pair_wasm = `${path_to_terraswap_contracts_artifacts}/terraswap_pair.wasm`;
+// ===================================================
 const governance_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_governance.wasm`;
 const basset_vault_strategy_contract_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault_strategy.wasm`;
 const basset_vault_config_holder_contract_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault_config_holder.wasm`;
@@ -28,7 +32,7 @@ const deployer = lcd_client.wallets["test1"];
 // ===================================================
 export const IS_PROD = false;
 export const CW20_CODE_ID = 4;
-const INITIAL_PSI_TOKENS_OWNER = "multisig account";
+export const INITIAL_PSI_TOKENS_OWNER = "multisig account";
 // ===================================================
 // ===================================================
 // ===================================================
@@ -78,7 +82,7 @@ async function main() {
 	console.log(`=======================`);
 
 	// instantiate psi_token
-	let token_config = TokenConfig(governance_contract_addr, INITIAL_PSI_TOKENS_OWNER);
+	let token_config = TokenConfig(governance_contract_addr, PSiTokensOwner(deployer));
 	let psi_token_addr = await init_psi_token(lcd_client, deployer, cw20_code_id, token_config);
 	console.log(`=======================`);
 
@@ -98,7 +102,8 @@ async function main() {
 	console.log(`=======================`);
 	
 	// instantiate psi_stable_swap_contract
-	let psi_stable_swap_contract = await create_psi_usd_terraswap_pair(lcd_client, deployer, terraswap_factory_contract_addr(), psi_token_addr);
+	let terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, deployer, cw20_code_id);
+	let psi_stable_swap_contract = await create_psi_usd_terraswap_pair(lcd_client, deployer, terraswap_factory_contract_addr, psi_token_addr);
 	console.log(`psi_stable_swap_contract created; address: ${psi_stable_swap_contract.pair_contract_addr}, lp token address: ${psi_stable_swap_contract.liquidity_token_addr}`);
 	console.log(`=======================`);
 

@@ -29,7 +29,7 @@ async function main() {
 
 	{
 		let curr_count: CountResponse = await lcd_client.wasm.contractQuery(contract_addr, {"get_count": {}});
-		console.log(`count afre: ${JSON.stringify( curr_count )}`);
+		console.log(`count after: ${JSON.stringify( curr_count )}`);
 	}
 }
 
