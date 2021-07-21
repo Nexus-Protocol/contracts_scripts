@@ -1,18 +1,30 @@
 import { readFileSync } from 'fs';
-import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, LCDClient, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
+import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
 
-export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm_path: string): Promise<string> {
+export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object): Promise<string> {
+	let code_id = await store_contract(lcd_client, sender, wasm_path);
+	console.log(`${contract_name} uploaded; code_id: ${code_id}`);
+	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+	console.log(`${contract_name} instantiated; address: ${contract_addr}`);
+	return contract_addr;
+}
+
+// ============================================================
+// ============================================================
+// ============================================================
+
+export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm_path: string): Promise<number> {
 	let contract_wasm = readFileSync(wasm_path, {encoding: 'base64'});
 	const messages: Msg[] = [new MsgStoreCode(sender.key.accAddress, contract_wasm)];
 	let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
-	return getCodeId(result)
+	return parseInt(getCodeId(result))
 }
 
-export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: string, init_msg: object): Promise<string> {
+export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object): Promise<string> {
 	const messages: Msg[] = [new MsgInstantiateContract(
 		sender.key.accAddress,
 		 	admin,
-			parseInt(code_id),
+			code_id,
 			init_msg
 	)];
 
@@ -28,6 +40,47 @@ export async function execute_contract(lcd_client: LCDClient, sender: Wallet, co
 	)];
 	let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
 	return result
+}
+
+// ============================================================
+// ============================================================
+// ============================================================
+
+export interface TerraswapPairInfo {
+	pair_contract_addr: string,
+	liquidity_token_addr: string
+}
+
+export async function create_psi_usd_terraswap_pair(lcd_client: LCDClient, sender: Wallet, terraswap_factory_contract_addr: string, psi_token_addr: string): Promise<TerraswapPairInfo> {
+	let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr,
+		{
+			create_pair: {
+				asset_infos: [
+					{ token: { contract_addr: psi_token_addr } },
+					{ native_token: { denom: "uusd" } },
+				]
+			}
+		}
+	);
+	
+	var pair_info: TerraswapPairInfo = {
+		pair_contract_addr: '',
+		liquidity_token_addr: ''
+	};
+	let contract_events = getContractEvents(pair_creation_result);
+	for (let contract_event of contract_events) {
+		let pair_contract_addr = contract_event["pair_contract_addr"];
+		if ( pair_contract_addr !== undefined ) {
+			pair_info.pair_contract_addr = pair_contract_addr;
+		}
+
+		let liquidity_token_addr = contract_event["liquidity_token_addr"];
+		if ( liquidity_token_addr !== undefined ) {
+			pair_info.liquidity_token_addr = liquidity_token_addr;
+		}
+	}
+
+	return pair_info;
 }
 
 // ============================================================
