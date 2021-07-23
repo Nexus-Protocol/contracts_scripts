@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs';
 import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
+import {BassetVaultConfig} from './config';
 
 export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object): Promise<string> {
 	let code_id = await store_contract(lcd_client, sender, wasm_path);
@@ -20,7 +21,7 @@ export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm
 	return parseInt(getCodeId(result))
 }
 
-export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object): Promise<string> {
+async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object): Promise<BlockTxBroadcastResult> {
 	const messages: Msg[] = [new MsgInstantiateContract(
 		sender.key.accAddress,
 		 	admin,
@@ -28,7 +29,11 @@ export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet
 			init_msg
 	)];
 
-	let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
+	return await calc_fee_and_send_tx(lcd_client, sender, messages);
+}
+
+export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object): Promise<string> {
+	let result = await instantiate_contract_raw(lcd_client, sender, admin, code_id, init_msg);
 	return getContractAddress(result)
 }
 
@@ -51,12 +56,12 @@ export interface TerraswapPairInfo {
 	liquidity_token_addr: string
 }
 
-export async function create_psi_usd_terraswap_pair(lcd_client: LCDClient, sender: Wallet, terraswap_factory_contract_addr: string, psi_token_addr: string): Promise<TerraswapPairInfo> {
+export async function create_usd_to_token_terraswap_pair(lcd_client: LCDClient, sender: Wallet, terraswap_factory_contract_addr: string, token_addr: string): Promise<TerraswapPairInfo> {
 	let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr,
 		{
 			create_pair: {
 				asset_infos: [
-					{ token: { contract_addr: psi_token_addr } },
+					{ token: { contract_addr: token_addr } },
 					{ native_token: { denom: "uusd" } },
 				]
 			}
@@ -81,6 +86,58 @@ export async function create_psi_usd_terraswap_pair(lcd_client: LCDClient, sende
 	}
 
 	return pair_info;
+}
+
+// ============================================================
+// ============================================================
+// ============================================================
+
+export interface BassetVaultInfo {
+	addr: string,
+	nasset_token_config_holder_addr: string,
+	nasset_token_addr: string,
+	nasset_token_rewards_addr: string,
+	psi_distributor_addr: string
+}
+
+export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, basset_vault_wasm: string, init_msg: BassetVaultConfig): Promise<BassetVaultInfo> {
+	let contract_name = "basset_vault";
+	let code_id = await store_contract(lcd_client, sender, basset_vault_wasm);
+	console.log(`${contract_name} uploaded; code_id: ${code_id}`);
+	let init_contract_res = await instantiate_contract_raw(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+	let contract_addr = getContractAddress(init_contract_res);
+
+	var basset_vault_info: BassetVaultInfo = {
+		addr: contract_addr,
+		nasset_token_addr: '',
+		nasset_token_config_holder_addr: '',
+		nasset_token_rewards_addr: '',
+		psi_distributor_addr: ''
+	};
+	let contract_events = getContractEvents(init_contract_res);
+	for (let contract_event of contract_events) {
+		let nasset_token_config_holder_addr = contract_event["nasset_token_config_holder_addr"];
+		if (nasset_token_config_holder_addr !== undefined) {
+			basset_vault_info.nasset_token_config_holder_addr = nasset_token_config_holder_addr;
+		}
+
+		let nasset_token_addr = contract_event["nasset_token_addr"];
+		if (nasset_token_addr !== undefined) {
+			basset_vault_info.nasset_token_addr = nasset_token_addr;
+		}
+
+		let nasset_token_rewards_addr = contract_event["nasset_token_rewards_addr"];
+		if (nasset_token_rewards_addr !== undefined) {
+			basset_vault_info.nasset_token_rewards_addr = nasset_token_rewards_addr;
+		}
+
+		let psi_distributor_addr = contract_event["psi_distributor_addr"];
+		if (psi_distributor_addr !== undefined) {
+			basset_vault_info.psi_distributor_addr = psi_distributor_addr;
+		}
+
+	}
+	return basset_vault_info;
 }
 
 // ============================================================

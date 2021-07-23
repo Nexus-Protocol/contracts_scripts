@@ -1,6 +1,6 @@
-import {LCDClient, LocalTerra, Wallet} from '@terra-money/terra.js';
-import {BassetVaultConfig, BassetVaultConfigHolderConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, terraswap_factory_contract_addr, Cw20CodeId, init_terraswap_factory, PSiTokensOwner} from './config';
-import {store_contract, instantiate_contract, execute_contract, create_contract, create_psi_usd_terraswap_pair} from './utils';
+import { LCDClient, LocalTerra, Wallet} from '@terra-money/terra.js';
+import {BassetVaultConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, Cw20CodeId, init_terraswap_factory, PSiTokensOwner, CommunityPoolConfig} from './config';
+import {store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault} from './utils';
 
 // ===================================================
 const path_to_cosmwasm_artifacts = "/Users/pronvis/terra/cosmwasm-plus/artifacts"
@@ -14,7 +14,7 @@ export const terraswap_pair_wasm = `${path_to_terraswap_contracts_artifacts}/ter
 // ===================================================
 const governance_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_governance.wasm`;
 const basset_vault_strategy_contract_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault_strategy.wasm`;
-const basset_vault_config_holder_contract_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault_config_holder.wasm`;
+const community_pool_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_community.wasm`;
 const basset_vault_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault.wasm`;
 const nasset_token_wasm = `${path_to_basset_vault_artifacts}/basset_vault_nasset_token.wasm`;
 const nasset_token_config_holder_wasm = `${path_to_basset_vault_artifacts}/basset_vault_nasset_config_holder.wasm`;
@@ -53,13 +53,8 @@ async function init_basset_vault_strategy(init_msg: BassetVaultStrategyConfig): 
 	return contract_addr;
 }
 
-async function init_basset_vault_config_holder(init_msg: BassetVaultConfigHolderConfig): Promise<string> {
-	let contract_addr = await create_contract(lcd_client, deployer, "basset_vault_config_holder", basset_vault_config_holder_contract_wasm, init_msg);
-	return contract_addr;
-}
-
-async function init_basset_vault(init_msg: BassetVaultConfig): Promise<string> {
-	let contract_addr = await create_contract(lcd_client, deployer, "basset_vault", basset_vault_wasm, init_msg);
+async function init_community_pool(init_msg: CommunityPoolConfig): Promise<string> {
+	let contract_addr = await create_contract(lcd_client, deployer, "community_pool", community_pool_contract_wasm, init_msg);
 	return contract_addr;
 }
 
@@ -103,8 +98,8 @@ async function main() {
 	
 	// instantiate psi_stable_swap_contract
 	let terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, deployer, cw20_code_id);
-	let psi_stable_swap_contract = await create_psi_usd_terraswap_pair(lcd_client, deployer, terraswap_factory_contract_addr, psi_token_addr);
-	console.log(`psi_stable_swap_contract created; address: ${psi_stable_swap_contract.pair_contract_addr}, lp token address: ${psi_stable_swap_contract.liquidity_token_addr}`);
+	let psi_stable_swap_contract = await create_usd_to_token_terraswap_pair(lcd_client, deployer, terraswap_factory_contract_addr, psi_token_addr);
+	console.log(`psi_stable_swap_contract created\n\taddress: ${psi_stable_swap_contract.pair_contract_addr}\n\tlp token address: ${psi_stable_swap_contract.liquidity_token_addr}`);
 	console.log(`=======================`);
 
 	// instantiate basset_vault_strategy
@@ -112,9 +107,9 @@ async function main() {
 	let basset_vault_strategy_contract_addr = await init_basset_vault_strategy(basset_vault_strategy_config);
 	console.log(`=======================`);
 	
-	// instantiate basset_vault_config_holder
-	let basset_vault_config_holder_config = BassetVaultConfigHolderConfig(governance_contract_addr, psi_token_addr, psi_stable_swap_contract.pair_contract_addr, basset_vault_strategy_contract_addr);
-	let basset_vault_config_holder_contract_addr = await init_basset_vault_config_holder(basset_vault_config_holder_config);
+	// instantiate community_pool
+	let community_pool_config = CommunityPoolConfig(governance_contract_addr, psi_token_addr);
+	let community_pool_contract_addr = await init_community_pool(community_pool_config);
 	console.log(`=======================`);
 	
 	// instantiate basset_vault
@@ -131,8 +126,14 @@ async function main() {
 	console.log(`psi_distributor uploaded; code_id: ${psi_distributor_code_id}`);
 	console.log(`=======================`);
 
-	let basset_vault_config = BassetVaultConfig(governance_contract_addr, basset_vault_config_holder_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id);
-	await init_basset_vault(basset_vault_config);
+	let basset_vault_config = BassetVaultConfig(governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_stable_swap_contract.pair_contract_addr, basset_vault_strategy_contract_addr);
+	let basset_vault_info = await init_basset_vault(lcd_client, deployer, basset_vault_wasm, basset_vault_config);
+	console.log(`basset_vault instantiated\n\taddress: ${basset_vault_info.addr}\n\tnasset_token address: ${basset_vault_info.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info.psi_distributor_addr}`);
+	console.log(`=======================`);
+
+	// instantiate nasset_stable_swap_contract
+	let nasset_stable_swap_contract = await create_usd_to_token_terraswap_pair(lcd_client, deployer, terraswap_factory_contract_addr, basset_vault_info.nasset_token_addr);
+	console.log(`nasset_stable_swap_contract created\n\taddress: ${nasset_stable_swap_contract.pair_contract_addr}\n\tlp token address: ${nasset_stable_swap_contract.liquidity_token_addr}`);
 	console.log(`=======================`);
 }
 
