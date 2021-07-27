@@ -68,6 +68,25 @@ export async function create_usd_to_token_terraswap_pair(lcd_client: LCDClient, 
 		}
 	);
 	
+	return parse_pair_creation(pair_creation_result);
+}
+
+export async function create_token_to_token_terraswap_pair(lcd_client: LCDClient, sender: Wallet, terraswap_factory_contract_addr: string, token_1_addr: string, token_2_addr: string): Promise<TerraswapPairInfo> {
+	let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr,
+		{
+			create_pair: {
+				asset_infos: [
+					{ token: { contract_addr: token_1_addr } },
+					{ token: { contract_addr: token_2_addr } },
+				]
+			}
+		}
+	);
+
+	return parse_pair_creation(pair_creation_result);
+}
+
+function parse_pair_creation(pair_creation_result: BlockTxBroadcastResult): TerraswapPairInfo {
 	var pair_info: TerraswapPairInfo = {
 		pair_contract_addr: '',
 		liquidity_token_addr: ''

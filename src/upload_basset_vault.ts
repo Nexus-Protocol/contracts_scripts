@@ -1,6 +1,6 @@
 import { LCDClient, LocalTerra, Wallet} from '@terra-money/terra.js';
 import {BassetVaultConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, Cw20CodeId, init_terraswap_factory, PSiTokensOwner, CommunityPoolConfig} from './config';
-import {store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault} from './utils';
+import {store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault, create_token_to_token_terraswap_pair} from './utils';
 
 // ===================================================
 const path_to_cosmwasm_artifacts = "/Users/pronvis/terra/cosmwasm-plus/artifacts"
@@ -66,6 +66,7 @@ async function init_community_pool(init_msg: CommunityPoolConfig): Promise<strin
 // 5. instantiate basset_vault_strategy
 // 6. instantiate basset_vault_config_holder
 // 7. instantiate basset_vault
+// 8. instantiate nasset_psi_swap_contract
 async function main() {
 	//get cw20_code_id
 	let cw20_code_id = await Cw20CodeId(lcd_client, deployer);
@@ -131,9 +132,9 @@ async function main() {
 	console.log(`basset_vault instantiated\n\taddress: ${basset_vault_info.addr}\n\tnasset_token address: ${basset_vault_info.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info.psi_distributor_addr}`);
 	console.log(`=======================`);
 
-	// instantiate nasset_stable_swap_contract
-	let nasset_stable_swap_contract = await create_usd_to_token_terraswap_pair(lcd_client, deployer, terraswap_factory_contract_addr, basset_vault_info.nasset_token_addr);
-	console.log(`nasset_stable_swap_contract created\n\taddress: ${nasset_stable_swap_contract.pair_contract_addr}\n\tlp token address: ${nasset_stable_swap_contract.liquidity_token_addr}`);
+	// instantiate nasset_psi_swap_contract
+	let nasset_psi_swap_contract = await create_token_to_token_terraswap_pair(lcd_client, deployer, terraswap_factory_contract_addr, basset_vault_info.nasset_token_addr, psi_token_addr);
+	console.log(`nasset_psi_swap_contract created\n\taddress: ${nasset_psi_swap_contract.pair_contract_addr}\n\tlp token address: ${nasset_psi_swap_contract.liquidity_token_addr}`);
 	console.log(`=======================`);
 }
 

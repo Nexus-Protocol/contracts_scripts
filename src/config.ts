@@ -254,54 +254,38 @@ export function BassetVaultStrategyConfig(governance_contract_addr: string): Bas
 // ================================================
 
 export interface BassetVaultConfig {
-    // // nasset_token_code_id
-    // pub nasset_t_ci: u64,
-    // // nasset_token_config_holder_code_id
-    // pub nasset_t_ch_ci: u64,
-    // // nasset_token_rewards_code_id
-    // pub nasset_t_r_ci: u64,
-    // // psi_distributor_code_id
-    // pub psi_distr_ci: u64,
-    // // collateral_token_symbol
-    // pub collateral_ts: String,
-    // // basset_token_addr: String,
-    // pub basset_addr: String,
-    // // anchor_token_addr
-    // pub anchor_addr: String,
-    // // anchor_market_contract_addr
-    // pub a_market_addr: String,
-    // // anchor_overseer_contract_addr
-    // pub a_overseer_addr: String,
-    // // anchor_custody_basset_contract_addr
-    // pub a_custody_basset_addr: String,
-    // // anc_stable_swap_contract_addr
-    // pub anc_stable_swap_addr: String,
-    // // psi_stable_swap_contract_addr
-    // pub psi_stable_swap_addr: String,
-    // // aterra_token_addr
-    // pub aterra_addr: String,
-    // // psi_token_addr
-    // pub psi_addr: String,
-    // // basset_vault_strategy_contract_addr
-    // pub basset_vs_addr: String,
-
 	gov_addr: string,
 	community_addr: string,
+        // nasset_token_code_id
 	nasset_t_ci: number,
+        // nasset_token_config_holder_code_id
 	nasset_t_ch_ci: number,
+        // nasset_token_rewards_code_id
 	nasset_t_r_ci: number,
+        // psi_distributor_code_id
 	psi_distr_ci: number,
 	//Luna / ETH / Sol, will be converted to nLuna, nETH, nSol
+        // collateral_token_symbol
 	collateral_ts: string,
+        // basset_token_addr: String,
         basset_addr: string,
+        // anchor_token_addr
         anchor_addr: string,
+        // anchor_market_contract_addr
         a_market_addr: string,
+        // anchor_overseer_contract_addr
         a_overseer_addr: string,
+        // anchor_custody_basset_contract_addr
         a_custody_basset_addr: string,
+        // anc_stable_swap_contract_addr
         anc_stable_swap_addr: string,
+        // psi_stable_swap_contract_addr
         psi_stable_swap_addr: string,
+        // aterra_token_addr
         aterra_addr: string,
+        // psi_token_addr
         psi_addr: string,
+        // basset_vault_strategy_contract_addr
 	basset_vs_addr: string,
 	stable_denom: string,
         claiming_rewards_delay: number,
