@@ -4,7 +4,8 @@
 	"description": "",
 	"scripts": {
 		"upload-basset-vault": "ts-node src/basset_vault/executor.ts",
-		"upload-vesting": "ts-node src/vesting/executor.ts"
+		"upload-vesting": "ts-node src/vesting/executor.ts",
+		"upload-airdrop": "ts-node src/airdrop/executor.ts"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.11",

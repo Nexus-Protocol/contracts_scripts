@@ -16,6 +16,7 @@ const governance_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_
 const basset_vault_strategy_contract_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault_strategy.wasm`;
 const community_pool_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_community.wasm`;
 export const vesting_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_vesting.wasm`;
+export const airdrop_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_airdrop.wasm`;
 const basset_vault_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault.wasm`;
 const nasset_token_wasm = `${path_to_basset_vault_artifacts}/basset_vault_nasset_token.wasm`;
 const nasset_token_config_holder_wasm = `${path_to_basset_vault_artifacts}/basset_vault_nasset_config_holder.wasm`;
