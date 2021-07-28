@@ -1,5 +1,5 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
-import {CW20_CODE_ID, cw20_contract_wasm, INITIAL_PSI_TOKENS_OWNER, terraswap_factory_wasm, terraswap_pair_wasm, IS_PROD} from "./upload_basset_vault"
+import {CW20_CODE_ID, cw20_contract_wasm, INITIAL_PSI_TOKENS_OWNER, terraswap_factory_wasm, terraswap_pair_wasm, IS_PROD} from "./basset_vault/definition"
 import {instantiate_contract, store_contract} from './utils';
 
 // ================================================

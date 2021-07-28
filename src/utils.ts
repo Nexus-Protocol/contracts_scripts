@@ -4,9 +4,9 @@ import {BassetVaultConfig} from './config';
 
 export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object): Promise<string> {
 	let code_id = await store_contract(lcd_client, sender, wasm_path);
-	console.log(`${contract_name} uploaded; code_id: ${code_id}`);
+	console.log(`${contract_name} uploaded\n\tcode_id: ${code_id}`);
 	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
-	console.log(`${contract_name} instantiated; address: ${contract_addr}`);
+	console.log(`${contract_name} instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
 }
 

@@ -1,6 +1,6 @@
 import { LCDClient, LocalTerra, Wallet} from '@terra-money/terra.js';
-import {BassetVaultConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, Cw20CodeId, init_terraswap_factory, PSiTokensOwner, CommunityPoolConfig} from './config';
-import {store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault, create_token_to_token_terraswap_pair} from './utils';
+import {BassetVaultConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, Cw20CodeId, init_terraswap_factory, PSiTokensOwner, CommunityPoolConfig} from './../config';
+import {store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault, create_token_to_token_terraswap_pair} from './../utils';
 
 // ===================================================
 const path_to_cosmwasm_artifacts = "/Users/pronvis/terra/cosmwasm-plus/artifacts"
@@ -15,6 +15,7 @@ export const terraswap_pair_wasm = `${path_to_terraswap_contracts_artifacts}/ter
 const governance_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_governance.wasm`;
 const basset_vault_strategy_contract_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault_strategy.wasm`;
 const community_pool_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_community.wasm`;
+export const vesting_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_vesting.wasm`;
 const basset_vault_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault.wasm`;
 const nasset_token_wasm = `${path_to_basset_vault_artifacts}/basset_vault_nasset_token.wasm`;
 const nasset_token_config_holder_wasm = `${path_to_basset_vault_artifacts}/basset_vault_nasset_config_holder.wasm`;
@@ -23,8 +24,8 @@ const psi_distributor_wasm = `${path_to_basset_vault_artifacts}/basset_vault_psi
 // ===================================================
 
 // ===================================================
-let lcd_client = new LocalTerra();
-const deployer = lcd_client.wallets["test1"];
+export let lcd_client = new LocalTerra();
+export const deployer = lcd_client.wallets["test1"];
 // ===================================================
 
 // ===================================================
@@ -32,7 +33,9 @@ const deployer = lcd_client.wallets["test1"];
 // ===================================================
 export const IS_PROD = false;
 export const CW20_CODE_ID = 4;
-export const INITIAL_PSI_TOKENS_OWNER = "multisig account";
+//TODO
+export const MULTISIG_ADDR = "multisig account";
+export const INITIAL_PSI_TOKENS_OWNER = MULTISIG_ADDR;
 // ===================================================
 // ===================================================
 // ===================================================
@@ -67,7 +70,7 @@ async function init_community_pool(init_msg: CommunityPoolConfig): Promise<strin
 // 6. instantiate basset_vault_config_holder
 // 7. instantiate basset_vault
 // 8. instantiate nasset_psi_swap_contract
-async function main() {
+export async function main() {
 	//get cw20_code_id
 	let cw20_code_id = await Cw20CodeId(lcd_client, deployer);
 	console.log(`=======================`);
@@ -137,11 +140,3 @@ async function main() {
 	console.log(`nasset_psi_swap_contract created\n\taddress: ${nasset_psi_swap_contract.pair_contract_addr}\n\tlp token address: ${nasset_psi_swap_contract.liquidity_token_addr}`);
 	console.log(`=======================`);
 }
-
-main()
-    .then(text => {
-        console.log(text);
-    })
-	.catch(err => {
-        console.log(err);
-    });
