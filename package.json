@@ -6,7 +6,8 @@
 		"upload-basset-vault": "ts-node src/basset_vault/executor.ts",
 		"upload-vesting": "ts-node src/vesting/executor.ts",
 		"upload-airdrop": "ts-node src/airdrop/executor.ts",
-		"upload-staking-lp": "ts-node src/staking_lp/executor.ts"
+		"upload-staking-lp": "ts-node src/staking_lp/executor.ts",
+		"lp-simulation": "ts-node src/lp_simulation/executor.ts"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.11",
