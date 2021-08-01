@@ -5,7 +5,7 @@ import {execute_contract_messages, store_contract, instantiate_contract, execute
 
 async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
 	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
-	console.log(`psi_token instantiated\n\taddress: ${contract_addr}`);
+	// console.log(`psi_token instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
 }
 
@@ -29,10 +29,10 @@ export async function main() {
 					// instantiate psi_token
 					let token_config = TokenConfig(deployer.key.accAddress, PSiTokensOwner(deployer));
 					let psi_token_addr = await init_psi_token(lcd_client, deployer, cw20_code_id, token_config);
-					console.log(`=======================`);
+					// console.log(`=======================`);
 	
 					let psi_stable_swap_contract = await create_usd_to_token_terraswap_pair(lcd_client, deployer, terraswap_factory_contract_addr, psi_token_addr);
-					console.log(`psi_stable_swap_contract created\n\taddress: ${psi_stable_swap_contract.pair_contract_addr}\n\tlp token address: ${psi_stable_swap_contract.liquidity_token_addr}`);
+					// console.log(`psi_stable_swap_contract created\n\taddress: ${psi_stable_swap_contract.pair_contract_addr}\n\tlp token address: ${psi_stable_swap_contract.liquidity_token_addr}`);
 					await run_simulation(psi_stable_swap_contract.pair_contract_addr, psi_token_addr, psi_price, lp_size, buyback_size, purchase_count);
 					console.log(`=======================`);
 				}
@@ -44,13 +44,13 @@ export async function main() {
 async function run_simulation(contract_addr: string, psi_token_addr: string, psi_price: number, lp_size: number, buyback_size_total: number, purchase_count: number) {
 	console.log(`RUN SIMULATION FOR WITH PARAMETERS:`);
 	console.log(`\tpsi_price: ${psi_price}`);
-	console.log(`\lp_size: ${lp_size}`);
+	console.log(`\tlp_size: ${lp_size}`);
 	console.log(`\tbuyback_size_total: ${buyback_size_total}`);
 	console.log(`\tpurchase_count: ${purchase_count}`);
 	let ust_amount = lp_size / 2;
 	let psi_amount = lp_size / 2 / psi_price;
 	let provide_liquidity_resp = await provide_liquidity(contract_addr, psi_token_addr, psi_amount, ust_amount);
-	console.log(`liquidity provided successfully:\n\tassets: ${provide_liquidity_resp.assets}\n\tshare: ${provide_liquidity_resp.share}`);
+	// console.log(`liquidity provided successfully:\n\tassets: ${provide_liquidity_resp.assets}\n\tshare: ${provide_liquidity_resp.share}`);
 
 	let buyback_size = buyback_size_total / purchase_count;
 	let i = 0;
