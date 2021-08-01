@@ -42,7 +42,7 @@ export async function main() {
 }
 
 async function run_simulation(contract_addr: string, psi_token_addr: string, psi_price: number, lp_size: number, buyback_size_total: number, purchase_count: number) {
-	console.log(`RUN SIMULATION FOR WITH PARAMETERS:`);
+	console.log(`RUN SIMULATION WITH PARAMETERS:`);
 	console.log(`\tpsi_price: ${psi_price}`);
 	console.log(`\tlp_size: ${lp_size}`);
 	console.log(`\tbuyback_size_total: ${buyback_size_total}`);
