@@ -68,8 +68,8 @@ export interface TokenConfig {
 
 export function prod_TokenConfig(governance_contract_addr: string, initial_psi_tokens_owner: string): TokenConfig {
 	return {
-		name: "Nexus Token",
-		symbol: "PSi",
+		name: "Nexus Governance Token",
+		symbol: "Psi",
 		decimals: 6,
 		initial_balances: [
 			{
@@ -85,8 +85,8 @@ export function prod_TokenConfig(governance_contract_addr: string, initial_psi_t
 
 export function testnet_TokenConfig(governance_contract_addr: string, initial_psi_tokens_owner: string): TokenConfig {
 	return {
-		name: "Nexus Token",
-		symbol: "PSi",
+		name: "Nexus Governance Token",
+		symbol: "Psi",
 		decimals: 6,
 		initial_balances: [
 			{
@@ -137,10 +137,10 @@ export function prod_GovernanceConfig(): GovernanceConfig {
 	return {
 		quorum: "0.1",
 		threshold: "0.5",
-		voting_period: 94097,
-		timelock_period: 40327,
+		voting_period: 94097, // change to 4 days
+		timelock_period: 40327, // to investigate (maybe half of voting)
 		expiration_period: 13443,
-		proposal_deposit: "1000000000",
+		proposal_deposit: "1000000000", //change to 10000
 		snapshot_period: 13443,
 	}
 }
@@ -336,8 +336,8 @@ export function prod_BassetVaultConfig(
 		///on what portion.
 		///for example: 1.01 means 1% more than loan
 		over_loan_balance_value: "1.01",
-		///mean ltv that user manage by himself (advise: 60%)
-		manual_ltv: "0.6",
+		///mean ltv that user manage by himself (advise: 70%)
+		manual_ltv: "0.7",
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
@@ -379,8 +379,8 @@ export function testnet_BassetVaultConfig(
 		///on what portion.
 		///for example: 1.01 means 1% more than loan
 		over_loan_balance_value: "1.01",
-		///mean ltv that user manage by himself (advise: 60%)
-		manual_ltv: "0.6",
+		///mean ltv that user manage by himself (advise: 70%)
+		manual_ltv: "0.7",
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
