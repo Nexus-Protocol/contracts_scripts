@@ -43,6 +43,11 @@ export async function execute_contract(lcd_client: LCDClient, sender: Wallet, co
 		contract_addr,
 		execute_msg
 	)];
+	let result = await execute_contract_messages(lcd_client, sender, messages);
+	return result
+}
+
+export async function execute_contract_messages(lcd_client: LCDClient, sender: Wallet, messages: Msg[]) {
 	let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
 	return result
 }

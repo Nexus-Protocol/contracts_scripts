@@ -44,7 +44,7 @@ export const INITIAL_PSI_TOKENS_OWNER = MULTISIG_ADDR;
 
 async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
 	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
-	console.log(`psi_token instantiated; address: ${contract_addr}`);
+	console.log(`psi_token instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
 }
 

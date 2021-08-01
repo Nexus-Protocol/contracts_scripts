@@ -73,12 +73,12 @@ export function prod_TokenConfig(governance_contract_addr: string, initial_psi_t
 		decimals: 6,
 		initial_balances: [
 			{
-			address: initial_psi_tokens_owner,
-			amount: "10000000000"
+				address: initial_psi_tokens_owner,
+				amount: "10000000000000000"
 			}
 		],
 		mint: {
-		  minter: governance_contract_addr,
+			minter: governance_contract_addr,
 		}
 	}
 }
@@ -90,12 +90,12 @@ export function testnet_TokenConfig(governance_contract_addr: string, initial_ps
 		decimals: 6,
 		initial_balances: [
 			{
-			address: initial_psi_tokens_owner,
-			amount: "10000000000"
+				address: initial_psi_tokens_owner,
+				amount: "10000000000000000"
 			}
 		],
 		mint: {
-		  minter: governance_contract_addr,
+			minter: governance_contract_addr,
 		}
 	}
 }
