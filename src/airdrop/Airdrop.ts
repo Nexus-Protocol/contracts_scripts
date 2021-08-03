@@ -8,7 +8,7 @@ class Airdrop {
 		const leaves: any[] = [];
 		for (let account of accounts) {
 			const leaf_str = account.address + account.amount;
-			// console.log(`leaf data: ${leave_str}`);
+			// console.log(`leaf data: ${leaf_str}`);
 			const leaf = keccak256(leaf_str);
 			leaves.push(leaf);
 		}
