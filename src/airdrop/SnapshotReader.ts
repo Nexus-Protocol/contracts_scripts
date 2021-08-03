@@ -19,9 +19,9 @@ class SnapshotReader {
 			let trimmed = line.trim();
 			if (trimmed !== "") {
 				let splitted = line.split(':');
-				let stake_amount = new Decimal(splitted[1]);
+				let stake_amount = new Decimal(splitted[1].trim());
 				if (stake_amount.gt(new Decimal(1))) {
-					result.set(splitted[0].toLowerCase(), stake_amount.mul(new Decimal(1_000_000)));
+					result.set(splitted[0].toLowerCase().trim(), stake_amount.mul(new Decimal(1_000_000)));
 				}
 			}
 		}

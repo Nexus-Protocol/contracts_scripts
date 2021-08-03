@@ -1,5 +1,5 @@
 import {main, register_merkle_tree} from "./definition";
-import { build_merkel_tree } from "./merkle_tree"
+import { build_merkel_tree } from "./airdrop_merkle_tree"
 
 // main()
 //     .then(text => {
@@ -9,4 +9,4 @@ import { build_merkel_tree } from "./merkle_tree"
 //         console.log(err);
 //     });
 
-build_merkel_tree("{your path here}");
+build_merkel_tree("/Users/pronvis/Yandex.Disk.localized/crypto/nexus/gov_stakers_3950000.txt");
