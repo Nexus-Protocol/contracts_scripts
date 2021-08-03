@@ -7,10 +7,10 @@ class Airdrop {
 	constructor(accounts: Array<{address: string; amount: string}>) {
 		const leaves: any[] = [];
 		for (let account of accounts) {
-			const leave_str = account.address + account.amount;
-			// console.log(`leave data: ${leave_str}`);
-			const leave = keccak256(leave_str);
-			leaves.push(leave);
+			const leaf_str = account.address + account.amount;
+			// console.log(`leaf data: ${leave_str}`);
+			const leaf = keccak256(leaf_str);
+			leaves.push(leaf);
 		}
 		this.tree = new MerkleTree(leaves, keccak256, { sort: true });
 	}
