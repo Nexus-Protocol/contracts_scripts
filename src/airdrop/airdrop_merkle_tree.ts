@@ -36,7 +36,7 @@ export function build_merkel_tree(_snapshot_path: string) {
 		console.log(`address: \"${acc.address}\", amount: \"${acc.amount}\"`);
 	}
 	const airdrop = new Airdrop(buggy_accounts);
-	console.log("\nMerkle Root", airdrop.getMerkleRoot());
+	console.log(`\nMerkle Root: \"${airdrop.getMerkleRoot()}\"`);
 
 	const proof = airdrop.getMerkleProof(buggy_accounts[0]);
 	console.log("\nMerkle Proof", proof);
