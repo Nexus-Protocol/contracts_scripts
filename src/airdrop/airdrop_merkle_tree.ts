@@ -42,6 +42,21 @@ export function build_merkel_tree(_snapshot_path: string) {
 	console.log("\nMerkle Proof", proof);
 	console.log("\nTarget Acc", buggy_accounts[0]);
 	console.log("\nVerified", airdrop.verify(proof, buggy_accounts[0]));
+
+	// validate_merkle_tree(airdrop, buggy_accounts);
+}
+
+function validate_merkle_tree(airdrop: Airdrop, accounts_arr: Array<{address: string; amount: string}>): boolean {
+	const validate_arr: boolean[] = [];
+	for (const acc of accounts_arr) {
+		const proof = airdrop.getMerkleProof(acc);
+		validate_arr.push(airdrop.verify(proof, acc));
+	}
+
+	const wrong_proofs_cnt = validate_arr.filter(p => p === false);
+	console.log(`wrong proofs count: ${wrong_proofs_cnt.length}`);
+
+	return wrong_proofs_cnt.length === 0;
 }
 
 function save_stakers_as_json(accounts_arr: Array<{address: string; amount: string}>) {
