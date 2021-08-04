@@ -9,7 +9,6 @@ class Airdrop {
 		for (let account of accounts) {
 			const leaf_str = account.address + account.amount;
 			const leaf = keccak256(leaf_str);
-			console.log(`leaf\n\tstr: \"${leaf_str}\"\n\thex: \"${leaf.toString('hex')}\"`);
 			leaves.push(leaf);
 		}
 		this.tree = new MerkleTree(leaves, keccak256, { sort: true });
@@ -24,7 +23,6 @@ class Airdrop {
 		amount: string;
 	}): string[] {
 		const leaf_str = account.address + account.amount;
-		console.log(`leaf\n\tstr: \"${leaf_str}\"\n\thex: \"${keccak256(leaf_str).toString('hex')}\"`);
 		return this.tree
 			.getHexProof(keccak256(leaf_str))
 			.map((v) => v.replace('0x', ''));
@@ -36,19 +34,17 @@ class Airdrop {
 	): boolean {
 		const leaf_str = account.address + account.amount;
 		let hashBuf = keccak256(leaf_str);
-		console.log(`leaf\n\tstr: \"${leaf_str}\"\n\thex: \"${hashBuf.toString('hex')}\"`);
 
 		proof.forEach((proofElem) => {
 			const proofBuf = Buffer.from(proofElem, 'hex');
 
-			if (hashBuf < proofBuf) {
+			if (Buffer.compare(hashBuf, proofBuf) === -1) {
 				hashBuf = keccak256(Buffer.concat([hashBuf, proofBuf]));
 			} else {
 				hashBuf = keccak256(Buffer.concat([proofBuf, hashBuf]));
 			}
 		});
 
-		console.log(`merkle root on verify: \"${this.getMerkleRoot()}\"`);
 		return this.getMerkleRoot() === hashBuf.toString('hex');
 	}
 }

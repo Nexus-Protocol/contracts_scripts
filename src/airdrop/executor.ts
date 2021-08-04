@@ -9,4 +9,4 @@ import { build_merkel_tree } from "./airdrop_merkle_tree"
 //         console.log(err);
 //     });
 
-build_merkel_tree("/Users/pronvis/Yandex.Disk.localized/crypto/nexus/gov_stakers_3950000.txt");
+build_merkel_tree("/Users/pronvis/Yandex.Disk.localized/crypto/nexus/gov_stakers_4000000.txt");
