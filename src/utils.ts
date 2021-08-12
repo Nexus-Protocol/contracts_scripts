@@ -17,8 +17,15 @@ export async function create_contract(lcd_client: LCDClient, sender: Wallet, con
 export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm_path: string): Promise<number> {
 	let contract_wasm = readFileSync(wasm_path, {encoding: 'base64'});
 	const messages: Msg[] = [new MsgStoreCode(sender.key.accAddress, contract_wasm)];
-	let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
-	return parseInt(getCodeId(result))
+
+	while (true) {
+		let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
+		if (result !== undefined) {
+			return parseInt(getCodeId(result));
+		} else {
+			await sleep(1000);
+		}
+	}
 }
 
 async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object): Promise<BlockTxBroadcastResult> {
@@ -29,7 +36,14 @@ async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, a
 			init_msg
 	)];
 
-	return await calc_fee_and_send_tx(lcd_client, sender, messages);
+	while (true) {
+		let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
+		if (result !== undefined) {
+			return result;
+		} else {
+			await sleep(1000);
+		}
+	}
 }
 
 export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object): Promise<string> {
@@ -43,11 +57,11 @@ export async function execute_contract(lcd_client: LCDClient, sender: Wallet, co
 		contract_addr,
 		execute_msg
 	)];
-	let result = await execute_contract_messages(lcd_client, sender, messages);
+	let result = await send_message(lcd_client, sender, messages);
 	return result
 }
 
-export async function execute_contract_messages(lcd_client: LCDClient, sender: Wallet, messages: Msg[]) {
+export async function send_message(lcd_client: LCDClient, sender: Wallet, messages: Msg[]) {
 	let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
 	return result
 }
@@ -62,33 +76,43 @@ export interface TerraswapPairInfo {
 }
 
 export async function create_usd_to_token_terraswap_pair(lcd_client: LCDClient, sender: Wallet, terraswap_factory_contract_addr: string, token_addr: string): Promise<TerraswapPairInfo> {
-	let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr,
-		{
-			create_pair: {
-				asset_infos: [
-					{ token: { contract_addr: token_addr } },
-					{ native_token: { denom: "uusd" } },
-				]
-			}
+	const create_pair_msg = {
+		create_pair: {
+			asset_infos: [
+				{ token: { contract_addr: token_addr } },
+				{ native_token: { denom: "uusd" } },
+			]
 		}
-	);
-	
-	return parse_pair_creation(pair_creation_result);
+	};
+
+	while (true) {
+		let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr, create_pair_msg);
+		if (pair_creation_result !== undefined) {
+			return parse_pair_creation(pair_creation_result);
+		} else {
+			await sleep(1000);
+		}
+	}
 }
 
 export async function create_token_to_token_terraswap_pair(lcd_client: LCDClient, sender: Wallet, terraswap_factory_contract_addr: string, token_1_addr: string, token_2_addr: string): Promise<TerraswapPairInfo> {
-	let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr,
-		{
-			create_pair: {
-				asset_infos: [
-					{ token: { contract_addr: token_1_addr } },
-					{ token: { contract_addr: token_2_addr } },
-				]
-			}
+	const create_pair_msg = {
+		create_pair: {
+			asset_infos: [
+				{token: {contract_addr: token_1_addr}},
+				{token: {contract_addr: token_2_addr}},
+			]
 		}
-	);
+	};
 
-	return parse_pair_creation(pair_creation_result);
+	while (true) {
+		let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr, create_pair_msg);
+		if (pair_creation_result !== undefined) {
+			return parse_pair_creation(pair_creation_result);
+		} else {
+			await sleep(1000);
+		}
+	}
 }
 
 function parse_pair_creation(pair_creation_result: BlockTxBroadcastResult): TerraswapPairInfo {
@@ -168,11 +192,11 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, b
 // ============================================================
 // ============================================================
 
-export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[]): Promise<BlockTxBroadcastResult> {
+export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[]): Promise<BlockTxBroadcastResult | undefined> {
 	try {
 		const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages);
 		if (estimated_tx_fee === undefined) {
-			process.exit(1);
+			return undefined;
 		}
 
 		const signed_tx = await sender.createAndSignTx({
@@ -184,15 +208,16 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 		return tx_result;
 	} catch (err) {
 		console.error(`calc_fee_and_send_tx return err: ${err}`)
-		process.exit(1);
+		return undefined;
 	}
 }
+
 
 async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[]): Promise<StdFee | undefined> {
 	try {
 		const estimated_fee_res = await lcd_client.tx.estimateFee(sender.key.accAddress, msgs, {
 			gasPrices: new Coins([new Coin("uusd", 0.15)]),
-			gasAdjustment: 1.3,
+			gasAdjustment: 1.2,
 			feeDenoms: ["uusd"],
 		});
 		return estimated_fee_res;
@@ -202,3 +227,12 @@ async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[]): P
 	}
 }
 
+// ============================================================
+// ============================================================
+// ============================================================
+
+export function sleep(ms: number) {
+  return new Promise(
+    resolve => setTimeout(resolve, ms, [])
+  );
+}

@@ -1,8 +1,9 @@
-import {getContractEvents, Msg,MsgExecuteContract, LCDClient, LocalTerra, Wallet, Coin, Coins} from '@terra-money/terra.js';
-import {BassetVaultConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, Cw20CodeId, init_terraswap_factory, PSiTokensOwner, CommunityPoolConfig} from './../config';
-import {deployer, IS_PROD, lcd_client, MULTISIG_ADDR, staking_contract_wasm} from './../basset_vault/definition';
-import {execute_contract_messages, store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault, create_token_to_token_terraswap_pair} from './../utils';
-import {appendFile, appendFileSync, existsSync, readFileSync} from 'fs';
+import {getContractEvents, MsgExecuteContract, LCDClient, Wallet, Coin, Coins, BlockTxBroadcastResult} from '@terra-money/terra.js';
+import {TokenConfig, Cw20CodeId, init_terraswap_factory, PSiTokensOwner} from '../config';
+import {deployer, lcd_client} from '../basset_vault/definition';
+import {send_message, instantiate_contract, create_usd_to_token_terraswap_pair, sleep} from '../utils';
+import {appendFileSync, existsSync} from 'fs';
+import {isTxSuccess} from '../transaction';
 
 interface LpSimulationConfig {
 	swap_pair_contract_addr: string,
@@ -189,14 +190,37 @@ async function provide_liquidity(contract_addr: string, psi_token_addr: string, 
 	// and I want here to get events from second (provide_liquidity_msg)
 	// let messages = [allowance_msg, provide_liquidity_msg];
 	// ---------------------------------------------------
-	await execute_contract_messages(lcd_client, deployer, [allowance_msg]);
-	let tx_result = await execute_contract_messages(lcd_client, deployer, [ provide_liquidity_msg ]);
+	let is_done: boolean = false;
+	while (!is_done) {
+		let allowance_resp = await send_message(lcd_client, deployer, [allowance_msg]);
+		if (allowance_resp === undefined || !isTxSuccess(allowance_resp)) {
+			console.error("fail to send allowance message (provide liquidity context)");
+			await sleep(2500);
+			continue;
+		}
+		console.log(`successfully send allowance message (provide liquidity context)`);
+		is_done = true;
+	}
+
+	let provide_liquidity_tx_result: BlockTxBroadcastResult | undefined;
+	is_done = false;
+	while (!is_done) {
+		provide_liquidity_tx_result = await send_message(lcd_client, deployer, [provide_liquidity_msg]);
+		if (provide_liquidity_tx_result === undefined || !isTxSuccess(provide_liquidity_tx_result)) {
+			console.error("fail to send provide liquidity message");
+			await sleep(2500);
+			continue;
+		}
+		console.log(`successfully send provide liquidity message`);
+		is_done = true;
+	}
+	provide_liquidity_tx_result = provide_liquidity_tx_result as BlockTxBroadcastResult;
 
 	var result: ProvideLiquidityResponse = {
 		assets: '',
 		share: 0
 	};
-	let contract_events = getContractEvents(tx_result);
+	let contract_events = getContractEvents(provide_liquidity_tx_result);
 	for (let contract_event of contract_events) {
 		let assets_str = contract_event["assets"];
 		if (assets_str !== undefined) {
@@ -240,7 +264,18 @@ async function buy_psi_token(contract_addr: string, ust_amount: number): Promise
 		},
 		new Coins([new Coin("uusd", uusd_amount)])
 	);
-	let tx_result = await execute_contract_messages(lcd_client, deployer, [buy_psi_token_msg]);
+	let tx_result: BlockTxBroadcastResult | undefined;
+	let is_done: boolean = false;
+	while (!is_done) {
+		tx_result = await send_message(lcd_client, deployer, [buy_psi_token_msg]);
+		if (tx_result === undefined || !isTxSuccess(tx_result)) {
+			console.error("fail to send buy_psi_token message");
+			await sleep(2500);
+			continue;
+		}
+		is_done = true;
+	}
+	tx_result = tx_result as BlockTxBroadcastResult;
 
 	var result: SwapResponse = {
 		offer_asset: '',
