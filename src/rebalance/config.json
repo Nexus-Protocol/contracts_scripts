@@ -1,21 +1,5 @@
 {
-	"terraswap_factory_addr": "terra1sh36qn08g4cqg685cfzmyxqv2952q6r8gpczrt",
-	"asset_1": {
-		"info": {
-			"token": {
-				"contract_addr": "terra1hqrdl6wstt8qzshwc6mrumpjk9338k0l93hqyd"
-			}
-		},
-		"amount": 100000000
-	},
-	"asset_2": {
-		"info": {
-			"native_token": {
-				"denom": "uusd"
-			}
-		},
-		"amount": 1000000
-	},
+	"basset_vault_addr": "terra1...",
 	"lcd_client": {
 		"localterra": true,
 		"url": "http://127.0.0.1:1317",
