@@ -1,0 +1,17 @@
+{
+	"basset_vault_addr": "terra1...",
+	"lcd_client": {
+		"localterra": true,
+		"url": "http://127.0.0.1:1317",
+		"chain_id": "columbus-5"
+	},
+	"sender": {
+		"seed": "x y z"
+	},
+	"honest_work_delay": {
+		"days": 0,
+		"hours": 8,
+		"minutes": 0,
+		"seconds": 0
+	}
+}

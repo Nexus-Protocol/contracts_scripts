@@ -9,7 +9,8 @@
 		"upload-staking-lp": "ts-node src/staking_lp/executor.ts",
 		"lp-simulation": "ts-node src/lp_simulation/executor.ts",
 		"calc-airdrop": "ts-node src/airdrop/calc_airdrop_merkle_root.ts",
-		"rebalance": "ts-node src/rebalance/executor.ts"
+		"rebalance": "ts-node src/rebalance/executor.ts",
+		"honest_work": "ts-node src/basset_honest_work/executor.ts"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.11",
