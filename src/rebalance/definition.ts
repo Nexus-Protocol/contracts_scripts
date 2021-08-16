@@ -1,5 +1,5 @@
 import {getContractEvents, BlockTxBroadcastResult, LCDClient,  Wallet} from '@terra-money/terra.js';
-import {execute_contract, sleep} from './../utils';
+import {execute_contract, get_date_str, sleep} from './../utils';
 
 enum RebalanceType {
 	Nothing,
@@ -103,7 +103,7 @@ export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet
 		const query_rebalance_resp = await query_rebalance(lcd_client, basset_vault_addr);
 		if (query_rebalance_resp.rabalance_needed()) {
 			const rebalance_response = await rebalance(lcd_client, sender, basset_vault_addr);
-			console.log(`Rebalance Successfull`);
+			console.log(`${get_date_str()} :: Rebalance Successfull`);
 			const contract_events = getContractEvents(rebalance_response);
 			for (let contract_event of contract_events) {
 				if (contract_event.contract_address === basset_vault_addr) {

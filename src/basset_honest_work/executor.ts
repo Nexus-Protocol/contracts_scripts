@@ -78,7 +78,7 @@ export async function start_honest_work_loop(lcd_client: LCDClient, sender: Wall
 	while (true) {
 		let result = await execute_contract(lcd_client, sender, basset_vault_addr, hones_work_msg);
 		if (result !== undefined) {
-			console.log(`${get_date_str()}: Honest work successfully executed`);
+			console.log(`${get_date_str()} :: Honest work successfully executed`);
 			console.log(`=======================`);
 			await sleep(delay_millis);
 		} else {
