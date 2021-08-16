@@ -122,6 +122,28 @@ export function terraswap_factory_contract_addr(): string {
 }
 
 // ================================================
+// Anchor params
+// {
+//   "quorum": "0.1",
+//   "threshold": "0.5",
+//   "voting_period": 94097,
+//   "timelock_period": 40327,
+//   "expiration_period": 13443,
+//   "proposal_deposit": "1000000000",
+//   "snapshot_period": 13443
+// }
+//
+// Mirror params
+// {
+  // "quorum": "0.09998",
+  // "threshold": "0.49989",
+  // "voting_period": 604800,
+  // "effective_delay": 86400,
+  // "expiration_period": 86400,
+  // "proposal_deposit": "100000000",
+  // "voter_weight": "0.5",
+  // "snapshot_period": 86400
+// }
 
 export interface GovernanceConfig {
 	quorum: string,
@@ -140,7 +162,7 @@ export function prod_GovernanceConfig(): GovernanceConfig {
 		voting_period: 94097, // change to 4 days
 		timelock_period: 40327, // to investigate (maybe half of voting)
 		expiration_period: 13443,
-		proposal_deposit: "1000000000", //change to 10000
+		proposal_deposit: "10000000000",
 		snapshot_period: 13443,
 	}
 }
@@ -152,7 +174,7 @@ export function test_GovernanceConfig(): GovernanceConfig {
 		voting_period: 94097,
 		timelock_period: 40327,
 		expiration_period: 13443,
-		proposal_deposit: "1000000000",
+		proposal_deposit: "10000000000",
 		snapshot_period: 13443,
 	}
 }
