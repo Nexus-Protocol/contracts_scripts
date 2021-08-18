@@ -16,9 +16,9 @@ now you are done with terra-js repo, go to your project directory
 
 #### Download dependency repos:
 
-1. https://github.com/Nexus-Protocol/basset-vault-contracts
+1. https://github.com/Nexus-Protocol/basset-vault-contracts (`v1.0.0` tag)
 2. https://github.com/terraswap/terraswap (`92f65af98a5b1ae985bc16208143098d92954b2f` branch)
-3. https://github.com/Nexus-Protocol/services-contracts
+3. https://github.com/Nexus-Protocol/services-contracts (`v1.0.0` tag)
 4. https://github.com/CosmWasm/cosmwasm-plus (`v0.7.0` branch)
 
 ##### build cosmwasm-plus
