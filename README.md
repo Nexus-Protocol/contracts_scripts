@@ -1,4 +1,4 @@
-**CosmWasm compatible version: `0.15`**
+**CosmWasm compatible version: `0.16`**
 
 ## Setup:
 
@@ -16,10 +16,10 @@ now you are done with terra-js repo, go to your project directory
 
 #### Download dependency repos:
 
-1. https://github.com/Nexus-Protocol/basset-vault-contracts
-2. https://github.com/terraswap/terraswap (`92f65af98a5b1ae985bc16208143098d92954b2f` branch)
-3. https://github.com/Nexus-Protocol/services-contracts
-4. https://github.com/CosmWasm/cosmwasm-plus (`v0.7.0` branch)
+1. https://github.com/Nexus-Protocol/basset-vault-contracts (`v1.1.0` tag)
+2. https://github.com/terraswap/terraswap (`3ae1c1252ffcfff0a5b6f67d8a87a1604edae3a3` commit)
+3. https://github.com/Nexus-Protocol/services-contracts (`v1.1.0` tag)
+4. https://github.com/CosmWasm/cosmwasm-plus (`v0.8.0` tag)
 
 ##### build cosmwasm-plus
 
@@ -39,9 +39,10 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 
 ## Start localterra:
 
-1. `git clone git@github.com:invis87/LocalTerra.git`
+1. `git clone --depth 1 git@github.com:terra-money/LocalTerra.git`
 2. `cd LocalTerra`
-3. `git checkout bombay`
+3. `git fetch --tags`, `git checkout tags/v0.5.0`
+3. `docker pull terramoney/localterra-core:bombay`
 4. `docker-compose up`
 
 ## Upload basset-vault smart contracts:
