@@ -1,4 +1,4 @@
-import {appendFile, appendFileSync, existsSync, readFileSync} from 'fs';
+import {existsSync, readFileSync} from 'fs';
 import {Decimal} from 'decimal.js'
 
 class SnapshotReader {

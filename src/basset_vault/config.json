@@ -1,8 +1,8 @@
 {
-	"basset_vault_addr": "terra1...",
 	"lcd_client": {
 		"localterra": true,
 		"url": "http://127.0.0.1:1317",
 		"chain_id": "columbus-5"
-	}
+	},
+	"multisig_address": "terra1..."
 }

@@ -1,5 +1,4 @@
 {
-	"basset_vault_addr": "terra1...",
 	"lcd_client": {
 		"localterra": true,
 		"url": "http://127.0.0.1:1317",

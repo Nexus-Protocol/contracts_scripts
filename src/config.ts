@@ -1,12 +1,12 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
-import {CW20_CODE_ID, cw20_contract_wasm, INITIAL_PSI_TOKENS_OWNER, terraswap_factory_wasm, terraswap_pair_wasm, IS_PROD} from "./basset_vault/definition"
+import {CW20_CODE_ID, cw20_contract_wasm, terraswap_factory_wasm, terraswap_pair_wasm} from "./basset_vault/definition"
 import {instantiate_contract, store_contract} from './utils';
 
 // ================================================
 
-export function PSiTokensOwner(sender: Wallet): string {
-	if (IS_PROD) {
-		return INITIAL_PSI_TOKENS_OWNER;
+export function PSiTokensOwner(lcd_client: LCDClient, sender: Wallet, multisig_address: string): string {
+	if (is_prod(lcd_client)) {
+		return multisig_address;
 	} else {
 		return sender.key.accAddress;
 	}
@@ -23,6 +23,10 @@ export async function Cw20CodeId(lcd_client: LCDClient, sender: Wallet): Promise
 	} else {
 		return CW20_CODE_ID;
 	}
+}
+
+export function is_prod(lcd_client: LCDClient): boolean {
+	return lcd_client.config.chainID.startsWith("columbus");
 }
 
 // ================================================
@@ -42,7 +46,7 @@ export async function init_terraswap_factory(lcd_client: LCDClient, sender: Wall
 		console.log(`terraswap_factory instantiated; address: ${terraswap_factory_contract_addr}`);
 		return terraswap_factory_contract_addr;
 	} else {
-		return terraswap_factory_contract_addr();
+		return terraswap_factory_contract_addr(lcd_client);
 	}
 }
 
@@ -77,6 +81,12 @@ export function prod_TokenConfig(governance_contract_addr: string, initial_psi_t
 				amount: "10000000000000000"
 			}
 		],
+		// marketing: {
+		// 	project: "",
+		// 	description: Option<String>,
+		// 	marketing: Option<String>,
+		// 	logo: Option<Logo>,
+		// },
 		mint: {
 			minter: governance_contract_addr,
 		}
@@ -100,8 +110,8 @@ export function testnet_TokenConfig(governance_contract_addr: string, initial_ps
 	}
 }
 
-export function TokenConfig(governance_contract_addr: string, initial_psi_tokens_owner: string): TokenConfig {
-	if (IS_PROD) {
+export function TokenConfig(lcd_client: LCDClient, governance_contract_addr: string, initial_psi_tokens_owner: string): TokenConfig {
+	if (is_prod(lcd_client)) {
 		return prod_TokenConfig(governance_contract_addr, initial_psi_tokens_owner);
 	} else {
 		return testnet_TokenConfig(governance_contract_addr, initial_psi_tokens_owner);
@@ -113,8 +123,8 @@ export function TokenConfig(governance_contract_addr: string, initial_psi_tokens
 const terraswap_factory_contract_addr_prod = "terra1ulgw0td86nvs4wtpsc80thv6xelk76ut7a7apj";
 const terraswap_factory_contract_addr_testnet = "terra18qpjm4zkvqnpjpw0zn0tdr8gdzvt8au35v45xf";
 
-export function terraswap_factory_contract_addr(): string {
-	if (IS_PROD) {
+export function terraswap_factory_contract_addr(lcd_client: LCDClient): string {
+	if (is_prod(lcd_client)) {
 		return terraswap_factory_contract_addr_prod;
 	} else {
 		return terraswap_factory_contract_addr_testnet;
@@ -159,7 +169,7 @@ export function prod_GovernanceConfig(): GovernanceConfig {
 	return {
 		quorum: "0.1",
 		threshold: "0.5",
-		voting_period: 94097, // change to 4 days
+		voting_period: 72000, // 5 days: 72_000 * 6 / 86_400
 		timelock_period: 40327, // to investigate (maybe half of voting)
 		expiration_period: 13443,
 		proposal_deposit: "10000000000",
@@ -179,8 +189,8 @@ export function test_GovernanceConfig(): GovernanceConfig {
 	}
 }
 
-export function GovernanceConfig(): GovernanceConfig {
-	if (IS_PROD) {
+export function GovernanceConfig(lcd_client: LCDClient): GovernanceConfig {
+	if (is_prod(lcd_client)) {
 		return prod_GovernanceConfig();
 	} else {
 		return test_GovernanceConfig();
@@ -211,8 +221,8 @@ export function test_CommunityPoolConfig(governance_contract_addr: string, psi_t
 	}
 }
 
-export function CommunityPoolConfig(governance_contract_addr: string, psi_token_addr: string): CommunityPoolConfig {
-	if (IS_PROD) {
+export function CommunityPoolConfig(lcd_client: LCDClient, governance_contract_addr: string, psi_token_addr: string): CommunityPoolConfig {
+	if (is_prod(lcd_client)) {
 		return prod_CommunityPoolConfig(governance_contract_addr, psi_token_addr);
 	} else {
 		return test_CommunityPoolConfig(governance_contract_addr, psi_token_addr);
@@ -265,8 +275,8 @@ export function testnet_BassetVaultStrategyConfig(governance_contract_addr: stri
 	}
 }
 
-export function BassetVaultStrategyConfig(governance_contract_addr: string): BassetVaultStrategyConfig {
-	if (IS_PROD) {
+export function BassetVaultStrategyConfig(lcd_client: LCDClient, governance_contract_addr: string): BassetVaultStrategyConfig {
+	if (is_prod(lcd_client)) {
 		return prod_BassetVaultStrategyConfig(governance_contract_addr);
 	} else {
 		return testnet_BassetVaultStrategyConfig(governance_contract_addr);
@@ -410,6 +420,7 @@ export function testnet_BassetVaultConfig(
 }
 
 export function BassetVaultConfig(
+	lcd_client: LCDClient,
 	governance_contract_addr: string,
 	community_pool_contract_addr: string,
 	nasset_token_code_id: number,
@@ -420,7 +431,7 @@ export function BassetVaultConfig(
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string
 ): BassetVaultConfig {
-	if (IS_PROD) {
+	if (is_prod(lcd_client)) {
 		return prod_BassetVaultConfig(
 			governance_contract_addr,
 			community_pool_contract_addr,

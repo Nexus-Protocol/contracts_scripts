@@ -1,13 +1,12 @@
-import {getContractEvents, LCDClient, LocalTerra, Wallet} from '@terra-money/terra.js';
-import {BassetVaultConfig, TokenConfig, BassetVaultStrategyConfig, GovernanceConfig, Cw20CodeId, init_terraswap_factory, PSiTokensOwner, CommunityPoolConfig} from './../config';
-import { deployer, IS_PROD, lcd_client, MULTISIG_ADDR, staking_contract_wasm} from './../basset_vault/definition';
-import {store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault, create_token_to_token_terraswap_pair} from './../utils';
+import {LCDClient, Wallet} from '@terra-money/terra.js';
+import {staking_contract_wasm} from './../basset_vault/definition';
+import {create_contract} from './../utils';
+import {DistributionScheduleRaw} from './executor';
 
 interface StakingConfig {
 	psi_token: string,
 	staking_token: string,
 	distribution_schedule: any[][],
-
 }
 
 interface DistributionSchedule {
@@ -16,18 +15,14 @@ interface DistributionSchedule {
 	amount: string;
 }
 
-function create_distribution_schedule(
-	start_time: string,
-	end_time: string,
-	amount: string
-): DistributionSchedule {
-	let start_time_secs = Date.parse(start_time) / 1000;
-	let end_time_secs = Date.parse(end_time) / 1000;
+function create_distribution_schedule(distribution_schedule_raw: DistributionScheduleRaw): DistributionSchedule {
+	let start_time_secs = Date.parse(distribution_schedule_raw.start_date) / 1000;
+	let end_time_secs = Date.parse(distribution_schedule_raw.end_date) / 1000;
 
 	return {
 		start_time: start_time_secs,
 		end_time: end_time_secs,
-		amount: amount
+		amount: distribution_schedule_raw.tokens_amount
 	};
 }
 
@@ -45,32 +40,18 @@ async function init_staking_contract(lcd_client: LCDClient, sender: Wallet, init
 	return contract_addr;
 }
 
-// ===================================================
-// ==================== IMPORTANT ====================
-// ===================================================
-//TODO
-const PSI_TOKEN_ADDR = "terra1...";
-const LP_TOKEN_ADDR = "terra1...";
-// ===================================================
-// ===================================================
-// ===================================================
-
-export async function main() {
-	let distribution_schedule = create_distribution_schedule(
-		"2021-03-18T11:00:00",
-		"2021-03-19T11:00:00",
-		"5000000"
-	);
+export async function init_lp_staking_contract(lcd_client: LCDClient, sender: Wallet, distribution_schedule_raw: DistributionScheduleRaw, psi_token_addr: string, lp_token_addr: string) {
+	let distribution_schedule = create_distribution_schedule(distribution_schedule_raw);
 	// instantiate lp tokens staking contract
-	let staking_config = StakingConfig(PSI_TOKEN_ADDR, LP_TOKEN_ADDR, distribution_schedule);
-	await init_staking_contract(lcd_client, deployer, staking_config);
+	let staking_config = StakingConfig(psi_token_addr, lp_token_addr, distribution_schedule);
+	await init_staking_contract(lcd_client, sender, staking_config);
 	console.log(`=======================`);
 }
 
-export async function query_state() {
-	let config_response = await lcd_client.wasm.contractQuery("terra14npwmxc8lk7em77xc8w84k8spgk7qzsuz4hlsg", {config: {}});
+export async function query_state(lcd_client: LCDClient, staking_contract_addr: string) {
+	let config_response = await lcd_client.wasm.contractQuery(staking_contract_addr, {config: {}});
 	console.log(`config:\n${JSON.stringify( config_response )}`)
 
-	let state_response = await lcd_client.wasm.contractQuery("terra14npwmxc8lk7em77xc8w84k8spgk7qzsuz4hlsg", {state: {}});
+	let state_response = await lcd_client.wasm.contractQuery(staking_contract_addr, {state: {}});
 	console.log(`state:\n${JSON.stringify( state_response )}`)
 }

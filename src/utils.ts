@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
-import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
+import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, LocalTerra, MnemonicKey, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
 import {BassetVaultConfig} from './config';
+import * as prompt from 'prompt';
 
 export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object): Promise<string> {
 	let code_id = await store_contract(lcd_client, sender, wasm_path);
@@ -239,4 +240,63 @@ export function sleep(ms: number) {
 
 export function get_date_str(): string {
 	return new Date().toISOString().replace('T', ' ');
+}
+
+const seed_prompt = [
+	{
+		name: 'seed',
+		hidden: true
+	}
+];
+
+export function prompt_for_seed(): Promise<string> {
+	return new Promise(resolve => {
+		prompt.get(seed_prompt, (err, result) => {
+			if (err) {
+				process.exit(1);
+			}
+			resolve(result.seed.toString())
+		});
+	});
+}
+
+export interface LCDConfig {
+	localterra: boolean,
+	url: string,
+	chain_id: string
+}
+
+export async function get_lcd_config_with_wallet(lcd_config: LCDConfig): Promise<[LCDClient, Wallet]> {
+	let lcd_client: LCDClient;
+	let sender: Wallet;
+	if (lcd_config.localterra) {
+		const localterra = new LocalTerra()
+		lcd_client = localterra;
+		sender = localterra.wallets["test1"];
+	} else {
+		lcd_client = new LCDClient({
+			URL: lcd_config.url,
+			chainID: lcd_config.chain_id
+		});
+		const seed = await prompt_for_seed();
+		const owner = new MnemonicKey({mnemonic: seed});
+		sender = new Wallet(lcd_client, owner);
+	}
+
+	return [lcd_client, sender];
+}
+
+export async function get_lcd_config(lcd_config: LCDConfig): Promise<LCDClient> {
+	let lcd_client: LCDClient;
+	if (lcd_config.localterra) {
+		const localterra = new LocalTerra()
+		lcd_client = localterra;
+	} else {
+		lcd_client = new LCDClient({
+			URL: lcd_config.url,
+			chainID: lcd_config.chain_id
+		});
+	}
+
+	return lcd_client;
 }

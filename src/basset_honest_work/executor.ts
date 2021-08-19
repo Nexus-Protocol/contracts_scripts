@@ -1,7 +1,7 @@
-import { LCDClient, LocalTerra, Wallet, MnemonicKey} from '@terra-money/terra.js';
+import { LCDClient, Wallet } from '@terra-money/terra.js';
 import { readFileSync } from 'fs';
 import {Command} from 'commander';
-import {execute_contract, get_date_str, sleep} from './../utils';
+import {execute_contract, get_date_str, get_lcd_config_with_wallet, sleep} from './../utils';
 
 interface Config {
 	basset_vault_addr: string,
@@ -9,9 +9,6 @@ interface Config {
 		localterra: boolean,
 		url: string,
 		chain_id: string
-	},
-	sender: {
-		seed: string
 	},
 	honest_work_delay: {
 		days: number,
@@ -40,21 +37,9 @@ async function run_program() {
 	await program.parseAsync(process.argv);
 }
 
-async function run(config_path: string) { const config: Config = JSON.parse(readFileSync(config_path, 'utf-8'))
-	let lcd_client: LCDClient;
-	let sender: Wallet;
-	if (config.lcd_client.localterra) {
-		const localterra = new LocalTerra()
-		lcd_client = localterra;
-		sender = localterra.wallets["test1"];
-	} else {
-		lcd_client = new LCDClient({
-			URL: config.lcd_client.url,
-			chainID: config.lcd_client.chain_id
-		});
-		const owner = new MnemonicKey({mnemonic: config.sender.seed});
-		sender = new Wallet(lcd_client, owner);
-	}
+async function run(config_path: string) {
+	const config: Config = JSON.parse(readFileSync(config_path, 'utf-8'))
+	const [lcd_client, sender] = await get_lcd_config_with_wallet(config.lcd_client);
 
 	const honest_work_delay = config.honest_work_delay;
 	const delay_millis =

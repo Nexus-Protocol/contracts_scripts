@@ -1,8 +1,9 @@
 {
-	"basset_vault_addr": "terra1...",
 	"lcd_client": {
 		"localterra": true,
 		"url": "http://127.0.0.1:1317",
 		"chain_id": "columbus-5"
-	}
+	},
+	"psi_token_addr": "terra1...",
+	"airdrop_contract_owner": "terra1..."
 }
