@@ -4,19 +4,19 @@
 		"url": "http://127.0.0.1:1317",
 		"chain_id": "columbus-5"
 	},
-	"multisig_address": "terra1...",
-	"psi_token_addr": "terra1...",
+	"multisig_address": "terra1x46rqay4d3cssq8gxxvqz8xt6nwlz4td20k38v",
+	"psi_token_addr": "terra1hqrdl6wstt8qzshwc6mrumpjk9338k0l93hqyd",
 	"genesis_date_str": "2021-03-17T11:00:00",
 	"vesting_accounts": [
 		{
-			"address": "terra1...",
+			"address": "terra17lmam6zguazs5q5u6z5mmx76uj63gldnse2pdp",
 			"start_date": "2021-03-17T11:00:00",
 			"end_date": "2021-03-18T11:00:00",
 			"cliff_end_date": "2021-03-19T11:00:00",
 			"tokens_amount": "5000000"
 		},
 		{
-			"address": "terra1...",
+			"address": "terra1757tkx08n0cqrw7p86ny9lnxsqeth0wgp0em95",
 			"start_date": "2021-03-17T11:00:00",
 			"end_date": "2021-03-18T11:00:00",
 			"cliff_end_date": "2021-03-19T11:00:00",

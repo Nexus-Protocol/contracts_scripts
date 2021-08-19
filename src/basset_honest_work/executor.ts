@@ -52,16 +52,16 @@ async function run(config_path: string) {
 }
 
 export async function start_honest_work_loop(lcd_client: LCDClient, sender: Wallet, basset_vault_addr: string, delay_millis: number) {
-	const hones_work_msg = {
+	const honest_work_msg = {
 		anyone: {
 			anyone_msg: {
-				hones_work: {}
+				honest_work: {}
 			}
 		}
 	};
 
 	while (true) {
-		let result = await execute_contract(lcd_client, sender, basset_vault_addr, hones_work_msg);
+		let result = await execute_contract(lcd_client, sender, basset_vault_addr, honest_work_msg);
 		if (result !== undefined) {
 			console.log(`${get_date_str()} :: Honest work successfully executed`);
 			console.log(`=======================`);

@@ -13,14 +13,15 @@ export async function init_airdrop_contract(lcd_client: LCDClient, sender: Walle
 }
 
 export async function register_merkle_tree(lcd_client: LCDClient, sender: Wallet, airdrop_contract_addr: string, merkle_root: string) {
-	const register_merkle_tree_msg = {
+	const register_merkle_root_msg = {
 		register_merkle_root: {
 			merkle_root: merkle_root
 		}
 	};
 
+	console.log(`xxx: ${JSON.stringify(register_merkle_root_msg)}`);
 	while (true) {
-		let register_merkle_tree_result = await execute_contract(lcd_client, sender, airdrop_contract_addr, register_merkle_tree_msg);
+		let register_merkle_tree_result = await execute_contract(lcd_client, sender, airdrop_contract_addr, register_merkle_root_msg);
 		if (register_merkle_tree_result !== undefined) {
 			let stage;
 			let tx_events = getContractEvents(register_merkle_tree_result);

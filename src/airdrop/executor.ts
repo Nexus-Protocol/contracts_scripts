@@ -2,7 +2,7 @@ import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {readFileSync} from 'fs';
 import {Command} from 'commander';
 import {register_merkle_tree, init_airdrop_contract, AirdropConfig} from "./definition";
-import {get_lcd_config_with_wallet} from 'src/utils';
+import {get_lcd_config_with_wallet} from './../utils';
 
 interface Config {
 	lcd_client: {
@@ -38,7 +38,7 @@ async function run_program() {
 		.option('-C, --config <filepath>', `relative path to json config`)
 		.action(async (options) => {
 			const [_config, lcd_client, sender] = await get_lcd_and_wallet(options);
-			await register_merkle_tree(lcd_client, sender, options.address, options.merkle_root);
+			await register_merkle_tree(lcd_client, sender, options.address, options.merkleRoot);
 		});
 
 	await program.parseAsync(process.argv);

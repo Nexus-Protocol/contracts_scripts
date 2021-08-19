@@ -2,7 +2,7 @@ import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {readFileSync} from 'fs';
 import {Command} from 'commander';
 import {init_lp_staking_contract, query_state} from "./definition";
-import {get_lcd_config_with_wallet} from 'src/utils';
+import {get_lcd_config_with_wallet} from './../utils';
 
 interface Config {
 	lcd_client: {

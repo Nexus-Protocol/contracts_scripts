@@ -4,8 +4,8 @@
 		"url": "http://127.0.0.1:1317",
 		"chain_id": "columbus-5"
 	},
-	"psi_token_addr": "terra1...",
-	"lp_token_addr": "terra1...",
+	"psi_token_addr": "terra1hqrdl6wstt8qzshwc6mrumpjk9338k0l93hqyd",
+	"lp_token_addr": "terra15gfn3tmx589z9l0h0n6mk0sunkn3864xw89v63",
 	"distribution_schedule": {
 		"start_date": "2021-03-18T11:00:00",
 		"end_date": "2021-03-19T11:00:00",
