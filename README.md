@@ -45,36 +45,32 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 3. `docker pull terramoney/localterra-core:bombay`
 4. `docker-compose up`
 
-## Upload basset-vault smart contracts:
-
-`npm run upload-basset-vault`
-
 # Usage
 
-#### upload basset vault
+### upload basset vault
 
 `npm run upload-basset-vault` - full upload cycle (governance, psi token, psi-ust swap pair, community pool, basset vault, nasset-psi swap pair)
 
-#### airdrop
+### airdrop
 
 `npm run airdrop -- instantiate` - instantiate airdrop contract
 `npm run calc-airdrop` - calculate merkle tree for airdrop and amounts for each address with proofs
 `npm run airdrop -- register-merkle-tree -A terra1lk26r9kcysvd3g2lfmsuavf7s5g59wnyu5u6fh -R asdsadyhsafdsfdsfdsgsdfsdfs` - register merkle root (`asdsadyhsafdsfdsfdsgsdfsdfs`) in airdrop contract (`terra1lk26r9kcysvd3g2lfmsuavf7s5g59wnyu5u6fh`)
 
-#### honest work
+### honest work
 
 `npm run honest-work` - run cycle that send `HonestWork` (claim ANC rewards, sell them, buy PSI token) message to bAsset vault
 
-#### staking lp
+### staking lp
 
 `npm run staking-lp -- instantiate` - instantiate LP staking contract
 `npm run staking-lp -- query-state -A terra1qeedgtvrtjkqjn6fkezddjjlrwxmt5peafp8fx` - query state of staking LP contract (`terra1qeedgtvrtjkqjn6fkezddjjlrwxmt5peafp8fx`)
 
-#### staking lp
+### staking lp
 
 `npm run vesting -- instantiate` - instantiate vesting contract
 `npm run vesting -- query-state -A terra1ef44l7ayrzcjr7980gjqdqmndgy3cw04gtaj25` - query state of vesting contract (`terra1qeedgtvrtjkqjn6fkezddjjlrwxmt5peafp8fx`)
 
-#### lp simulation
+### lp simulation
 
 `npm run lp-simulation` - run lp simulation (provide liquidity, buy some tokens in loop, return token price at the end)
