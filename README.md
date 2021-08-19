@@ -66,7 +66,7 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 - `npm run staking-lp -- instantiate` - instantiate LP staking contract
 - `npm run staking-lp -- query-state -A terra1qeedgtvrtjkqjn6fkezddjjlrwxmt5peafp8fx` - query state of staking LP contract (`terra1qeedgtvrtjkqjn6fkezddjjlrwxmt5peafp8fx`)
 
-### staking lp
+### vesting
 
 - `npm run vesting -- instantiate` - instantiate vesting contract
 - `npm run vesting -- query-state -A terra1ef44l7ayrzcjr7980gjqdqmndgy3cw04gtaj25` - query state of vesting contract (`terra1qeedgtvrtjkqjn6fkezddjjlrwxmt5peafp8fx`)
