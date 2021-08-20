@@ -64,7 +64,7 @@ export async function add_vesting_account(lcd_client: LCDClient, sender: Wallet,
 	for (const vesting_account of vesting_accounts) {
 		const is_vesting_exists = await is_vesting_already_exists_for(lcd_client, vesting_contract_addr, vesting_account.address);
 		if (is_vesting_exists) {
-			console.log(`stop cayse vesting already exists, will not overwrite it`);
+			console.log(`stop cause vesting already exists, will not overwrite it`);
 			console.log(`=======================`);
 			return;
 		}
