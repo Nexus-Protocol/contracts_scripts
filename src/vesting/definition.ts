@@ -29,7 +29,7 @@ interface VestingSchedule {
 	amount: string;
 }
 
-function create_vesting_account(vesting_account_raw: VestingAccountRaw): VestingAccount {
+export function create_vesting_account(vesting_account_raw: VestingAccountRaw): VestingAccount {
 	let start_time_secs = Date.parse(vesting_account_raw.start_date) / 1000;
 	let end_time_secs = Date.parse(vesting_account_raw.end_date) / 1000;
 	let cliff_end_time_secs = Date.parse(vesting_account_raw.cliff_end_date) / 1000;
@@ -41,7 +41,7 @@ function create_vesting_account(vesting_account_raw: VestingAccountRaw): Vesting
 				start_time: start_time_secs,
 				end_time: end_time_secs,
 				cliff_end_time: cliff_end_time_secs,
-				amount: vesting_account_raw.tokens_amount
+				amount: (parseInt(vesting_account_raw.tokens_amount) * 1_000_000).toString()
 			}
 		]
 	};
@@ -57,8 +57,20 @@ export async function init_vesting_contract(lcd_client: LCDClient, sender: Walle
 
 	// register vesting accounts
 	let vesting_accounts: VestingAccount[] = config.vesting_accounts.map(create_vesting_account);
-	await execute_contract(lcd_client, sender, vesting_contract_addr, 
-	       {
+	await add_vesting_account(lcd_client, sender, vesting_contract_addr, vesting_accounts);
+}
+
+export async function add_vesting_account(lcd_client: LCDClient, sender: Wallet, vesting_contract_addr: string, vesting_accounts: VestingAccount[]) {
+	for (const vesting_account of vesting_accounts) {
+		const is_vesting_exists = await is_vesting_already_exists_for(lcd_client, vesting_contract_addr, vesting_account.address);
+		if (is_vesting_exists) {
+			console.log(`stop cayse vesting already exists, will not overwrite it`);
+			console.log(`=======================`);
+			return;
+		}
+	}
+
+	await execute_contract(lcd_client, sender, vesting_contract_addr, {
 		       register_vesting_accounts: {
 			       vesting_accounts: vesting_accounts
 		       }
@@ -66,6 +78,16 @@ export async function init_vesting_contract(lcd_client: LCDClient, sender: Walle
 	);
 	console.log(`vesting accounts registered`);
 	console.log(`=======================`);
+}
+
+async function is_vesting_already_exists_for(lcd_client: LCDClient, vesting_contract_addr: string, address: string): Promise<boolean> {
+	try {
+		await lcd_client.wasm.contractQuery(vesting_contract_addr, {vesting_account: {address: address}});
+		console.log(`vesting already exists for ${address}`);
+		return true;
+	} catch (err) {
+		return false;
+	}
 }
 
 export async function query_state(lcd_client: LCDClient, vesting_contract_addr: string) {

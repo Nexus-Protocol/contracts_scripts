@@ -1,7 +1,7 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {readFileSync} from 'fs';
 import {Command} from 'commander';
-import {init_vesting_contract, query_state} from "./definition";
+import {add_vesting_account, create_vesting_account, init_vesting_contract, query_state} from "./definition";
 import {get_lcd_config_with_wallet} from './../utils';
 
 export interface Config {
@@ -35,6 +35,22 @@ async function run_program() {
 		.action(async (options) => {
 			const [config, lcd_client, sender] = await get_lcd_and_wallet(options);
 			await init_vesting_contract(lcd_client, sender, config);
+		});
+
+	program
+		.command('add-vesting <address> <start_date> <end_date> <cliff_end_date> <tokens_amount>')
+		.option('-A, --address <address>', `vesting contract address`)
+		.option('-C, --config <filepath>', `relative path to json config`)
+		.action(async (address, start_date, end_date, cliff_end_date, tokens_amount, options) => {
+			const [_config, lcd_client, sender] = await get_lcd_and_wallet(options);
+			const vesting_accounts = create_vesting_account({
+				address: address,
+				start_date: start_date,
+				end_date: end_date,
+				cliff_end_date: cliff_end_date,
+				tokens_amount: tokens_amount
+			});
+			await add_vesting_account(lcd_client, sender, options.address, [vesting_accounts]);
 		});
 
 	program

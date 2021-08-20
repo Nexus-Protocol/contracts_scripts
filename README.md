@@ -18,7 +18,7 @@ now you are done with terra-js repo, go to your project directory
 
 1. https://github.com/Nexus-Protocol/basset-vault-contracts (`v1.1.0` tag)
 2. https://github.com/terraswap/terraswap (`3ae1c1252ffcfff0a5b6f67d8a87a1604edae3a3` commit)
-3. https://github.com/Nexus-Protocol/services-contracts (`v1.1.0` tag)
+3. https://github.com/Nexus-Protocol/services-contracts (`v1.1.1` tag)
 4. https://github.com/CosmWasm/cosmwasm-plus (`v0.8.0` tag)
 
 ##### build cosmwasm-plus
@@ -64,11 +64,13 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 ### staking lp
 
 - `npm run staking-lp -- instantiate` - instantiate LP staking contract
+- `npm run staking-lp -- add-distribution {start_block} {end_block} {tokens_amount} -A {staking_contract_addr}` - add new staking distribution schedule, for example: `npm run staking-lp -- add-distribution 100000 200000 1000 -A terra1qeedgtvrtjkqjn6fkezddjjlrwxmt5peafp8fx`
 - `npm run staking-lp -- query-state -A terra1qeedgtvrtjkqjn6fkezddjjlrwxmt5peafp8fx` - query state of staking LP contract (`terra1qeedgtvrtjkqjn6fkezddjjlrwxmt5peafp8fx`)
 
 ### vesting
 
 - `npm run vesting -- instantiate` - instantiate vesting contract
+- `npm run vesting -- add-vesting {address} {start_date} {end_date} {cliff_end_date} {tokens_amount} -A {vesting_contract_addr}` - add new vesting, for example: `npm run vesting -- add-vesting terra1x46rqay4d3cssq8gxxvqz8xt6nwlz4td20k38v 2021-03-17T11:00:00 2021-03-18T11:00:00 2021-03-18T11:00:00 1000 -A terra1u3zhxxmqq9fkuxmuzkzlzjgzerejqpk64xpmx8`
 - `npm run vesting -- query-state -A terra1ef44l7ayrzcjr7980gjqdqmndgy3cw04gtaj25` - query state of vesting contract (`terra1qeedgtvrtjkqjn6fkezddjjlrwxmt5peafp8fx`)
 
 ### lp simulation

@@ -1,23 +1,24 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {readFileSync} from 'fs';
 import {Command} from 'commander';
-import {init_lp_staking_contract, query_state} from "./definition";
+import {add_distribution_schedules, create_distribution_schedule, init_lp_staking_contract, query_state} from "./definition";
 import {get_lcd_config_with_wallet} from './../utils';
 
-interface Config {
+export interface Config {
 	lcd_client: {
 		localterra: boolean,
 		url: string,
 		chain_id: string
 	},
+	multisig_address: string,
 	psi_token_addr: string,
 	lp_token_addr: string,
 	distribution_schedule: DistributionScheduleRaw
 }
 
 export interface DistributionScheduleRaw {
-	start_date: string;
-	end_date: string;
+	start_block: string;
+	end_block: string;
 	tokens_amount: string;
 }
 
@@ -31,7 +32,21 @@ async function run_program() {
 		.option('-C, --config <filepath>', `relative path to json config`)
 		.action(async (options) => {
 			const [config, lcd_client, sender] = await get_lcd_and_wallet(options);
-			await init_lp_staking_contract(lcd_client, sender, config.distribution_schedule, config.psi_token_addr, config.lp_token_addr);
+			await init_lp_staking_contract(lcd_client, sender, config);
+		});
+
+	program
+		.command('add-distribution <start_block> <end_block> <tokens_amount>')
+		.option('-A, --address <address>', `staking contract address`)
+		.option('-C, --config <filepath>', `relative path to json config`)
+		.action(async (start_block, end_block, tokens_amount, options) => {
+			const [_config, lcd_client, sender] = await get_lcd_and_wallet(options);
+			const distribution_schedule = create_distribution_schedule({
+				start_block: start_block,
+				end_block: end_block,
+				tokens_amount: tokens_amount
+			});
+			await add_distribution_schedules(lcd_client, sender, options.address, [distribution_schedule]);
 		});
 
 	program
