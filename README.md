@@ -4,16 +4,6 @@
 
 `npm install`
 
-To setup `terra-js` from `bombay` branch:
-1. `git clone https://github.com/terra-money/terra.js`
-2. `cd terra.js` && `git checkout bombay`
-3. `npm install`
-4. `npm run build`
-5. `npm link`
-now you are done with terra-js repo, go to your project directory
-6. `cd {my_bombay_js_project_dir}`
-7. `npm link @terra-money/terra.js`
-
 #### Download dependency repos:
 
 1. https://github.com/Nexus-Protocol/basset-vault-contracts (`v1.1.0` tag)
@@ -57,10 +47,6 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 - `npm run calc-airdrop` - calculate merkle tree for airdrop and amounts for each address with proofs
 - `npm run airdrop -- register-merkle-tree -A terra1lk26r9kcysvd3g2lfmsuavf7s5g59wnyu5u6fh -R asdsadyhsafdsfdsfdsgsdfsdfs` - register merkle root (`asdsadyhsafdsfdsfdsgsdfsdfs`) in airdrop contract (`terra1lk26r9kcysvd3g2lfmsuavf7s5g59wnyu5u6fh`)
 
-### honest work
-
-- `npm run honest-work` - run cycle that send `HonestWork` (claim ANC rewards, sell them, buy PSI token) message to bAsset vault
-
 ### staking lp
 
 - `npm run staking-lp -- instantiate` - instantiate LP staking contract
@@ -76,3 +62,15 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 ### lp simulation
 
 - `npm run lp-simulation` - run lp simulation (provide liquidity, buy some tokens in loop, return token price at the end)
+
+### rebalance
+
+- `npm run rebalance` - run cycle that send `Rebalance` message to bAsset vault if needed
+
+### honest work
+
+- `npm run honest-work` - run cycle that send `HonestWork` (claim ANC rewards, sell them, buy PSI token) message to bAsset vault
+
+### claim lp rewards for psi-nasset pool
+
+- `npm run claim-lp-rewards` - run cycle that claim nAsset holding rewards for PSI-nAsset liquidity pool with some delay
