@@ -17,9 +17,9 @@ export interface Config {
 }
 
 export interface DistributionScheduleRaw {
-	start_block: string;
-	end_block: string;
-	tokens_amount: string;
+	start_date: string,
+	end_date: string,
+	tokens_amount: string,
 }
 
 const DEFAULT_CONFIG_PATH: string = 'src/staking_lp/config.json';
@@ -36,14 +36,14 @@ async function run_program() {
 		});
 
 	program
-		.command('add-distribution <start_block> <end_block> <tokens_amount>')
+		.command('add-distribution <start_date> <end_date> <tokens_amount>')
 		.option('-A, --address <address>', `staking contract address`)
 		.option('-C, --config <filepath>', `relative path to json config`)
-		.action(async (start_block, end_block, tokens_amount, options) => {
+		.action(async (start_date, end_date, tokens_amount, options) => {
 			const [_config, lcd_client, sender] = await get_lcd_and_wallet(options);
 			const distribution_schedule = create_distribution_schedule({
-				start_block: start_block,
-				end_block: end_block,
+				start_date: start_date,
+				end_date: end_date,
 				tokens_amount: tokens_amount
 			});
 			await add_distribution_schedules(lcd_client, sender, options.address, [distribution_schedule]);

@@ -18,10 +18,10 @@ export interface Config {
 
 export interface VestingAccountRaw {
 	address: string,
-	start_date: string;
-	end_date: string;
-	cliff_end_date: string;
-	tokens_amount: string;
+	start_date: string,
+	end_date: string,
+	cliff_end_date: string,
+	tokens_amount: string,
 }
 
 const DEFAULT_CONFIG_PATH: string = 'src/vesting/config.json';

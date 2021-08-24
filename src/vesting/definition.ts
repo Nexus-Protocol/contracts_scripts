@@ -23,10 +23,10 @@ interface VestingAccount {
 }
 
 interface VestingSchedule {
-	start_time: number;
-	end_time: number;
-	cliff_end_time: number;
-	amount: string;
+	start_time: number,
+	end_time: number,
+	cliff_end_time: number,
+	amount: string,
 }
 
 export function create_vesting_account(vesting_account_raw: VestingAccountRaw): VestingAccount {

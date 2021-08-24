@@ -11,15 +11,18 @@ interface StakingConfig {
 }
 
 interface DistributionSchedule {
-	start_block: number;
-	end_block: number;
-	amount: string;
+	start_time: number,
+	end_time: number,
+	amount: string,
 }
 
 export function create_distribution_schedule(distribution_schedule_raw: DistributionScheduleRaw): DistributionSchedule {
+	let start_time_secs = Date.parse(distribution_schedule_raw.start_date) / 1000;
+	let end_time_secs = Date.parse(distribution_schedule_raw.end_date) / 1000;
+
 	return {
-		start_block: parseInt(distribution_schedule_raw.start_block),
-		end_block: parseInt(distribution_schedule_raw.end_block),
+		start_time: start_time_secs,
+		end_time: end_time_secs,
 		amount: (parseInt(distribution_schedule_raw.tokens_amount) * 1_000_000).toString()
 	};
 }
