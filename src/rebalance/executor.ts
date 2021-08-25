@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import {Command} from 'commander';
 import {start_rebalance_loop} from "./definition";
-import {get_lcd_config_with_wallet} from 'src/utils';
+import {get_lcd_config_with_wallet} from './../utils';
 
 interface Config {
 	basset_vault_addr: string,
