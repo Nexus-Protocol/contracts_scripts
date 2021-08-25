@@ -149,10 +149,7 @@ export interface BassetVaultInfo {
 	psi_distributor_addr: string
 }
 
-export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, basset_vault_wasm: string, init_msg: BassetVaultConfig): Promise<BassetVaultInfo> {
-	let contract_name = "basset_vault";
-	let code_id = await store_contract(lcd_client, sender, basset_vault_wasm);
-	console.log(`${contract_name} uploaded; code_id: ${code_id}`);
+export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: BassetVaultConfig): Promise<BassetVaultInfo> {
 	let init_contract_res = await instantiate_contract_raw(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
 	let contract_addr = getContractAddress(init_contract_res);
 
