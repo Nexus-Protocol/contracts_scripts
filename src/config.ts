@@ -555,7 +555,7 @@ export function testnet_BassetVaultConfigForbEth(
 		nasset_t_ch_ci: nasset_token_config_holder_code_id,
 		nasset_t_r_ci: nasset_token_rewards_code_id,
 		psi_distr_ci: psi_distributor_code_id,
-		collateral_ts: "Luna",
+		collateral_ts: "ETH",
 		basset_addr: "terra19mkj9nec6e3y5754tlnuz4vem7lzh4n0lc2s3l",
 		anchor_addr: "terra1747mad58h0w4y589y3sk84r5efqdev9q4r02pc",
 		a_market_addr: "terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal",
