@@ -1,4 +1,5 @@
 import {getContractEvents, BlockTxBroadcastResult, LCDClient,  Wallet} from '@terra-money/terra.js';
+import {isTxSuccess} from 'src/transaction';
 import {execute_contract, get_date_str, sleep} from './../utils';
 
 enum RebalanceType {
@@ -88,7 +89,7 @@ export async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_va
 
 	while (true) {
 		let result = await execute_contract(lcd_client, sender, basset_vault_addr, rebalance_msg);
-		if (result !== undefined) {
+		if (result !== undefined && isTxSuccess(result)) {
 			return result;
 		} else {
 			await sleep(1000);
@@ -97,6 +98,7 @@ export async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_va
 }
 
 export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet, basset_vault_addr: string) {
+	let price_printer: number = 0;
 	while (true) {
 		const query_rebalance_resp = await query_rebalance(lcd_client, basset_vault_addr);
 		if (query_rebalance_resp.rabalance_needed()) {
@@ -113,6 +115,13 @@ export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet
 			console.log(`=======================`);
 			await sleep(3000);
 		} else {
+			if (price_printer % 1000 === 0) {
+				console.log(`rebalance not needed`);
+				price_printer = 1;
+			} else {
+				price_printer += 1;
+			}
+
 			await sleep(200);
 		}
 	}
