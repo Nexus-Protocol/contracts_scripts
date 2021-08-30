@@ -62,9 +62,9 @@ type RebalanceResponse = NothingToRebalance | BorrowRebalance | RepayRebalance;
 
 
 export function rebalance_response_from_json(json_val: any): RebalanceResponse {
-	if (json_val.nothing !== undefined) {
+	if (json_val.Nothing !== undefined) {
 		return new NothingToRebalance();
-	} else if (json_val.borrow !== undefined) {
+	} else if (json_val.Borrow !== undefined) {
 		return BorrowRebalance.from_json(json_val);
 	} else {
 		return RepayRebalance.from_json(json_val);
