@@ -34,7 +34,7 @@ class BorrowRebalance {
 	}
 
 	public static from_json(js: any): BorrowRebalance {
-		return new BorrowRebalance(js.borrow.amount, js.borrow.advised_buffer_size, js.borrow.is_possible);
+		return new BorrowRebalance(js.Borrow.amount, js.Borrow.advised_buffer_size, js.Borrow.is_possible);
 	}
 }
 class RepayRebalance {
@@ -54,12 +54,11 @@ class RepayRebalance {
 	}
 
 	public static from_json(js: any): RepayRebalance {
-		return new RepayRebalance(js.repay.amount, js.repay.advised_buffer_size);
+		return new RepayRebalance(js.Repay.amount, js.Repay.advised_buffer_size);
 	}
 }
 
 type RebalanceResponse = NothingToRebalance | BorrowRebalance | RepayRebalance;
-
 
 export function rebalance_response_from_json(json_val: any): RebalanceResponse {
 	if (json_val.Nothing !== undefined) {
@@ -73,7 +72,6 @@ export function rebalance_response_from_json(json_val: any): RebalanceResponse {
 
 export async function query_rebalance(lcd_client: LCDClient, basset_vault_addr: string): Promise<RebalanceResponse> {
 	let rebalance_response = await lcd_client.wasm.contractQuery(basset_vault_addr, {rebalance: {}});
-	console.log(`rebalance response:\n${JSON.stringify(rebalance_response)}`)
 
 	const result: RebalanceResponse = rebalance_response_from_json(rebalance_response);
 	return result;
@@ -117,6 +115,5 @@ export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet
 		} else {
 			await sleep(200);
 		}
-
 	}
 }
