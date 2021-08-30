@@ -1,5 +1,5 @@
 import {getContractEvents, BlockTxBroadcastResult, LCDClient,  Wallet} from '@terra-money/terra.js';
-import {isTxSuccess} from 'src/transaction';
+import {isTxSuccess} from './../transaction';
 import {execute_contract, get_date_str, sleep} from './../utils';
 
 enum RebalanceType {
