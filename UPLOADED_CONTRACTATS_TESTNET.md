@@ -2,9 +2,9 @@
 cw20_base uploaded; code_id: 9573
 =======================
 governance_contract uploaded
-        code_id: 9574
+        code_id: 9635
 governance_contract instantiated
-        address: terra18xqvjxx0250hu3q40kndjh7q7kax3xuy3ak3kx
+        address: terra1chg0agy289rfvgm9vhc5247mp5lnfka7mz3trp
 =======================
 psi_token instantiated
         address: terra1y6lc6t8f9vst037e49mec02x6e9aflct0l9ret
