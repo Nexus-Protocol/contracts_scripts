@@ -25,17 +25,6 @@ const nasset_token_rewards_wasm = `${path_to_basset_vault_artifacts}/basset_vaul
 const psi_distributor_wasm = `${path_to_basset_vault_artifacts}/basset_vault_psi_distributor.wasm`;
 // ===================================================
 
-// ===================================================
-// ==================== IMPORTANT ====================
-// ===================================================
-export const CW20_CODE_ID = 4;
-//TODO
-// const MULTISIG_ADDR = "multisig account";
-// const INITIAL_PSI_TOKENS_OWNER = MULTISIG_ADDR;
-// ===================================================
-// ===================================================
-// ===================================================
-
 async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
 	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
 	console.log(`psi_token instantiated\n\taddress: ${contract_addr}`);

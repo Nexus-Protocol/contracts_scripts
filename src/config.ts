@@ -1,5 +1,5 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
-import {CW20_CODE_ID, cw20_contract_wasm, terraswap_factory_wasm, terraswap_pair_wasm} from "./basset_vault/definition"
+import {cw20_contract_wasm, terraswap_factory_wasm, terraswap_pair_wasm} from "./basset_vault/definition"
 import {instantiate_contract, store_contract} from './utils';
 
 // ================================================
@@ -15,14 +15,10 @@ export function PSiTokensOwner(lcd_client: LCDClient, sender: Wallet, multisig_a
 // ================================================
 
 export async function Cw20CodeId(lcd_client: LCDClient, sender: Wallet): Promise<number> {
-	if (lcd_client.config.chainID === "localterra") {
-		console.log(`in localterra, so storing our own cw20`);
-		let cw20_code_id = await store_contract(lcd_client, sender, cw20_contract_wasm);
-		console.log(`cw20_base uploaded; code_id: ${cw20_code_id}`);
-		return cw20_code_id;
-	} else {
-		return CW20_CODE_ID;
-	}
+	console.log(`storing our own cw20`);
+	let cw20_code_id = await store_contract(lcd_client, sender, cw20_contract_wasm);
+	console.log(`cw20_base uploaded; code_id: ${cw20_code_id}`);
+	return cw20_code_id;
 }
 
 export function is_prod(lcd_client: LCDClient): boolean {
