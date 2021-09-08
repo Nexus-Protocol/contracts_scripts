@@ -175,7 +175,6 @@ export interface GovernanceConfig {
 	threshold: string,
 	voting_period: number,
 	timelock_period: number,
-	expiration_period: number,
 	proposal_deposit: string,
 	snapshot_period: number,
 }
@@ -184,11 +183,10 @@ export function prod_GovernanceConfig(): GovernanceConfig {
 	return {
 		quorum: "0.1",
 		threshold: "0.5",
-		voting_period: 72000, // 5 days: 72_000 * 6 / 86_400
-		timelock_period: 40327, // to investigate (maybe half of voting)
-		expiration_period: 13443,
+		voting_period: 432000, // 5 days (in seconds)
+		timelock_period: 86400, // 1 day
 		proposal_deposit: "10000000000",
-		snapshot_period: 13443,
+		snapshot_period: 86400, // 1 day
 	}
 }
 
@@ -196,11 +194,10 @@ export function test_GovernanceConfig(): GovernanceConfig {
 	return {
 		quorum: "0.1",
 		threshold: "0.5",
-		voting_period: 94097,
-		timelock_period: 40327,
-		expiration_period: 13443,
+		voting_period: 432000, // 2 days (in seconds)
+		timelock_period: 86400, // 1 day
 		proposal_deposit: "10000000000",
-		snapshot_period: 13443,
+		snapshot_period: 86400, // 1 day
 	}
 }
 
