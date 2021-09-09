@@ -15,6 +15,10 @@ class NothingToRebalance {
 	public rabalance_needed(): boolean {
 		return false;
 	}
+
+	public to_string(): string {
+		return `NothingToRebalance`;
+	}
 }
 class BorrowRebalance {
 	public amount: number;
@@ -32,6 +36,10 @@ class BorrowRebalance {
 
 	public rabalance_needed(): boolean {
 		return this.is_possible;
+	}
+
+	public to_string(): string {
+		return `Borrow: { amount: ${this.amount}, advised_buffer_size: ${this.advised_buffer_size}, is_possible: ${this.is_possible} }`;
 	}
 
 	public static from_json(js: any): BorrowRebalance {
@@ -52,6 +60,10 @@ class RepayRebalance {
 
 	public rabalance_needed(): boolean {
 		return true;
+	}
+
+	public to_string(): string {
+		return `Repay: { amount: ${this.amount}, advised_buffer_size: ${this.advised_buffer_size} }`;
 	}
 
 	public static from_json(js: any): RepayRebalance {
@@ -102,6 +114,7 @@ export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet
 	while (true) {
 		const query_rebalance_resp = await query_rebalance(lcd_client, basset_vault_addr);
 		if (query_rebalance_resp.rabalance_needed()) {
+			console.log(`rebalance needed: ${query_rebalance_resp.to_string()}`)
 			const rebalance_response = await rebalance(lcd_client, sender, basset_vault_addr);
 			console.log(`${get_date_str()} :: Rebalance Successfull`);
 			const contract_events = getContractEvents(rebalance_response);
