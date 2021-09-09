@@ -1,7 +1,7 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {readFileSync} from 'fs';
 import {Command} from 'commander';
-import {add_distribution_schedules, create_distribution_schedule, init_lp_staking_contract, query_state} from "./definition";
+import {upload_staking_contract, add_distribution_schedules, create_distribution_schedule, init_lp_staking_contract, query_state} from "./definition";
 import {get_lcd_config_with_wallet} from './../utils';
 
 export interface Config {
@@ -28,11 +28,19 @@ async function run_program() {
 	const program = new Command();
 
 	program
-		.command('instantiate')
+		.command('upload')
 		.option('-C, --config <filepath>', `relative path to json config`)
 		.action(async (options) => {
+			const [_, lcd_client, sender] = await get_lcd_and_wallet(options);
+			await upload_staking_contract(lcd_client, sender);
+		});
+
+	program
+		.command('instantiate <code_id>')
+		.option('-C, --config <filepath>', `relative path to json config`)
+		.action(async (code_id, options) => {
 			const [config, lcd_client, sender] = await get_lcd_and_wallet(options);
-			await init_lp_staking_contract(lcd_client, sender, config);
+			await init_lp_staking_contract(lcd_client, sender, config, parseInt(code_id));
 		});
 
 	program
