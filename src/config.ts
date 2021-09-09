@@ -194,7 +194,7 @@ export function test_GovernanceConfig(): GovernanceConfig {
 	return {
 		quorum: "0.1",
 		threshold: "0.5",
-		voting_period: 432000, // 2 days (in seconds)
+		voting_period: 172800, // 2 days (in seconds)
 		timelock_period: 86400, // 1 day
 		proposal_deposit: "10000000000",
 		snapshot_period: 86400, // 1 day
