@@ -65,8 +65,10 @@ nasset_psi_swap_contract_for_beth created
         address: terra1g66tufg387m5at4f3dgtx9zm0g3l6w3y0zlrcn
         lp token address: terra1duf06z0aacg8c7s247n474jkwcatnrl65fms89
 =======================
-staking_contract instantiated
+staking_contract uploaded
 	code: 10029
+=======================
+staking_contract instantiated for PSI-UST pool
         address: terra194slkwm88juafc6fk4hfm6c5ncz9mknv6syf8z
 =======================
 ```

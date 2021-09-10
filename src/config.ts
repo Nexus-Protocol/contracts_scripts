@@ -416,8 +416,8 @@ export function prod_BassetVaultConfigForbLuna(
 		///on what portion.
 		///for example: 1.01 means 1% more than loan
 		over_loan_balance_value: "1.01",
-		///mean ltv that user manage by himself (advise: 70%)
-		manual_ltv: "0.7",
+		///mean ltv that user manage by himself (advise: 58%)
+		manual_ltv: "0.58",
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
@@ -459,8 +459,8 @@ export function testnet_BassetVaultConfigForbLuna(
 		///on what portion.
 		///for example: 1.01 means 1% more than loan
 		over_loan_balance_value: "1.01",
-		///mean ltv that user manage by himself (advise: 70%)
-		manual_ltv: "0.7",
+		///mean ltv that user manage by himself (advise: 58%)
+		manual_ltv: "0.58",
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
@@ -541,8 +541,8 @@ export function prod_BassetVaultConfigForbEth(
 		///on what portion.
 		///for example: 1.01 means 1% more than loan
 		over_loan_balance_value: "1.01",
-		///mean ltv that user manage by himself (advise: 70%)
-		manual_ltv: "0.7",
+		///mean ltv that user manage by himself (advise: 58%)
+		manual_ltv: "0.58",
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
@@ -584,8 +584,8 @@ export function testnet_BassetVaultConfigForbEth(
 		///on what portion.
 		///for example: 1.01 means 1% more than loan
 		over_loan_balance_value: "1.01",
-		///mean ltv that user manage by himself (advise: 70%)
-		manual_ltv: "0.7",
+		///mean ltv that user manage by himself (advise: 58%)
+		manual_ltv: "0.58",
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
