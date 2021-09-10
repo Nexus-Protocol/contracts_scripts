@@ -68,7 +68,9 @@ nasset_psi_swap_contract_for_beth created
 staking_contract uploaded
 	code: 10029
 =======================
-staking_contract instantiated for PSI-UST pool
-        address: terra194slkwm88juafc6fk4hfm6c5ncz9mknv6syf8z
+staking_contract instantiated
+        PSI-UST pool address: terra194slkwm88juafc6fk4hfm6c5ncz9mknv6syf8z
+        PSI-nLuna pool address: terra1lfky467gfgacucrj2jndqrxdudk05n85wnn86u
+        PSI-nETH pool address: terra12mv4fs5kutznggrjl5v4ll6eg8nvme4np0tk65
 =======================
 ```
