@@ -7,6 +7,7 @@
 	"multisig_address": "terra1x46rqay4d3cssq8gxxvqz8xt6nwlz4td20k38v",
 	"psi_token_addr": "terra1hqrdl6wstt8qzshwc6mrumpjk9338k0l93hqyd",
 	"lp_token_addr": "terra15gfn3tmx589z9l0h0n6mk0sunkn3864xw89v63",
+	"terraswap_factory_addr": "terra18qpjm4zkvqnpjpw0zn0tdr8gdzvt8au35v45xf",
 	"distribution_schedule": {
 		"start_date": "2021-03-17T11:00:00",
 		"end_date": "2021-03-18T11:00:00",

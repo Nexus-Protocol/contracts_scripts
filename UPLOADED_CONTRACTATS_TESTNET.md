@@ -69,8 +69,8 @@ staking_contract uploaded
 	code: 10029
 =======================
 staking_contract instantiated
-        PSI-UST pool address: terra194slkwm88juafc6fk4hfm6c5ncz9mknv6syf8z
-        PSI-nLuna pool address: terra1lfky467gfgacucrj2jndqrxdudk05n85wnn86u
-        PSI-nETH pool address: terra12mv4fs5kutznggrjl5v4ll6eg8nvme4np0tk65
+        PSI-UST pool address: terra1vu36vl68csfpm5faut372gj3g7mwlzfexncp38
+        PSI-nLuna pool address: terra1aqcp4mav0cj6cxa0jgs38c3xjv6n5h5x52xt3g
+        PSI-nETH pool address: terra15laqpswauhhmteqa7dny4fgzl4e9mf0sqcd2az
 =======================
 ```

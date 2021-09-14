@@ -13,6 +13,7 @@ export interface Config {
 	multisig_address: string,
 	psi_token_addr: string,
 	lp_token_addr: string,
+	terraswap_factory_addr: string,
 	distribution_schedule: DistributionScheduleRaw
 }
 

@@ -7,6 +7,7 @@ interface StakingConfig {
 	owner: string,
 	psi_token: string,
 	staking_token: string,
+	terraswap_factory: string,
 	distribution_schedule: any[],
 }
 
@@ -27,11 +28,12 @@ export function create_distribution_schedule(distribution_schedule_raw: Distribu
 	};
 }
 
-export function StakingConfig(multisig_address: string, psi_token_addr: string, staking_token_addr: string, schedule: DistributionSchedule): StakingConfig {
+export function StakingConfig(multisig_address: string, psi_token_addr: string, staking_token_addr: string, terraswap_factory_addr: string, schedule: DistributionSchedule): StakingConfig {
 	return {
 		owner: multisig_address,
 		psi_token: psi_token_addr,
 		staking_token: staking_token_addr,
+		terraswap_factory: terraswap_factory_addr,
 		distribution_schedule: [schedule]
 	};
 }
@@ -50,7 +52,7 @@ async function init_staking_contract(lcd_client: LCDClient, sender: Wallet, init
 export async function init_lp_staking_contract(lcd_client: LCDClient, sender: Wallet, config: Config, code_id: number) {
 	let distribution_schedule = create_distribution_schedule(config.distribution_schedule);
 	// instantiate lp tokens staking contract
-	let staking_config = StakingConfig(config.multisig_address, config.psi_token_addr, config.lp_token_addr, distribution_schedule);
+	let staking_config = StakingConfig(config.multisig_address, config.psi_token_addr, config.lp_token_addr, config.terraswap_factory_addr, distribution_schedule);
 	await init_staking_contract(lcd_client, sender, staking_config, code_id);
 	console.log(`=======================`);
 }
