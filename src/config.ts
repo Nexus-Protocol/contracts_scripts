@@ -268,7 +268,7 @@ export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr:
 		borrow_ltv_aim: "0.8",
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
-		price_timeframe: 50,
+		price_timeframe: 25,
 	}
 }
 
@@ -283,7 +283,7 @@ export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_ad
 		borrow_ltv_aim: "0.8",
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
-		price_timeframe: 50,
+		price_timeframe: 25,
 	}
 }
 
@@ -306,7 +306,7 @@ export function prod_BassetVaultStrategyConfigForbEth(governance_contract_addr: 
 		borrow_ltv_aim: "0.8",
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
-		price_timeframe: 50,
+		price_timeframe: 25,
 	}
 }
 
@@ -321,7 +321,7 @@ export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_add
 		borrow_ltv_aim: "0.8",
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
-		price_timeframe: 50,
+		price_timeframe: 25,
 	}
 }
 
