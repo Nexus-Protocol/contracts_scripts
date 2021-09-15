@@ -2,7 +2,11 @@
 	"lcd_client": {
 		"localterra": true,
 		"url": "http://127.0.0.1:1317",
-		"chain_id": "columbus-5"
+		"chain_id": "columbus-5",
+		"aws_secrets": {
+			"region": "eu-west-1",
+			"secret_name": "seeds/testnet"
+		}
 	},
 	"claiming_rewards_delay": {
 		"days": 0,

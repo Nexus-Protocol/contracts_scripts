@@ -1,15 +1,11 @@
 import { readFileSync } from 'fs';
 import {Command} from 'commander';
 import {start_rebalance_loop} from "./definition";
-import {get_lcd_config_with_wallet} from './../utils';
+import {get_lcd_config_with_wallet, LCDConfig} from './../utils';
 
 interface Config {
 	basset_vault_addr: string,
-	lcd_client: {
-		localterra: boolean,
-		url: string,
-		chain_id: string
-	}
+	lcd_client: LCDConfig
 }
 
 const DEFAULT_CONFIG_PATH: string = 'src/rebalance/config.json';

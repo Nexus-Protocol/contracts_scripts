@@ -1,16 +1,12 @@
 import { LCDClient, Wallet } from '@terra-money/terra.js';
 import { readFileSync } from 'fs';
 import {Command} from 'commander';
-import {execute_contract, get_date_str, get_lcd_config_with_wallet, sleep} from './../utils';
+import {execute_contract, get_date_str, get_lcd_config_with_wallet, LCDConfig, sleep} from './../utils';
 import {isTxSuccess} from './../transaction';
 
 interface Config {
 	basset_vault_addr: string,
-	lcd_client: {
-		localterra: boolean,
-		url: string,
-		chain_id: string
-	},
+	lcd_client: LCDConfig,
 	honest_work_delay: {
 		days: number,
 		hours: number,

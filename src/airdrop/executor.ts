@@ -2,14 +2,10 @@ import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {readFileSync} from 'fs';
 import {Command} from 'commander';
 import {register_merkle_tree, init_airdrop_contract, AirdropConfig} from "./definition";
-import {get_lcd_config_with_wallet} from './../utils';
+import {get_lcd_config_with_wallet, LCDConfig} from './../utils';
 
 interface Config {
-	lcd_client: {
-		localterra: boolean,
-		url: string,
-		chain_id: string
-	},
+	lcd_client: LCDConfig,
 	psi_token_addr: string,
 	airdrop_contract_owner: string
 }
