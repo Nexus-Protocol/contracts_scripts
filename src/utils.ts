@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, LocalTerra, MnemonicKey, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
 import {BassetVaultConfig} from './config';
+import {SecretsManager} from 'aws-sdk';
 import * as prompt from 'prompt';
 
 export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object): Promise<string> {
@@ -257,10 +258,30 @@ export function prompt_for_seed(): Promise<string> {
 	});
 }
 
+export async function get_seed_from_aws_secrets(region: string, secret_name: string): Promise<string | undefined> {
+	var client = new SecretsManager({
+	    region: region
+	});
+
+	return client.getSecretValue({SecretId: secret_name}).promise().then((data) => {
+		if (data.SecretString !== undefined) {
+			return JSON.parse(data.SecretString).seed;
+		} else {
+			return undefined;
+		}
+	});
+}
+
+export interface AwsSecrets {
+	region: string,
+	secret_name: string
+}
+
 export interface LCDConfig {
 	localterra: boolean,
 	url: string,
-	chain_id: string
+	chain_id: string,
+	aws_secrets?: AwsSecrets
 }
 
 export async function get_lcd_config_with_wallet(lcd_config: LCDConfig): Promise<[LCDClient, Wallet]> {
@@ -270,6 +291,21 @@ export async function get_lcd_config_with_wallet(lcd_config: LCDConfig): Promise
 		const localterra = new LocalTerra()
 		lcd_client = localterra;
 		sender = localterra.wallets["test1"];
+	} else if (lcd_config.aws_secrets !== undefined) {
+		lcd_client = new LCDClient({
+			URL: lcd_config.url,
+			chainID: lcd_config.chain_id
+		});
+
+		const seed = await get_seed_from_aws_secrets(lcd_config.aws_secrets.region, lcd_config.aws_secrets.secret_name);
+
+		if (seed === undefined) {
+			console.error(`can't find seed on AWS; region: ${lcd_config.aws_secrets.region}, secret_name: ${lcd_config.aws_secrets.secret_name}`);
+			process.exit(1);
+		}
+
+		const owner = new MnemonicKey({mnemonic: seed});
+		sender = new Wallet(lcd_client, owner);
 	} else {
 		lcd_client = new LCDClient({
 			URL: lcd_config.url,

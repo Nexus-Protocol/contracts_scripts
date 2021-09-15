@@ -2,14 +2,10 @@ import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {readFileSync} from 'fs';
 import {Command} from 'commander';
 import {add_vesting_account, create_vesting_account, init_vesting_contract, query_state} from "./definition";
-import {get_lcd_config_with_wallet} from './../utils';
+import {get_lcd_config_with_wallet, LCDConfig} from './../utils';
 
 export interface Config {
-	lcd_client: {
-		localterra: boolean,
-		url: string,
-		chain_id: string
-	},
+	lcd_client: LCDConfig,
 	multisig_address: string,
 	psi_token_addr: string,
 	genesis_date_str: string,

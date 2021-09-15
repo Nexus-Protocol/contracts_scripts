@@ -1,14 +1,10 @@
 import {full_init} from "./definition";
 import { readFileSync } from 'fs';
 import {Command} from 'commander';
-import {get_lcd_config_with_wallet} from './../utils';
+import {get_lcd_config_with_wallet, LCDConfig} from './../utils';
 
 interface Config {
-	lcd_client: {
-		localterra: boolean,
-		url: string,
-		chain_id: string
-	},
+	lcd_client: LCDConfig,
 	multisig_address: string
 }
 
