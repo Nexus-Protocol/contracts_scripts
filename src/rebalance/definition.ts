@@ -114,7 +114,7 @@ export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet
 	while (true) {
 		const query_rebalance_resp = await query_rebalance(lcd_client, basset_vault_addr);
 		if (query_rebalance_resp.rabalance_needed()) {
-			console.log(`rebalance needed: ${query_rebalance_resp.to_string()}`)
+			console.log(`${get_date_str()} :: rebalance needed: ${query_rebalance_resp.to_string()}`)
 			const rebalance_response = await rebalance(lcd_client, sender, basset_vault_addr);
 			console.log(`${get_date_str()} :: Rebalance Successfull`);
 			const contract_events = getContractEvents(rebalance_response);
@@ -129,7 +129,7 @@ export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet
 			await sleep(3000);
 		} else {
 			if (price_printer % 1000 === 0) {
-				console.log(`rebalance not needed`);
+				console.log(`${get_date_str()} :: rebalance not needed`);
 				price_printer = 1;
 			} else {
 				price_printer += 1;
