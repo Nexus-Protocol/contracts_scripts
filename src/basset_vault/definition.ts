@@ -50,7 +50,7 @@ async function init_community_pool(lcd_client: LCDClient, sender: Wallet, init_m
 // 6. instantiate basset_vault_config_holder
 // 7. instantiate basset_vault
 // 8. instantiate nasset_psi_swap_contract
-export async function full_init(lcd_client: LCDClient, sender: Wallet, multisig_address: string) {
+export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token_initial_owner: string) {
 	//get cw20_code_id
 	let cw20_code_id = await Cw20CodeId(lcd_client, sender);
 	console.log(`=======================`);
@@ -61,7 +61,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, multisig_
 	console.log(`=======================`);
 
 	// instantiate psi_token
-	let token_config = TokenConfig(lcd_client, governance_contract_addr, PSiTokensOwner(lcd_client, sender, multisig_address));
+	let token_config = TokenConfig(lcd_client, governance_contract_addr, PSiTokensOwner(lcd_client, sender, psi_token_initial_owner));
 	let psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, token_config);
 	console.log(`=======================`);
 

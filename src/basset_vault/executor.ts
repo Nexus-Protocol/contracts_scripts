@@ -5,7 +5,7 @@ import {get_lcd_config_with_wallet, LCDConfig} from './../utils';
 
 interface Config {
 	lcd_client: LCDConfig,
-	multisig_address: string
+	psi_token_initial_owner: string
 }
 
 const DEFAULT_CONFIG_PATH: string = 'src/basset_vault/config.json';
@@ -31,7 +31,7 @@ async function run(config_path: string) {
 	const config: Config = JSON.parse(readFileSync(config_path, 'utf-8'))
 	const [lcd_client, sender] = await get_lcd_config_with_wallet(config.lcd_client);
 
-	await full_init(lcd_client, sender, config.multisig_address);
+	await full_init(lcd_client, sender, config.psi_token_initial_owner);
 }
 
 run_program()

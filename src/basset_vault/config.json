@@ -8,5 +8,5 @@
 			"secret_name": "seeds/testnet"
 		}
 	},
-	"multisig_address": "terra1..."
+	"psi_token_initial_owner": "terra1..."
 }
