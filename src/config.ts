@@ -214,14 +214,12 @@ export function GovernanceConfig(lcd_client: LCDClient): GovernanceConfig {
 export interface CommunityPoolConfig {
 	governance_contract_addr: string,
 	psi_token_addr: string,
-	spend_limit: string
 }
 
 export function prod_CommunityPoolConfig(governance_contract_addr: string, psi_token_addr: string): CommunityPoolConfig {
 	return {
 		governance_contract_addr: governance_contract_addr,
 		psi_token_addr: psi_token_addr,
-		spend_limit: "1000000000000"
 	}
 }
 
@@ -229,7 +227,6 @@ export function test_CommunityPoolConfig(governance_contract_addr: string, psi_t
 	return {
 		governance_contract_addr: governance_contract_addr,
 		psi_token_addr: psi_token_addr,
-		spend_limit: "1000000000000"
 	}
 }
 
