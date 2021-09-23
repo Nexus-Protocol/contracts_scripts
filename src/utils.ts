@@ -3,6 +3,7 @@ import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getC
 import {BassetVaultConfig} from './config';
 import {SecretsManager} from 'aws-sdk';
 import * as prompt from 'prompt';
+import {isTxSuccess} from './transaction';
 
 export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object): Promise<string> {
 	let code_id = await store_contract(lcd_client, sender, wasm_path);
@@ -22,7 +23,7 @@ export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm
 
 	while (true) {
 		let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
-		if (result !== undefined) {
+		if (result !== undefined && isTxSuccess(result)) {
 			return parseInt(getCodeId(result));
 		} else {
 			await sleep(1000);
@@ -40,7 +41,7 @@ async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, a
 
 	while (true) {
 		let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
-		if (result !== undefined) {
+		if (result !== undefined && isTxSuccess(result)) {
 			return result;
 		} else {
 			await sleep(1000);
@@ -53,7 +54,7 @@ export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet
 	return getContractAddress(result)
 }
 
-export async function execute_contract(lcd_client: LCDClient, sender: Wallet, contract_addr: string, execute_msg: object) {
+export async function execute_contract(lcd_client: LCDClient, sender: Wallet, contract_addr: string, execute_msg: object): Promise<BlockTxBroadcastResult | undefined> {
 	const messages: Msg[] = [new MsgExecuteContract(
 		sender.key.accAddress,
 		contract_addr,
@@ -89,7 +90,7 @@ export async function create_usd_to_token_terraswap_pair(lcd_client: LCDClient, 
 
 	while (true) {
 		let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr, create_pair_msg);
-		if (pair_creation_result !== undefined) {
+		if (pair_creation_result !== undefined && isTxSuccess(pair_creation_result)) {
 			return parse_pair_creation(pair_creation_result);
 		} else {
 			await sleep(1000);
@@ -109,7 +110,7 @@ export async function create_token_to_token_terraswap_pair(lcd_client: LCDClient
 
 	while (true) {
 		let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr, create_pair_msg);
-		if (pair_creation_result !== undefined) {
+		if (pair_creation_result !== undefined && isTxSuccess(pair_creation_result)) {
 			return parse_pair_creation(pair_creation_result);
 		} else {
 			await sleep(1000);

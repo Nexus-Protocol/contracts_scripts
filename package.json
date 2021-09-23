@@ -24,7 +24,7 @@
 		"@aws-sdk/types": "^3.29.0"
 	},
 	"dependencies": {
-		"@terra-money/terra.js": "^2.0.4",
+		"@terra-money/terra.js": "^2.0.8",
 		"axios": "^0.21.1",
 		"commander": "^7.2.0",
 		"express": "^4.17.1",
