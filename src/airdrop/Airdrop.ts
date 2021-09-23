@@ -1,13 +1,14 @@
-import { MerkleTree } from 'merkletreejs';
+import {MerkleTree} from 'merkletreejs';
+import {AirdropAccount} from './airdrop_merkle_tree';
 const keccak256 = require('keccak256');
 
 class Airdrop {
 	private tree: MerkleTree;
 
-	constructor(accounts: Array<{address: string; amount: string}>) {
+	constructor(accounts: Array<AirdropAccount>) {
 		const leaves: any[] = [];
 		for (let account of accounts) {
-			const leaf_str = account.address + account.amount;
+			const leaf_str = account.address + account.psi_tokens_to_airdrop.toString();
 			const leaf = keccak256(leaf_str);
 			leaves.push(leaf);
 		}
@@ -18,11 +19,8 @@ class Airdrop {
 		return this.tree.getHexRoot().replace('0x', '');
 	}
 
-	public getMerkleProof(account: {
-		address: string;
-		amount: string;
-	}): string[] {
-		const leaf_str = account.address + account.amount;
+	public getMerkleProof(account: AirdropAccount): string[] {
+		const leaf_str = account.address + account.psi_tokens_to_airdrop.toString();
 		return this.tree
 			.getHexProof(keccak256(leaf_str))
 			.map((v) => v.replace('0x', ''));
@@ -30,9 +28,9 @@ class Airdrop {
 
 	public verify(
 		proof: string[],
-		account: { address: string; amount: string }
+		account: AirdropAccount
 	): boolean {
-		const leaf_str = account.address + account.amount;
+		const leaf_str = account.address + account.psi_tokens_to_airdrop.toString();
 		let hashBuf = keccak256(leaf_str);
 
 		proof.forEach((proofElem) => {

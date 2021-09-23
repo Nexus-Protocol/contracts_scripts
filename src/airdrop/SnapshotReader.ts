@@ -10,6 +10,7 @@ class SnapshotReader {
 
 	read_stakers(): Map<string, Decimal> {
 		if (!existsSync(this.FilePath)) {
+			console.error(`filepat '${this.FilePath}' does not exists`);
 			return new Map();
 		}
 
@@ -20,7 +21,8 @@ class SnapshotReader {
 			if (trimmed !== "") {
 				let splitted = line.split(':');
 				let stake_amount = new Decimal(splitted[1].trim());
-				if (stake_amount.gt(new Decimal(1))) {
+				const min_staking_amount = new Decimal(2);
+				if (stake_amount.gt(min_staking_amount)) {
 					result.set(splitted[0].toLowerCase().trim(), stake_amount.mul(new Decimal(1_000_000)));
 				}
 			}
