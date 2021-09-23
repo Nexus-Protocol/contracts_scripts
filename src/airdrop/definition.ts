@@ -19,7 +19,6 @@ export async function register_merkle_tree(lcd_client: LCDClient, sender: Wallet
 		}
 	};
 
-	console.log(`xxx: ${JSON.stringify(register_merkle_root_msg)}`);
 	while (true) {
 		let register_merkle_tree_result = await execute_contract(lcd_client, sender, airdrop_contract_addr, register_merkle_root_msg);
 		if (register_merkle_tree_result !== undefined) {
