@@ -12,8 +12,8 @@ async function run() {
 		.requiredOption('-M, --max_psi_per_anc <filepath>', `maximum psi tokens per anchor token`)
 		.action(async (options) => {
 			const psi_tokens_to_airdrop: number = parseInt(options.tokens_count);
-			const min_psi_per_anc: number = parseInt(options.min_psi_per_anc);
-			const max_psi_per_anc: number = parseInt(options.max_psi_per_anc);
+			const min_psi_per_anc: number = parseFloat(options.min_psi_per_anc);
+			const max_psi_per_anc: number = parseFloat(options.max_psi_per_anc);
 			build_merkel_tree(options.gov_stakers_file, options.output_path, psi_tokens_to_airdrop, min_psi_per_anc, max_psi_per_anc);
 		});
 

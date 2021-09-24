@@ -91,27 +91,22 @@ function get_airdropped_accounts_from_stakers(stakers: Map<string, Decimal>, tot
 function get_psi_amount(user_anc_tokens: Decimal, already_processed_anc_tokens: Decimal, total_anc_staked: Decimal, min_psi_per_anc: number, max_psi_per_anc: number, normalization_factor: Decimal, debug: boolean): Decimal {
 	const max_psi_per_anc_decimal = new Decimal(max_psi_per_anc);
 	const processed_anc_tokens_ratio = already_processed_anc_tokens.div(total_anc_staked);
-	const first_half_psi_to_anc_ratio = max_psi_per_anc_decimal.sub(processed_anc_tokens_ratio.mul(max_psi_per_anc - min_psi_per_anc));
-	const half_user_anc_tokens = user_anc_tokens.div(2);
+	const processed_after_user_anc_tokens_ratio = already_processed_anc_tokens.add(user_anc_tokens).div(total_anc_staked);
+	const avg_processed_anc_tokens_ratio = processed_anc_tokens_ratio.add(processed_after_user_anc_tokens_ratio).div(2);
 
-	const second_half_processed_anc_tokens_ratio = already_processed_anc_tokens.add(half_user_anc_tokens).div(total_anc_staked);
-	const second_half_psi_to_anc_ratio = max_psi_per_anc_decimal.sub(second_half_processed_anc_tokens_ratio.mul(max_psi_per_anc - min_psi_per_anc));
-
-	const first_half_psi_tokens = half_user_anc_tokens.mul(first_half_psi_to_anc_ratio);
-	const second_half_psi_tokens = half_user_anc_tokens.mul(second_half_psi_to_anc_ratio);
-
-	const user_psi_tokens = first_half_psi_tokens.add(second_half_psi_tokens).mul(normalization_factor).floor();
+	const avg_psi_to_anc_ratio = max_psi_per_anc_decimal.sub(avg_processed_anc_tokens_ratio.mul(max_psi_per_anc - min_psi_per_anc));
+	const user_psi_tokens = user_anc_tokens.mul(avg_psi_to_anc_ratio);
+	const user_psi_tokens_normalized = user_psi_tokens.mul(normalization_factor).floor();
 
 	if (debug) {
 		console.log(`\talready processed anc tokens: ${tokens_to_str(already_processed_anc_tokens)}`);
-		console.log(`\tfirst half psi to anc ratio: ${(first_half_psi_to_anc_ratio)}`);
-		console.log(`\tsecond half psi to anc ratio: ${second_half_psi_to_anc_ratio}`);
-		console.log(`\tuser psi tokens: ${tokens_to_str(user_psi_tokens)}`);
+		console.log(`\tpsi to anc ratio: ${(avg_psi_to_anc_ratio)}`);
+		console.log(`\tuser psi tokens: ${tokens_to_str(user_psi_tokens_normalized)}`);
 		console.log(`\tuser anc tokens: ${tokens_to_str(user_anc_tokens)}`);
 		console.log(`\tpsi tokens per 1 anc: ${user_psi_tokens.div(user_anc_tokens)}`)
 		console.log(`===================================================================`);
 	}
-	return user_psi_tokens;
+	return user_psi_tokens_normalized;
 }
 
 function tokens_to_str(tokens_amount: Decimal): string {
