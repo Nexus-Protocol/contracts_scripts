@@ -1,0 +1,7 @@
+{
+	"ratios": [
+		{"first_anc_tokens": 1, "psi_to_anc_ratio": 100},
+		{"first_anc_tokens": 10, "psi_to_anc_ratio": 50}
+	],
+	"default_ratio": 1
+}

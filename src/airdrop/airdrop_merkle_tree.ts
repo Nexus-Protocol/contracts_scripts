@@ -1,15 +1,52 @@
 import {Airdrop} from "./Airdrop";
 import {SnapshotReader} from "./SnapshotReader";
-import {writeFile} from 'fs';
-import {Decimal} from 'decimal.js'
+import {writeFile, readFileSync} from 'fs';
+import {Decimal} from 'decimal.js';
 
-export function build_merkel_tree(snapshot_path: string, output_file: string, tokens_to_aidrop: number, min_psi_per_anc: number, max_psi_per_anc: number) {
+interface PsiToAncRatioRaw {
+	first_anc_tokens: number,
+	psi_to_anc_ratio: number
+}
+
+interface PsiToAncRatiosConfigRaw {
+	ratios: PsiToAncRatioRaw[],
+	default_ratio: number
+}
+
+class PsiToAncRatio {
+	public first_anc_tokens: Decimal;
+	public psi_to_anc_ratio: Decimal;
+
+	constructor(first_anc_tokens: number, psi_to_anc_ratio: number) {
+		this.first_anc_tokens = new Decimal(first_anc_tokens).mul(1_000_000);
+		this.psi_to_anc_ratio = new Decimal(psi_to_anc_ratio);
+	}
+}
+
+class PsiToAncRatiosConfig {
+	public ratios: PsiToAncRatio[];
+	public default_ratio: Decimal;
+
+	constructor(psi_to_anc_ratios_config_raw: PsiToAncRatiosConfigRaw) {
+		let psi_to_anc_ratios: PsiToAncRatio[] = [];
+		for (const {first_anc_tokens, psi_to_anc_ratio} of psi_to_anc_ratios_config_raw.ratios) {
+			psi_to_anc_ratios.push(new PsiToAncRatio(first_anc_tokens, psi_to_anc_ratio));
+		}
+		this.ratios = psi_to_anc_ratios;
+		this.default_ratio = new Decimal(psi_to_anc_ratios_config_raw.default_ratio);
+		this.ratios.sort(function (a, b) {
+			return a.first_anc_tokens.cmp(b.first_anc_tokens);
+		});
+	}
+}
+
+export function build_merkel_tree(snapshot_path: string, output_file: string, tokens_to_aidrop: number, psi_to_anc_ratio_cfg_path: string) {
 	const snapshot_reader = new SnapshotReader(snapshot_path);
 	let stakers = snapshot_reader.read_stakers();
 	console.log("stakers count", stakers.size);
 
-	const total_airdrop: Decimal = new Decimal(tokens_to_aidrop).mul(new Decimal(1_000_000));
-	const airdrop_accounts = get_airdropped_accounts_from_stakers(stakers, total_airdrop, min_psi_per_anc, max_psi_per_anc);
+	const total_airdrop: Decimal = new Decimal(tokens_to_aidrop).mul(1_000_000);
+	const airdrop_accounts = get_airdropped_accounts_from_stakers(stakers, total_airdrop, psi_to_anc_ratio_cfg_path);
 
 	const airdrop = new Airdrop(airdrop_accounts);
 	const root = airdrop.getMerkleRoot();
@@ -29,7 +66,10 @@ export interface AirdropAccount {
 	psi_tokens_to_airdrop: Decimal
 }
 
-function get_airdropped_accounts_from_stakers(stakers: Map<string, Decimal>, total_airdrop: Decimal, min_psi_per_anc: number, max_psi_per_anc: number): Array<AirdropAccount> {
+function get_airdropped_accounts_from_stakers(stakers: Map<string, Decimal>, total_airdrop: Decimal, psi_to_anc_ratio_cfg_path: string): Array<AirdropAccount> {
+	const psi_to_anc_ratios_config_raw: PsiToAncRatiosConfigRaw = JSON.parse(readFileSync(psi_to_anc_ratio_cfg_path, 'utf-8'));
+	const psi_to_anc_ratios_config: PsiToAncRatiosConfig = new PsiToAncRatiosConfig(psi_to_anc_ratios_config_raw);
+
 	let address_to_anc_tokens_sorted = new Array<{address: string; anc_tokens: Decimal}>();
 	let total_anc_staked = new Decimal(0);
 	for (const [addr, tokens] of stakers) {
@@ -55,7 +95,7 @@ function get_airdropped_accounts_from_stakers(stakers: Map<string, Decimal>, tot
 		}
 		counter += 1;
 
-		const user_psi_tokens = get_psi_amount(anc_tokens, processed_anc_staked, total_anc_staked, min_psi_per_anc, max_psi_per_anc, default_normalization_factor, debug);
+		const user_psi_tokens = get_psi_amount(anc_tokens, psi_to_anc_ratios_config, default_normalization_factor, debug);
 		processed_anc_staked = processed_anc_staked.add(anc_tokens);
 		total_psi_tokens_without_normalization = total_psi_tokens_without_normalization.add(user_psi_tokens);
 	}
@@ -78,7 +118,7 @@ function get_airdropped_accounts_from_stakers(stakers: Map<string, Decimal>, tot
 		}
 		counter += 1;
 
-		const user_psi_tokens = get_psi_amount(anc_tokens, processed_anc_staked, total_anc_staked, min_psi_per_anc, max_psi_per_anc, psi_token_normalization_ratio, debug);
+		const user_psi_tokens = get_psi_amount(anc_tokens, psi_to_anc_ratios_config, psi_token_normalization_ratio, debug);
 		processed_anc_staked = processed_anc_staked.add(anc_tokens);
 		total_psi_tokens = total_psi_tokens.add(user_psi_tokens);
 		result.push({address: address, anc_tokens: anc_tokens, psi_tokens_to_airdrop: user_psi_tokens});
@@ -88,22 +128,32 @@ function get_airdropped_accounts_from_stakers(stakers: Map<string, Decimal>, tot
 	return result;
 }
 
-function get_psi_amount(user_anc_tokens: Decimal, already_processed_anc_tokens: Decimal, total_anc_staked: Decimal, min_psi_per_anc: number, max_psi_per_anc: number, normalization_factor: Decimal, debug: boolean): Decimal {
-	const max_psi_per_anc_decimal = new Decimal(max_psi_per_anc);
-	const processed_anc_tokens_ratio = already_processed_anc_tokens.div(total_anc_staked);
-	const processed_after_user_anc_tokens_ratio = already_processed_anc_tokens.add(user_anc_tokens).div(total_anc_staked);
-	const avg_processed_anc_tokens_ratio = processed_anc_tokens_ratio.add(processed_after_user_anc_tokens_ratio).div(2);
+function get_psi_amount(user_anc_tokens: Decimal, psi_to_anc_ratios_config: PsiToAncRatiosConfig, normalization_factor: Decimal, debug: boolean): Decimal {
+	let user_psi_tokens = new Decimal(0);
+	let user_anc_tokens_left = user_anc_tokens;
+	for (const {first_anc_tokens, psi_to_anc_ratio} of psi_to_anc_ratios_config.ratios) {
+		if (user_anc_tokens_left.isZero()) {
+			break;
+		}
+		
+		if (user_anc_tokens_left.lessThan(first_anc_tokens)) {
+			user_psi_tokens = user_anc_tokens_left.mul(psi_to_anc_ratio).add(user_psi_tokens);
+			user_anc_tokens_left = new Decimal(0);
+		} else {
+			user_psi_tokens = first_anc_tokens.mul(psi_to_anc_ratio).add(user_psi_tokens);
+			user_anc_tokens_left = user_anc_tokens_left.sub(first_anc_tokens);
+		}
+	}
 
-	const avg_psi_to_anc_ratio = max_psi_per_anc_decimal.sub(avg_processed_anc_tokens_ratio.mul(max_psi_per_anc - min_psi_per_anc));
-	const user_psi_tokens = user_anc_tokens.mul(avg_psi_to_anc_ratio);
+	if (!user_anc_tokens_left.isZero()) {
+		user_psi_tokens = user_anc_tokens_left.mul(psi_to_anc_ratios_config.default_ratio).add(user_psi_tokens);
+	}
+
 	const user_psi_tokens_normalized = user_psi_tokens.mul(normalization_factor).floor();
-
 	if (debug) {
-		console.log(`\talready processed anc tokens: ${tokens_to_str(already_processed_anc_tokens)}`);
-		console.log(`\tpsi to anc ratio: ${(avg_psi_to_anc_ratio)}`);
 		console.log(`\tuser psi tokens: ${tokens_to_str(user_psi_tokens_normalized)}`);
 		console.log(`\tuser anc tokens: ${tokens_to_str(user_anc_tokens)}`);
-		console.log(`\tpsi tokens per 1 anc: ${user_psi_tokens.div(user_anc_tokens)}`)
+		console.log(`\tpsi tokens per 1 anc: ${user_psi_tokens_normalized.div(user_anc_tokens)}`)
 		console.log(`===================================================================`);
 	}
 	return user_psi_tokens_normalized;
