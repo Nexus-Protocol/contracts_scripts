@@ -5,13 +5,13 @@ async function run() {
 	const program = new Command();
 
 	program
-		.requiredOption('-G, --gov_stakers_file <filepath>', `relative path to goverance stakers file`)
-		.requiredOption('-O, --output_path <filepath>', `filepath for output json`)
-		.requiredOption('-T, --tokens_amount <amount>', `amount of tokens to airdrop`)
-		.requiredOption('-C, --psi_to_anc_ratio_cfg_path <filepath>', `path to psi_to_anc_ratio config file`)
+		.requiredOption('-G, --gov-stakers-file <filepath>', `relative path to goverance stakers file`)
+		.requiredOption('-O, --output-path <filepath>', `filepath for output json`)
+		.requiredOption('-T, --tokens-amount <amount>', `amount of tokens to airdrop`)
+		.requiredOption('-C, --psi-to-anc-ratio-cfg-path <filepath>', `path to psi_to_anc_ratio config file`)
 		.action(async (options) => {
-			const psi_tokens_to_airdrop: number = parseInt(options.tokens_amount);
-			build_merkel_tree(options.gov_stakers_file, options.output_path, psi_tokens_to_airdrop, options.psi_to_anc_ratio_cfg_path);
+			const psi_tokens_to_airdrop: number = parseInt(options.tokensAmount);
+			build_merkel_tree(options.govStakersFile, options.outputPath, psi_tokens_to_airdrop, options.psiToAncRatioCfgPath);
 		});
 
 	await program.parseAsync(process.argv);
