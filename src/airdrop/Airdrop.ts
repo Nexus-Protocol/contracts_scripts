@@ -4,8 +4,10 @@ const keccak256 = require('keccak256');
 
 class Airdrop {
 	private tree: MerkleTree;
+	private accounts: Array<AirdropAccount>;
 
 	constructor(accounts: Array<AirdropAccount>) {
+		this.accounts = accounts;
 		const leaves: any[] = [];
 		for (let account of accounts) {
 			const leaf_str = account.address + account.psi_tokens_to_airdrop.toString();
@@ -44,6 +46,10 @@ class Airdrop {
 		});
 
 		return this.getMerkleRoot() === hashBuf.toString('hex');
+	}
+
+	public getAccounts(): Array<AirdropAccount> {
+		return this.accounts;
 	}
 }
 

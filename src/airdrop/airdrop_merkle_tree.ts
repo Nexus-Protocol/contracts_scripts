@@ -1,5 +1,5 @@
 import {Airdrop} from "./Airdrop";
-import {writeFile, readFileSync} from 'fs';
+import {readFileSync} from 'fs';
 import {Decimal} from 'decimal.js';
 
 interface PsiToAncRatioRaw {
@@ -39,21 +39,18 @@ class PsiToAncRatiosConfig {
 	}
 }
 
-export function build_merkel_tree(stakers: Map<string, Decimal>, output_file: string, tokens_to_aidrop: number, psi_to_anc_ratio_cfg_path: string) {
+export function build_merkel_tree(stakers: Map<string, Decimal>, tokens_to_aidrop: number, psi_to_anc_ratio_cfg_path: string): Airdrop {
 	console.log("stakers count", stakers.size);
 
 	const total_airdrop: Decimal = new Decimal(tokens_to_aidrop).mul(1_000_000);
 	const airdrop_accounts = get_airdropped_accounts_from_stakers(stakers, total_airdrop, psi_to_anc_ratio_cfg_path);
 
 	const airdrop = new Airdrop(airdrop_accounts);
-	const root = airdrop.getMerkleRoot();
 	if (validate_merkle_tree(airdrop, airdrop_accounts)) {
-		console.log(`Merkle Root: \"${root}\"`);
-
-		save_stakers_as_csv(airdrop_accounts, output_file);
-		save_stakers_as_json(airdrop_accounts, output_file);
+		return airdrop;
 	} else {
-		console.log(`Wrong MerkleTree!!!`);
+		console.error(`Wrong MerkleTree!!!`);
+		process.exit(1);
 	}
 }
 
@@ -180,27 +177,4 @@ function validate_merkle_tree(airdrop: Airdrop, accounts_arr: Array<AirdropAccou
 	console.log(`wrong proofs count: ${wrong_proofs_cnt.length}`);
 
 	return wrong_proofs_cnt.length === 0;
-}
-
-function save_stakers_as_json(accounts_arr: Array<AirdropAccount>, filepath: string) {
-	let accounts = {accounts: accounts_arr};
-	writeFile(`${filepath}.json`, JSON.stringify( accounts ), function(err) {
-	    if (err) {
-		console.log(err);
-	    }
-	});
-}
-
-function save_stakers_as_csv(airdrop_accounts: Array<AirdropAccount>, filepath: string) {
-	let csv_content = "address,psi_tokens_to_airdrop,anchor_tokens_staked,psi_tokens_per_anc\n";
-	for (const airdrop of airdrop_accounts) {
-		const psi_tokens_per_anc = airdrop.psi_tokens_to_airdrop.div(airdrop.anc_tokens);
-		let staker_str = `${airdrop.address},${airdrop.psi_tokens_to_airdrop},${airdrop.anc_tokens},${psi_tokens_per_anc}\n`;
-		csv_content += staker_str;
-	}
-	writeFile(`${filepath}.csv`, csv_content, function(err) {
-	    if (err) {
-		console.log(err);
-	    }
-	});
 }

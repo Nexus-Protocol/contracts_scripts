@@ -44,7 +44,8 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 ### airdrop
 
 - `npm run airdrop -- instantiate` - instantiate airdrop contract
-- `npm run calc-airdrop -- -G gov_stakers.txt -O airdrop_output -T 100000000 -C ./src/airdrop/default_psi_to_anc_ratio.json` - calculate merkle tree for airdrop and amounts for each address with proofs
+- `npm run calc-airdrop -- merkle-root -G gov_stakers.txt -O airdrop_output -T 100000000 -C ./src/airdrop/default_psi_to_anc_ratio.json` - calculate merkle tree for airdrop and save csv & json files with `<address>;<anc_tokens>;<psi_tokens>;<psi_to_anc_ratio>` data
+- `npm run calc-airdrop -- users-proof --stage 1 -G gov_stakers.txt -O users_airdrop_data -T 100000000 -C ./src/airdrop/default_psi_to_anc_ratio.json` - saves json with users proof and claimable psi tokens amount
 - `npm run airdrop -- register-merkle-tree -A terra1lk26r9kcysvd3g2lfmsuavf7s5g59wnyu5u6fh -R asdsadyhsafdsfdsfdsgsdfsdfs` - register merkle root (`asdsadyhsafdsfdsfdsgsdfsdfs`) in airdrop contract (`terra1lk26r9kcysvd3g2lfmsuavf7s5g59wnyu5u6fh`)
 
 ### staking lp
