@@ -1,5 +1,4 @@
 import {Airdrop} from "./Airdrop";
-import {SnapshotReader} from "./SnapshotReader";
 import {writeFile, readFileSync} from 'fs';
 import {Decimal} from 'decimal.js';
 
@@ -40,9 +39,7 @@ class PsiToAncRatiosConfig {
 	}
 }
 
-export function build_merkel_tree(snapshot_path: string, output_file: string, tokens_to_aidrop: number, psi_to_anc_ratio_cfg_path: string) {
-	const snapshot_reader = new SnapshotReader(snapshot_path);
-	let stakers = snapshot_reader.read_stakers();
+export function build_merkel_tree(stakers: Map<string, Decimal>, output_file: string, tokens_to_aidrop: number, psi_to_anc_ratio_cfg_path: string) {
 	console.log("stakers count", stakers.size);
 
 	const total_airdrop: Decimal = new Decimal(tokens_to_aidrop).mul(1_000_000);
