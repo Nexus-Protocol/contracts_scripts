@@ -1,14 +1,20 @@
 import {BlockTxBroadcastResult, LCDClient, Msg, MsgExecuteContract, Wallet} from '@terra-money/terra.js';
 import {AirdropAccount, anc_tokens_as_str, build_merkel_tree, tokens_to_drop_as_str} from "./airdrop_merkle_tree"
 import {Command} from 'commander';
-import {lstatSync} from 'fs';
+import {lstatSync, readFileSync} from 'fs';
 import {SnapshotDirReader, SnapshotFileReader} from "./SnapshotReader";
 import {Decimal} from 'decimal.js'
 import {writeFile} from 'fs';
 import {Airdrop} from "./Airdrop";
-import {send_message} from './../utils';
+import {get_lcd_config_with_wallet, LCDConfig, send_message} from './../utils';
 import {isTxSuccess} from './../transaction';
-import {get_lcd_and_wallet} from './executor';
+
+interface Config {
+	lcd_client: LCDConfig,
+	psi_token_addr: string,
+}
+
+const DEFAULT_CONFIG_PATH: string = 'src/airdrop/config.json';
 
 async function run() {
 	const program = new Command();
@@ -200,3 +206,17 @@ run()
 	.catch(err => {
         console.log(err);
     });
+
+async function get_lcd_and_wallet(options: any): Promise<[Config, LCDClient, Wallet]> {
+	let config_path: string;
+	if (options.config === undefined) {
+		config_path = DEFAULT_CONFIG_PATH;
+	} else {
+		config_path = options.config;
+	}
+
+	const config: Config = JSON.parse(readFileSync(config_path, 'utf-8'))
+	const [lcd_client, sender] = await get_lcd_config_with_wallet(config.lcd_client);
+	return [config, lcd_client, sender];
+}
+

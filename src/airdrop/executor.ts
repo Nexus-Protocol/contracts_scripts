@@ -48,7 +48,7 @@ run_program()
 		console.log(err);
 });
 
-export async function get_lcd_and_wallet(options: any): Promise<[Config, LCDClient, Wallet]> {
+async function get_lcd_and_wallet(options: any): Promise<[Config, LCDClient, Wallet]> {
 	let config_path: string;
 	if (options.config === undefined) {
 		config_path = DEFAULT_CONFIG_PATH;
