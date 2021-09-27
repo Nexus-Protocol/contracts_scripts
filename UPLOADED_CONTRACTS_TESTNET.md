@@ -74,4 +74,11 @@ staking_contract instantiated
         PSI-UST pool address: terra18dja782z2f8emrkpnaq2frn2rjed4hvn7md2uc
         PSI-nLuna pool address: terra1xpafyw4wfhk22thr8tndmhyk2zxtqcffyxyz5u
         PSI-nETH pool address: terra1982u6mf77auqyqdy634j6a57jy505d9ml37lu4
+=======================
+airdrop_contract uploaded
+        code_id: 10108
+=======================
+airdrop_contract instantiated
+        address: terra190ays2r593pmgkmxgjva2fklxgl2fux34qh8qz
+=======================
 ```
