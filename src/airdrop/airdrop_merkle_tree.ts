@@ -57,7 +57,7 @@ export function build_merkel_tree(stakers: Map<string, Decimal>, tokens_to_aidro
 export interface AirdropAccount {
 	address: string,
 	anc_tokens: Decimal,
-	psi_tokens_to_airdrop: Decimal
+	psi_tokens_to_airdrop: Decimal,
 }
 
 function get_airdropped_accounts_from_stakers(stakers: Map<string, Decimal>, total_airdrop: Decimal, psi_to_anc_ratio_cfg_path: string): Array<AirdropAccount> {
@@ -177,4 +177,26 @@ function validate_merkle_tree(airdrop: Airdrop, accounts_arr: Array<AirdropAccou
 	console.log(`wrong proofs count: ${wrong_proofs_cnt.length}`);
 
 	return wrong_proofs_cnt.length === 0;
+}
+
+export function tokens_to_drop_as_str(airdrop_account: AirdropAccount): string {
+	const result = airdrop_account.psi_tokens_to_airdrop.toNumber().toString();
+
+	if (result.includes('.') || !airdrop_account.psi_tokens_to_airdrop.isInt()) {
+		console.error(`User ${JSON.stringify(airdrop_account)} have decimal psi tokens to claim, which is wrong`);
+		process.exit(1);
+	}
+
+	return result;
+}
+
+export function anc_tokens_as_str(airdrop_account: AirdropAccount): string {
+	const result = airdrop_account.anc_tokens.toNumber().toString();
+
+	if (result.includes('.') || !airdrop_account.anc_tokens.isInt()) {
+		console.error(`User ${JSON.stringify(airdrop_account)} have decimal anc tokens, which is wrong`);
+		process.exit(1);
+	}
+
+	return result;
 }

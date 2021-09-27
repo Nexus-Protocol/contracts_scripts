@@ -1,10 +1,14 @@
-import {AirdropAccount, build_merkel_tree} from "./airdrop_merkle_tree"
+import {BlockTxBroadcastResult, LCDClient, Msg, MsgExecuteContract, Wallet} from '@terra-money/terra.js';
+import {AirdropAccount, anc_tokens_as_str, build_merkel_tree, tokens_to_drop_as_str} from "./airdrop_merkle_tree"
 import {Command} from 'commander';
 import {lstatSync} from 'fs';
 import {SnapshotDirReader, SnapshotFileReader} from "./SnapshotReader";
 import {Decimal} from 'decimal.js'
 import {writeFile} from 'fs';
 import {Airdrop} from "./Airdrop";
+import {send_message} from './../utils';
+import {isTxSuccess} from './../transaction';
+import {get_lcd_and_wallet} from './executor';
 
 async function run() {
 	const program = new Command();
@@ -44,8 +48,75 @@ async function run() {
 			save_users_proof(airdrop, options.outputPath, options.stage);
 		});
 
+	program
+		.command('send-airdrop')
+		.requiredOption('-G, --gov-stakers-path <filepath>', `relative path to goverance stakers file or directory`)
+		.requiredOption('-T, --tokens-amount <amount>', `amount of tokens to airdrop`)
+		.requiredOption('-C, --psi-to-anc-ratio-cfg-path <filepath>', `path to psi_to_anc_ratio config file`)
+		.option('-F, --config <filepath>', `relative path to json config`)
+		.action(async (options) => {
+			const [config, lcd_client, sender] = await get_lcd_and_wallet(options);
+			const stakers = read_stakers(options.govStakersPath, 2);
+			const psi_tokens_to_airdrop: number = parseInt(options.tokensAmount);
+			const airdrop = build_merkel_tree(stakers, psi_tokens_to_airdrop, options.psiToAncRatioCfgPath);
+			const root = airdrop.getMerkleRoot();
+			console.log(`Merkle Root: \"${root}\"`);
+
+			const airdrop_accounts = airdrop.getAccounts();
+			await send_all_airdrop(lcd_client, sender, airdrop_accounts, config.psi_token_addr);
+		});
+
 	await program.parseAsync(process.argv);
 }
+
+async function send_all_airdrop(lcd_client: LCDClient, sender: Wallet, airdrop_accounts: AirdropAccount[], psi_token_addr: string) {
+	console.log(`=======================`);
+	const batch_size = 1_000;
+	let airdropped_accounts = 0;
+	const total_accounts = airdrop_accounts.length;
+	while (total_accounts > (airdropped_accounts + 1)) {
+		let accounts_batch = [];
+		for (const account_index of Array(batch_size).keys()) {
+			const current_index = airdropped_accounts + account_index;
+			if (current_index == total_accounts) {
+				break;
+			}
+			accounts_batch.push(airdrop_accounts[current_index]);
+		}
+		airdropped_accounts += accounts_batch.length;
+
+		const tx_result = await send_batch_airdrop(lcd_client, sender, accounts_batch, psi_token_addr);
+		if (tx_result === undefined || !isTxSuccess(tx_result)) {
+			console.log(`fail to send airdrop tokens for users from '${accounts_batch[0].address}' to '${accounts_batch[accounts_batch.length - 1].address}'`);
+			console.log(`reason: ${JSON.stringify(tx_result)}`);
+		} else {
+			console.log(`successfully send airdrop for users from '${accounts_batch[0].address}' to '${accounts_batch[accounts_batch.length - 1].address}'`);
+			console.log(`tx_hash: ${tx_result.txhash}`);
+		}
+		console.log(`=======================`);
+	}
+}
+
+async function send_batch_airdrop(lcd_client: LCDClient, sender: Wallet, airdrop_accounts: AirdropAccount[], psi_token_addr: string): Promise<BlockTxBroadcastResult | undefined> {
+	let send_msgs: Msg[] = [];
+	for (const airdrop_acc of airdrop_accounts) {
+		const msg = new MsgExecuteContract(
+			sender.key.accAddress,
+			psi_token_addr,
+			{
+				transfer: {
+					recipient: airdrop_acc.address,
+					amount: tokens_to_drop_as_str(airdrop_acc)
+				}
+			}
+		);
+		send_msgs.push(msg);
+	}
+
+	let tx_result: BlockTxBroadcastResult | undefined = await send_message(lcd_client, sender, send_msgs);
+	return tx_result;
+}
+
 
 function read_stakers(snapshot_path: string, min_anc_staked: number): Map<string, Decimal> {
 	if (lstatSync(snapshot_path).isDirectory()) {
@@ -73,7 +144,7 @@ function save_stakers_as_csv(airdrop_accounts: Array<AirdropAccount>, filepath: 
 	let csv_content = "address,psi_tokens_to_airdrop,anchor_tokens_staked,psi_tokens_per_anc\n";
 	for (const airdrop of airdrop_accounts) {
 		const psi_tokens_per_anc = airdrop.psi_tokens_to_airdrop.div(airdrop.anc_tokens);
-		let staker_str = `${airdrop.address},${airdrop.psi_tokens_to_airdrop},${airdrop.anc_tokens},${psi_tokens_per_anc}\n`;
+		let staker_str = `${airdrop.address},${tokens_to_drop_as_str(airdrop)},${anc_tokens_as_str(airdrop)},${psi_tokens_per_anc}\n`;
 		csv_content += staker_str;
 	}
 	writeFile(`${filepath}.csv`, csv_content, function(err) {
@@ -85,7 +156,7 @@ function save_stakers_as_csv(airdrop_accounts: Array<AirdropAccount>, filepath: 
 
 interface UserAirdropData {
 	address: string,
-	claimable_psi_tokens: Decimal,
+	claimable_psi_tokens: string,
 	proofs: string[]
 }
 
@@ -100,14 +171,10 @@ function save_users_proof(airdrop: Airdrop, filepath: string, stage: number) {
 	
 	const airdrop_accounts = airdrop.getAccounts();
 	for (const airdrop_account of airdrop_accounts) {
-		if (!airdrop_account.psi_tokens_to_airdrop.isInt()) {
-			console.error(`User ${JSON.stringify(airdrop_account)} have decimal psi tokens to claim, which is wrong`);
-			process.exit(1);
-		}
 		const user_proofs = airdrop.getMerkleProof(airdrop_account);
 		const user_airdrop_data = {
 			address: airdrop_account.address,
-			claimable_psi_tokens: airdrop_account.psi_tokens_to_airdrop,
+			claimable_psi_tokens: tokens_to_drop_as_str(airdrop_account),
 			proofs: user_proofs
 		};
 		users.push(user_airdrop_data);
