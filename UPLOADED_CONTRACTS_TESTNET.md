@@ -1,84 +1,84 @@
-# Bombay-11
+# Bombay-12
 
 ```
-cw20_base uploaded; code_id: 9647
+cw20_base uploaded; code_id: 9324
 =======================
 governance_contract uploaded
-        code_id: 9648
+        code_id: 9325
 governance_contract instantiated
-        address: terra1hmpajtgf4pvm82hd95p8ecqdx3w0hj6vdygwrg
+        address: terra1u7tnl4326ge86mzqeqnzxxjg7xkgj8nfg65a2h
 =======================
 psi_token instantiated
-        address: terra1x7u9xxv5zsynk867ngttk2zdjlnps4vvgtzhnp
+        address: terra18nle009rtynpjgleh2975rleu5zts0zdtqryte
 =======================
 psi_token address setted in governance contract
 =======================
 psi_stable_swap_contract created
-        address: terra1zz2067trqtxk5kvxc3pntsetlh8tddts5tdu0k
-        lp token address: terra1vwl6lppq3lvp06hgldhgukexvzc3xqf05yxghh
+        address: terra1ee9h9c9fv2smm8wkq0aw78tut3w3x62ckj6nz8
+        lp token address: terra12qfjg2m50syyg3eljpj0rx0x8jez5j56mg77zc
 =======================
 community_pool uploaded
-        code_id: 9649
+        code_id: 9326
 community_pool instantiated
-        address: terra1cqntr8wnemcxvlzk4kmxmdcaf4g2md6vtv9ect
+        address: terra1tr4uxvmsfx7sl06m7xnp848ta20gesj0hpufjd
 =======================
 nasset_token uploaded
-        code_id: 9650
+        code_id: 9327
 =======================
 nasset_token_config_holder uploaded
-        code_id: 9651
+        code_id: 9328
 =======================
 nasset_token_rewards uploaded
-        code_id: 9656
+        code_id: 9329
 =======================
 psi_distributor uploaded
-        code_id: 9658
+        code_id: 9330
 =======================
 basset_vault_strategy uploaded
-        code_id: 9659
+        code_id: 9331
 basset_vault uploaded
-        code_id: 9660
+        code_id: 9332
 =======================
 basset_vault_strategy_for_bluna instantiated
-        address: terra1pf04qhm8zf59g9zs9c82m32x00wu2wlqe7cl0u
+        address: terra1qudlaq3dgm4t8n9thda29d4ccnpf7ju6xy9ned
 =======================
 basset_vault_for_bluna instantiated
-        address: terra1arpjrnrflx89srwk8338yn0mpnhvyjl5muzhej
-        nasset_token address: terra157gpuyvcz66wqkc5nkxu30dcsxzdwdhzlsh9h0
-        nasset_token_config_holder address: terra1p0eppxwhejfwwaypdzawt240ve0lm64eld7sgd
-        nasset_token_rewards address: terra1qfp32rfgtp7yx477rzlacgeez953jdgy6ca5na
-        psi_distributor address: terra1a6cyst4e90k3j72gvydj30est470hdcgyse306
+        address: terra1n6ywyqxu2d9yx3fzskmzuqej4na2aycc3caglx
+        nasset_token address: terra1730ecgfn7ukvsxrqnl2hwkgzhjv99pndhq7c9y
+        nasset_token_config_holder address: terra1a7tp6rsnruglsgylwamjhd79rdwmd657m442us
+        nasset_token_rewards address: terra124u9fdw5el96uxl9cnhx4mmxkqrrz4jv5juq6c
+        psi_distributor address: terra14svjnc6lpy2xqfct70pdjx4s9p02rh0favg7uu
 =======================
 nasset_psi_swap_contract_for_bluna created
-        address: terra16nx9ljrz5mtn7jslrgj27ukqd83vpz53yj8z20
-        lp token address: terra1syv93mnnl5dxsjqdksakkunacx5vwq3qaew3my
+        address: terra1w7u25czf46u9hj86dm4se7w7lnncj3y2rf0ua0
+        lp token address: terra1w0ap40l42pgh88fe0dupd4wendafy764alhssw
 =======================
 basset_vault_strategy_for_beth instantiated
-        address: terra1fdw0kqgaznq9elecme65ugtndhhwnvj6wnxe7t
+        address: terra1l0k4v6jmajgekr0tk7q2lanjynejt6ypapdzl5
 =======================
 basset_vault_for_beth instantiated
-        address: terra1vcepa5v5v023veltjush8u7pjlllg6um06veq9
-        nasset_token address: terra1xg8l50fqupdd8d5vr2xdpjll9xkdt8fl8w27lm
-        nasset_token_config_holder address: terra1w0kqz6s2m4zekmf45ydvtmsnej4yxduk9wc39a
-        nasset_token_rewards address: terra1zydtpmzljdt9c9ue8tttpuum0sfe9s0fwgmvtt
-        psi_distributor address: terra14pqzzage32epzpvyfqe7z88zke5c5zjux9xn0q
+        address: terra1tlcpagkcqsdfkns4ltwevqt9eh94td733svqlr
+        nasset_token address: terra1sz6lt07swjt62wv6m3vywzal4kwwl99rhzlt4f
+        nasset_token_config_holder address: terra1adglfdcpcsuvpdgq75c5ll5pcl5j9a06jp74vy
+        nasset_token_rewards address: terra1dpule8u8x8wz3qr82jnx9pjrefc0yagttdh048
+        psi_distributor address: terra1qluftl8twjqvctsakel2fhhe7su36vt5ajpqq3
 =======================
 nasset_psi_swap_contract_for_beth created
-        address: terra1tzgv93l0qa3rdrefga6p0gezlnkdfz0mlkl4fj
-        lp token address: terra1rw238pssv566m0d45cjzdep2k8cpd70vqeecre
+        address: terra1wndh8knhz5mse8exj8js2nmv2uw54ksr2htndc
+        lp token address: terra1zkrvkac64nr9lwqstf0cap788cyd3mpms8szve
 =======================
 staking_contract uploaded
-        code_id: 9669
+        code_id: 9335
 =======================
 staking_contract instantiated
-        PSI-UST pool address: terra18dja782z2f8emrkpnaq2frn2rjed4hvn7md2uc
-        PSI-nLuna pool address: terra1xpafyw4wfhk22thr8tndmhyk2zxtqcffyxyz5u
-        PSI-nETH pool address: terra1982u6mf77auqyqdy634j6a57jy505d9ml37lu4
+        PSI-UST pool address: terra1qsc7y8448payj9fyjxn6ffxxmdcj5g5dtptfq2
+        PSI-nLuna pool address: terra1j4p3uxn3h9v88fseqjlmljajvwdx9al588fvv0
+        PSI-nETH pool address: terra14utlc8j4r3kfp9qgja9lmxqwcxdu6qnqxtvcsa
 =======================
 airdrop_contract uploaded
-        code_id: 10108
+        code_id: 9339
 =======================
 airdrop_contract instantiated
-        address: terra190ays2r593pmgkmxgjva2fklxgl2fux34qh8qz
+        address: terra1s3qv2na283q7835d6qxcp5llp6ax7ydl7py4kd
 =======================
 ```
