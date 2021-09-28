@@ -13,7 +13,7 @@ psi_token instantiated
 =======================
 psi_token address setted in governance contract
 =======================
-psi_stable_swap_contract created
+Psi-UST pair contract instantiated
         address: terra1ee9h9c9fv2smm8wkq0aw78tut3w3x62ckj6nz8
         lp token address: terra12qfjg2m50syyg3eljpj0rx0x8jez5j56mg77zc
 =======================
@@ -49,7 +49,7 @@ basset_vault_for_bluna instantiated
         nasset_token_rewards address: terra124u9fdw5el96uxl9cnhx4mmxkqrrz4jv5juq6c
         psi_distributor address: terra14svjnc6lpy2xqfct70pdjx4s9p02rh0favg7uu
 =======================
-nasset_psi_swap_contract_for_bluna created
+Psi-nLuna pair contract instantiated
         address: terra1w7u25czf46u9hj86dm4se7w7lnncj3y2rf0ua0
         lp token address: terra1w0ap40l42pgh88fe0dupd4wendafy764alhssw
 =======================
@@ -63,7 +63,7 @@ basset_vault_for_beth instantiated
         nasset_token_rewards address: terra1dpule8u8x8wz3qr82jnx9pjrefc0yagttdh048
         psi_distributor address: terra1qluftl8twjqvctsakel2fhhe7su36vt5ajpqq3
 =======================
-nasset_psi_swap_contract_for_beth created
+Psi-nETH pair contract instantiated
         address: terra1wndh8knhz5mse8exj8js2nmv2uw54ksr2htndc
         lp token address: terra1zkrvkac64nr9lwqstf0cap788cyd3mpms8szve
 =======================
@@ -71,9 +71,9 @@ staking_contract uploaded
         code_id: 9335
 =======================
 staking_contract instantiated
-        PSI-UST pool address: terra1qsc7y8448payj9fyjxn6ffxxmdcj5g5dtptfq2
-        PSI-nLuna pool address: terra1j4p3uxn3h9v88fseqjlmljajvwdx9al588fvv0
-        PSI-nETH pool address: terra14utlc8j4r3kfp9qgja9lmxqwcxdu6qnqxtvcsa
+        Psi-UST staking address: terra1qsc7y8448payj9fyjxn6ffxxmdcj5g5dtptfq2
+        Psi-nLuna staking address: terra1j4p3uxn3h9v88fseqjlmljajvwdx9al588fvv0
+        Psi-nETH staking address: terra14utlc8j4r3kfp9qgja9lmxqwcxdu6qnqxtvcsa
 =======================
 airdrop_contract uploaded
         code_id: 9339
