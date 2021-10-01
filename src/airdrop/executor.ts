@@ -37,6 +37,17 @@ async function run_program() {
 			await register_merkle_tree(lcd_client, sender, options.address, options.merkleRoot);
 		});
 
+	program
+		.command('query-merkle-tree')
+		.requiredOption('-A, --address <address>', `airdrop contract address`)
+		.requiredOption('-S, --stage <stage_number>', `airdrop stage number`)
+		.option('-C, --config <filepath>', `relative path to json config`)
+		.action(async (options) => {
+			const [_config, lcd_client, _sender] = await get_lcd_and_wallet(options);
+			const stage: number = parseInt(options.stage);
+			await query_merkle_tree(lcd_client, options.address, stage);
+		});
+
 	await program.parseAsync(process.argv);
 }
 
@@ -47,6 +58,11 @@ run_program()
 	.catch(err => {
 		console.log(err);
 });
+
+export async function query_merkle_tree(lcd_client: LCDClient, airdrop_contract_addr: string, stage: number) {
+	let merkle_root_response = await lcd_client.wasm.contractQuery(airdrop_contract_addr, {merkle_root: {stage: stage}});
+	console.log(`merkle root for stage ${stage}:\n${JSON.stringify( merkle_root_response )}`)
+}
 
 async function get_lcd_and_wallet(options: any): Promise<[Config, LCDClient, Wallet]> {
 	let config_path: string;
