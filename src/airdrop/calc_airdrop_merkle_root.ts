@@ -47,11 +47,12 @@ async function run() {
 		.action(async (options) => {
 			const stakers = read_stakers(options.govStakersPath, 2);
 			const psi_tokens_to_airdrop: number = parseInt(options.tokensAmount);
+			const stage: number = parseInt(options.stage);
 			const airdrop = build_merkel_tree(stakers, psi_tokens_to_airdrop, options.psiToAncRatioCfgPath);
 			const root = airdrop.getMerkleRoot();
 			console.log(`Merkle Root: \"${root}\"`);
 
-			save_users_proof(airdrop, options.outputPath, options.stage);
+			save_users_proof(airdrop, options.outputPath, stage);
 		});
 
 	program
