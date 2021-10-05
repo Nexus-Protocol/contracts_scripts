@@ -2,7 +2,7 @@ import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {readFileSync} from 'fs';
 import {Command} from 'commander';
 import {register_merkle_tree, init_airdrop_contract, AirdropConfig} from "./definition";
-import {get_lcd_config_with_wallet, LCDConfig} from './../utils';
+import {execute_contract, get_lcd_config_with_wallet, LCDConfig} from './../utils';
 
 interface Config {
 	lcd_client: LCDConfig,
@@ -48,6 +48,16 @@ async function run_program() {
 			await query_merkle_tree(lcd_client, options.address, stage);
 		});
 
+	program
+		.command('claim')
+		.requiredOption('-A, --address <address>', `airdrop contract address`)
+		.requiredOption('-S, --stage <stage_number>', `airdrop stage number`)
+		.option('-C, --config <filepath>', `relative path to json config`)
+		.action(async (options) => {
+			const [_config, lcd_client, sender] = await get_lcd_and_wallet(options);
+			await claim_airdrop(lcd_client, sender);
+		});
+
 	await program.parseAsync(process.argv);
 }
 
@@ -58,6 +68,20 @@ run_program()
 	.catch(err => {
 		console.log(err);
 });
+
+export async function claim_airdrop(lcd_client: LCDClient, sender: Wallet) {
+	const claim_msg = {
+		claim: {
+			stage: 2,
+			amount: "9999",
+			proof: ["some proof"]
+		}
+	};
+	const psi_token_addr = "terra1...";
+
+	const claim_result = await execute_contract(lcd_client, sender, psi_token_addr, claim_msg);
+	console.log(`${JSON.stringify(claim_result)}`);
+}
 
 export async function query_merkle_tree(lcd_client: LCDClient, airdrop_contract_addr: string, stage: number) {
 	let merkle_root_response = await lcd_client.wasm.contractQuery(airdrop_contract_addr, {merkle_root: {stage: stage}});
