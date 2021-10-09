@@ -1,6 +1,6 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {staking_contract_wasm} from './../basset_vault/definition';
-import {create_contract, execute_contract, instantiate_contract, store_contract} from './../utils';
+import {execute_contract, instantiate_contract, store_contract, to_utc_seconds} from './../utils';
 import {DistributionScheduleRaw, Config} from './executor';
 
 interface StakingConfig {
@@ -18,8 +18,8 @@ interface DistributionSchedule {
 }
 
 export function create_distribution_schedule(distribution_schedule_raw: DistributionScheduleRaw): DistributionSchedule {
-	let start_time_secs = Date.parse(distribution_schedule_raw.start_date) / 1000;
-	let end_time_secs = Date.parse(distribution_schedule_raw.end_date) / 1000;
+	let start_time_secs = to_utc_seconds(distribution_schedule_raw.start_date);
+	let end_time_secs = to_utc_seconds(distribution_schedule_raw.end_date);
 
 	return {
 		start_time: start_time_secs,

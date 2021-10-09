@@ -1,6 +1,6 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {vesting_contract_wasm} from './../basset_vault/definition';
-import {execute_contract, create_contract} from './../utils';
+import {execute_contract, create_contract, to_utc_seconds} from './../utils';
 import {VestingAccountRaw, Config} from './executor';
 
 interface VestingConfig {
@@ -30,9 +30,9 @@ interface VestingSchedule {
 }
 
 export function create_vesting_account(vesting_account_raw: VestingAccountRaw): VestingAccount {
-	let start_time_secs = Date.parse(vesting_account_raw.start_date) / 1000;
-	let end_time_secs = Date.parse(vesting_account_raw.end_date) / 1000;
-	let cliff_end_time_secs = Date.parse(vesting_account_raw.cliff_end_date) / 1000;
+	const start_time_secs = to_utc_seconds(vesting_account_raw.start_date);
+	const end_time_secs = to_utc_seconds(vesting_account_raw.end_date);
+	const cliff_end_time_secs = to_utc_seconds(vesting_account_raw.cliff_end_date);
 
 	return {
 		address: vesting_account_raw.address,
@@ -48,8 +48,7 @@ export function create_vesting_account(vesting_account_raw: VestingAccountRaw): 
 }
 
 export async function init_vesting_contract(lcd_client: LCDClient, sender: Wallet, config: Config) {
-	const genesis_date = Date.parse(config.genesis_date_str);
-	let genesis_time = genesis_date / 1000;
+	let genesis_time = to_utc_seconds(config.genesis_date_str);
 	// instantiate vesting contract
 	let vesting_config = VestingConfig(config.psi_token_addr, genesis_time, config.multisig_address);
 	let vesting_contract_addr = await create_contract(lcd_client, sender, "vesting_contract", vesting_contract_wasm, vesting_config);
