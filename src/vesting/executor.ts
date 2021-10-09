@@ -35,7 +35,7 @@ async function run_program() {
 
 	program
 		.command('add-vesting <address> <start_date> <end_date> <cliff_end_date> <tokens_amount>')
-		.option('-A, --address <address>', `vesting contract address`)
+		.requiredOption('-A, --address <address>', `vesting contract address`)
 		.option('-C, --config <filepath>', `relative path to json config`)
 		.action(async (address, start_date, end_date, cliff_end_date, tokens_amount, options) => {
 			const [_config, lcd_client, sender] = await get_lcd_and_wallet(options);
