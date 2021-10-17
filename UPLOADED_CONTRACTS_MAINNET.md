@@ -42,5 +42,7 @@ staking_contract uploaded
         code_id: 543
 =======================
 staking_contract instantiated
-        address: terra12kzewegufqprmzl20nhsuwjjq6xu8t8ppzt30a
+        Psi-UST staking address: terra12kzewegufqprmzl20nhsuwjjq6xu8t8ppzt30a
+        Psi-nLuna staking address: later
+        Psi-nETH staking address: later
 ```
