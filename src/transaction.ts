@@ -8,7 +8,7 @@ export function isTxSuccess(tx: BlockTxBroadcastResult, write_to_log: boolean = 
 	if (isTxFailed(tx)) {
 		if (write_to_log) {
 			const failed_tx = tx as TxError;
-			console.log(`failed Tx; hash: ${tx.txhash}, code: ${failed_tx.code}`)
+			console.log(`failed Tx; hash: ${tx.txhash}, code: ${failed_tx.code}, codespace: ${failed_tx.codespace}, error: ${JSON.stringify(tx)}`)
 		}
 		return false;
 	}
