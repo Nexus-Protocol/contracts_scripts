@@ -1,6 +1,6 @@
 import { LCDClient, Wallet, Coin} from '@terra-money/terra.js';
 import { store_contract, execute_contract, instantiate_contract_with_init_funds, create_contract } from './../utils';
-import { AnchorDistrConfig, AnchorInterstConfig, AnchorLiquidationConfig, AnchorMarkerConfig, AnchorOracleConfig, AnchorOverseerConfig, RegisterContractsConfig} from './config';
+import { AnchorDistrConfig, AnchorInterstConfig, AnchorLiquidationConfig, AnchorMarkerConfig, AnchorOracleConfig, AnchorOverseerConfig } from './config';
 import {Cw20CodeId } from './../config';
 import { init_psi_token} from './../basset_vault/definition';
 
@@ -78,8 +78,17 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet){
 	let anchor_interest_model_addr = await create_contract(lcd_client, sender, "anchor_interest_model", anchor_interest_model_wasm, anchor_interest_model_config);
 	console.log(`=======================`);
 
-	let register_contracts_config = RegisterContractsConfig(anchor_overseer_addr, anchor_interest_model_addr, anchor_distribution_model_addr, sender.key.accAddress, anchor_distribution_model_addr);
-	await execute_contract(lcd_client, sender, anchor_market_addr, register_contracts_config);
+	await execute_contract(lcd_client, sender, anchor_market_addr,
+		{
+				register_contracts: {
+					overseer_contract: anchor_overseer_addr,
+					interest_model: anchor_interest_model_addr,
+					distribution_model: anchor_distribution_model_addr,
+					collector_contract: sender.key.accAddress,
+					distributor_contract: anchor_distribution_model_addr,
+					}
+				}
+	);
 	console.log(`contracts have been registered`);
 	console.log(`=======================`);
 }

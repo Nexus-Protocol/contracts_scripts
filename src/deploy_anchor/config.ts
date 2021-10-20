@@ -171,29 +171,3 @@ export function AnchorInterstConfig(
 	}
 }
 
-// ============================================================
-
-export interface RegisterContractsConfig{
-    overseer_contract: Addr,
-    interest_model: Addr,
-    distribution_model: Addr,
-    collector_contract: Addr,
-    distributor_contract: Addr,
-}
-
-export function RegisterContractsConfig(
-    overseer_contract: Addr,
-    interest_model: Addr,
-    distribution_model: Addr,
-    collector_contract: Addr,
-    distributor_contract: Addr,
-    ): RegisterContractsConfig{
-    return {
-        overseer_contract: overseer_contract,
-        interest_model: interest_model,
-        distribution_model: distribution_model,
-        collector_contract: collector_contract,
-        distributor_contract: distributor_contract,
-	}
-}
-
