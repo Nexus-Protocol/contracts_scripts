@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, LocalTerra, MnemonicKey, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
-import {BassetVaultConfig, TokenConfig} from './config';
+import {BassetVaultConfig} from './config';
 import {SecretsManager} from 'aws-sdk';
 import * as prompt from 'prompt';
 import {isTxSuccess} from './transaction';
@@ -49,7 +49,7 @@ async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, a
 	}
 }
 
-async function instantiate_contract_with_init_funds_util(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds: Coin[]): Promise<BlockTxBroadcastResult> {
+export async function instantiate_contract_with_init_funds_util(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds: Coin[]): Promise<BlockTxBroadcastResult> {
 	const messages: Msg[] = [new MsgInstantiateContract(
 		sender.key.accAddress,
 		 	admin,
