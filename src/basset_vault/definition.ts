@@ -3,10 +3,10 @@ import {TokenConfig, GovernanceConfig, Cw20CodeId, init_terraswap_factory, PSiTo
 import {store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault, create_token_to_token_terraswap_pair} from './../utils';
 
 // ===================================================
-const path_to_cosmwasm_artifacts = "/Users/pronvis/terra/cosmwasm-plus/artifacts"
-const path_to_basset_vault_artifacts = "/Users/pronvis/terra/nexus/yield-optimizer-contracts/artifacts"
-const path_to_services_contracts_artifacts = "/Users/pronvis/terra/nexus/services-contracts/artifacts"
-const path_to_terraswap_contracts_artifacts = "/Users/pronvis/terra/terraswap/artifacts"
+const path_to_cosmwasm_artifacts = "/Users/qdo_ln/terra/cosmwasm-plus/artifacts"
+const path_to_basset_vault_artifacts = "/Users/qdo_ln/terra/nexus/basset-vault-contracts/artifacts"
+const path_to_services_contracts_artifacts = "/Users/qdo_ln/terra/nexus/services-contracts/artifacts"
+const path_to_terraswap_contracts_artifacts = "/Users/qdo_ln/terra/terraswap/artifacts"
 // ===================================================
 export const cw20_contract_wasm = `${path_to_cosmwasm_artifacts}/cw20_base.wasm`;
 export const terraswap_factory_wasm = `${path_to_terraswap_contracts_artifacts}/terraswap_factory.wasm`;
@@ -25,7 +25,7 @@ const nasset_token_rewards_wasm = `${path_to_basset_vault_artifacts}/basset_vaul
 const psi_distributor_wasm = `${path_to_basset_vault_artifacts}/basset_vault_psi_distributor.wasm`;
 // ===================================================
 
-async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
+export async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
 	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
 	console.log(`psi_token instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;

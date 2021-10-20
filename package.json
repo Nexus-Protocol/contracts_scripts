@@ -11,7 +11,8 @@
 		"calc-airdrop": "ts-node src/airdrop/calc_airdrop_merkle_root.ts",
 		"rebalance": "ts-node src/rebalance/executor.ts",
 		"honest-work": "ts-node src/basset_honest_work/executor.ts",
-		"claim-lp-rewards": "ts-node src/claim_lp_rewards/executor.ts"
+		"claim-lp-rewards": "ts-node src/claim_lp_rewards/executor.ts",
+		"deploy-anchor": "ts-node src/deploy_anchor/executor.ts"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.11",

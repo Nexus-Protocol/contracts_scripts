@@ -49,8 +49,32 @@ async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, a
 	}
 }
 
+export async function instantiate_contract_with_init_funds_util(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds: Coin[]): Promise<BlockTxBroadcastResult> {
+	const messages: Msg[] = [new MsgInstantiateContract(
+		sender.key.accAddress,
+		 	admin,
+			code_id,
+			init_msg,
+    		init_funds,
+	)];
+	while (true) {
+		let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
+		if (result !== undefined && isTxSuccess(result)) {
+			return result;
+		} else {
+			await sleep(1000);
+		}
+	}
+}
+
+
 export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object): Promise<string> {
 	let result = await instantiate_contract_raw(lcd_client, sender, admin, code_id, init_msg);
+	return getContractAddress(result)
+}
+
+export async function instantiate_contract_with_init_funds(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds: Coin[]): Promise<string> {
+	let result = await instantiate_contract_with_init_funds_util(lcd_client, sender, admin, code_id, init_msg, init_funds);
 	return getContractAddress(result)
 }
 
@@ -194,10 +218,11 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, c
 
 export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[]): Promise<BlockTxBroadcastResult | undefined> {
 	try {
-		const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages);
-		if (estimated_tx_fee === undefined) {
-			return undefined;
-		}
+		// const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages);
+		// if (estimated_tx_fee === undefined) {
+		// 	return undefined;
+		// }
+		const estimated_tx_fee = new StdFee(3_000_000/0.38, [new Coin("uusd", 3_000_000)]);
 
 		const signed_tx = await sender.createAndSignTx({
 			msgs: messages,
