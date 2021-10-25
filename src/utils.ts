@@ -266,9 +266,9 @@ export function get_date_str(): string {
 }
 
 export function to_utc_seconds(date_str: string): number {
-	const parsed_date = Date.parse(date_str);
-	const date = new Date(parsed_date);
-	return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds())).getTime() / 1_000;
+    const date = new Date(date_str)
+    const time_zone_offset_in_ms = date.getTimezoneOffset() * 60 * 1_000
+    return (date.getTime() - time_zone_offset_in_ms) / 1_000
 }
 
 const seed_prompt = [
