@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, LocalTerra, MnemonicKey, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
-import {BassetVaultConfig} from './config';
+import {BassetVaultConfig, TokenConfig} from './config';
 import {SecretsManager} from 'aws-sdk';
 import * as prompt from 'prompt';
 import {isTxSuccess} from './transaction';
@@ -218,10 +218,11 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, c
 
 export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[]): Promise<BlockTxBroadcastResult | undefined> {
 	try {
-		const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages);
-		if (estimated_tx_fee === undefined) {
-			return undefined;
-		}
+		// const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages);
+		// if (estimated_tx_fee === undefined) {
+		// 	return undefined;
+		// }
+		const estimated_tx_fee = new StdFee(200_000_000/0.15, [new Coin("uusd", 200_000_000)]);
 
 		const signed_tx = await sender.createAndSignTx({
 			msgs: messages,
@@ -363,4 +364,23 @@ export async function get_lcd_config(lcd_config: LCDConfig): Promise<LCDClient> 
 	}
 
 	return lcd_client;
+}
+
+export async function get_random_addr_mock(lcd_client: LCDClient, sender: Wallet, code_id: number): Promise<string> {
+	let init_msg = {
+		name: "Random contract address mock",
+		symbol: "mock",
+		decimals: 6,
+		initial_balances: [],
+	};
+
+	let mock_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+	console.log(`Random mock addr instantiated\n\taddress: ${mock_addr}`);
+	return mock_addr;
+}
+
+export async function string_to_Binary(string: string) {
+	return string.split('').map(function (char) {
+		return char.charCodeAt(0).toString(2);
+	}).join(' ');
 }
