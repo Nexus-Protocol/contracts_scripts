@@ -39,10 +39,6 @@ export async function psi_distributor_init (lcd_client: LCDClient, sender: Walle
         symbol: "Psi",
         decimals: 6,
         initial_balances: [
-            {
-                address: sender.key.accAddress,
-                amount: "10000000000000000"
-            }
         ],
         mint: {
             minter: sender.key.accAddress,
@@ -101,20 +97,22 @@ export async function query_config(lcd_client: LCDClient, contract_addr: string)
     return JSON.stringify( config_response );
 }
 
-export async function send_1000_tokens_and_distribute(lcd_client: LCDClient, sender: Wallet, token_contract: string, recipient: string) : Promise<BlockTxBroadcastResult | undefined> {
-    return await execute_contract(lcd_client, sender, token_contract, {
-        send: {
-            contract: recipient,
-            amount: "1000",
-            msg: {
-                anyone: {
-                    anyone_msg: {
-                        distribute_rewards: {},
-                    },
+export async function send_tokens_and_distribute(lcd_client: LCDClient, sender: Wallet, token_contract: string, psi_distributor_addr: string, amount: number) : Promise<BlockTxBroadcastResult | undefined> {
+    await execute_contract(lcd_client, sender, token_contract, {
+        mint: {
+            recipient: psi_distributor_addr,
+            amount: amount.toString(),
+        }
+    });
+
+    return await execute_contract(lcd_client, sender, psi_distributor_addr, {
+            anyone: {
+                anyone_msg: {
+                    distribute_rewards: {},
                 },
             },
         }
-    });
+    );
 }
 
 export async function mint (lcd_client: LCDClient, sender: Wallet, token_contract: string, recipient: string) {
