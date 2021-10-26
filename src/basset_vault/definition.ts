@@ -3,10 +3,11 @@ import {TokenConfig, GovernanceConfig, Cw20CodeId, init_terraswap_factory, PSiTo
 import {store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault, create_token_to_token_terraswap_pair} from './../utils';
 
 // ===================================================
-const path_to_cosmwasm_artifacts = "/Users/pronvis/terra/cosmwasm-plus/artifacts"
-const path_to_basset_vault_artifacts = "/Users/pronvis/terra/nexus/yield-optimizer-contracts/artifacts"
-const path_to_services_contracts_artifacts = "/Users/pronvis/terra/nexus/services-contracts/artifacts"
-const path_to_terraswap_contracts_artifacts = "/Users/pronvis/terra/terraswap/artifacts"
+const artifacts_path = "wasm_artifacts";
+const path_to_cosmwasm_artifacts = `${artifacts_path}/cosmwasm_plus`
+const path_to_basset_vault_artifacts = `${artifacts_path}/nexus/basset_vaults`
+const path_to_services_contracts_artifacts = `${artifacts_path}/nexus/services`
+const path_to_terraswap_contracts_artifacts = `${artifacts_path}/terraswap`
 // ===================================================
 export const cw20_contract_wasm = `${path_to_cosmwasm_artifacts}/cw20_base.wasm`;
 export const terraswap_factory_wasm = `${path_to_terraswap_contracts_artifacts}/terraswap_factory.wasm`;
