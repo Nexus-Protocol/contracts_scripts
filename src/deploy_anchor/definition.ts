@@ -1,8 +1,13 @@
 import { LCDClient, Wallet, Coin} from '@terra-money/terra.js';
-import { store_contract, execute_contract, instantiate_contract_with_init_funds, create_contract } from './../utils';
+import {
+	store_contract,
+	execute_contract,
+	instantiate_contract_with_init_funds,
+	create_contract,
+	instantiate_contract
+} from './../utils';
 import { AnchorDistrConfig, AnchorInterstConfig, AnchorLiquidationConfig, AnchorMarkerConfig, AnchorOracleConfig, AnchorOverseerConfig } from './config';
-import {Cw20CodeId } from './../config';
-import { init_psi_token} from './../basset_vault/definition';
+import {Cw20CodeId, TokenConfig} from './../config';
 
 const path_to_anchor_artifacts = "/Users/qdo_ln/terra/anchor/money-market-contracts/artifacts/moneymarket_";
 
@@ -24,6 +29,12 @@ const anchor_overseer_wasm = `${path_to_anchor_artifacts}overseer.wasm`;
 // 8. deploy Interest model
 // 9. register all contracts in Market
 
+export async function init_anc_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
+	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+	console.log(`anc_token instantiated\n\taddress: ${contract_addr}`);
+	return contract_addr;
+}
+
 export async function anchor_init(lcd_client: LCDClient, sender: Wallet){
 
 	//deploy cw20_code_id
@@ -36,7 +47,7 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet){
 		decimals: 6,
 		initial_balances: [],
 	};
-	let anc_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, anchor_token_config);
+	let anc_token_addr = await init_anc_token(lcd_client, sender, cw20_code_id, anchor_token_config);
 	console.log(`=======================`);
 
 	console.log(`Instantiating Anchor contracts...\n\t`);
