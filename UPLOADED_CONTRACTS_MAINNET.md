@@ -6,7 +6,7 @@ storing our own cw20
 cw20_base uploaded; code_id: 538
 =======================
 governance_contract uploaded
-        code_id: 539
+        code_id: 706
 =======================
 governance_contract instantiated
         address: terra1xrk6v2tfjrhjz2dsfecj40ps7ayanjx970gy0j
