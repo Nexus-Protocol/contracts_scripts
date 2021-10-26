@@ -34,10 +34,7 @@ async function run(config_path: string) {
 	const config: Config = JSON.parse(readFileSync(config_path, 'utf-8'))
 	const [lcd_client, sender] = await get_lcd_config_with_wallet(config.lcd_client);
 
-	// get deployed psi_distributor_addr
-
 	const psi_distributor_deployment_result = await psi_distributor_init(lcd_client, sender);
-
 	console.log(`psi_distributor_addr: ${JSON.stringify(psi_distributor_deployment_result)}`);
 
 	const psi_distribution_response =  await send_tokens_and_distribute(
