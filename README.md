@@ -4,7 +4,7 @@
 
 `npm install`
 
-**If you want to use precompiled wasm files** - jump to [start localterra](#start-localterra)
+**If you want to use precompiled wasm artifacts** - jump to [start localterra](#start-localterra)
 
 #### Download dependency repos:
 
