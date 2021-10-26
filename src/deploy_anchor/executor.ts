@@ -7,7 +7,7 @@ interface Config {
 	lcd_client: LCDConfig,
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/deploy_anchor/configuration.json';
+const DEFAULT_CONFIG_PATH: string = 'src/deploy_anchor/lcd_client_config.json';
 
 async function run_program() {
 	const program = new Command();
