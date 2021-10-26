@@ -1,4 +1,4 @@
-import {BlockTxBroadcastResult, LCDClient, Wallet} from "@terra-money/terra.js";
+import {BlockTxBroadcastResult, getContractEvents, isTxError, LCDClient, Wallet} from "@terra-money/terra.js";
 import {
     create_contract,
     execute_contract,
@@ -134,4 +134,23 @@ export async function distribute (lcd_client: LCDClient, sender: Wallet, contrac
         }
     );
     return response;
+}
+
+export async function parse_distribution_response(result: BlockTxBroadcastResult) {
+    if (isTxError(result)) {
+        throw new Error(
+            `Error while instantiating: ${result.code} - ${result.raw_log}`
+        );
+    }
+
+    const event = result.logs[0].events.find((event) => {
+        return event.type == "from_contract";
+    });
+
+
+    let nassest_holder_rewards = event?.attributes[2].value as string;
+    let governance_rewards = event?.attributes[3].value as string;
+    let community_pool_rewards = event?.attributes[4].value as string;
+
+    return [nassest_holder_rewards, governance_rewards, community_pool_rewards];
 }

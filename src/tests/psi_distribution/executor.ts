@@ -1,11 +1,12 @@
 import {
 	psi_distributor_init,
-	send_tokens_and_distribute
+	send_tokens_and_distribute,
+	parse_distribution_response
 } from "./definition";
 import { readFileSync } from 'fs';
 import {Command, option} from 'commander';
 import {get_lcd_config_with_wallet, LCDConfig} from '../../utils';
-import {BlockTxBroadcastResult, getContractEvents} from "@terra-money/terra.js";
+import * as assert from 'assert';
 
 interface Config {
 	lcd_client: LCDConfig,
@@ -37,12 +38,24 @@ async function run(config_path: string) {
 	const psi_distributor_deployment_result = await psi_distributor_init(lcd_client, sender);
 	console.log(`psi_distributor_addr: ${JSON.stringify(psi_distributor_deployment_result)}`);
 
-	const psi_distribution_response =  await send_tokens_and_distribute(
+	const psi_distribution_response = await send_tokens_and_distribute(
 		lcd_client,
 		sender,
 		psi_distributor_deployment_result.psi_distributor_config.psi_token_addr,
 		psi_distributor_deployment_result.psi_distributor_addr,
 		1000);
+
+	if (psi_distribution_response === undefined) {
+		throw new Error(
+			`Invalid translation`
+		);
+	} else {
+		const rewards_distribution = await parse_distribution_response(psi_distribution_response);
+		assert(rewards_distribution[0] === "900");
+		assert(rewards_distribution[1] === "75");
+		assert(rewards_distribution[2] === "25");
+		console.log(`rewards_distribution: ${JSON.stringify(rewards_distribution)}`);
+	}
 	console.log(`psi_distribution_response: ${JSON.stringify(psi_distribution_response)}`);
 }
 
