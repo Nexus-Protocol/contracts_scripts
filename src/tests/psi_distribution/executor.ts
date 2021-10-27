@@ -9,7 +9,7 @@ interface Config {
 	lcd_client: LCDConfig,
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/tests/psi_distribution/configuration.json';
+const DEFAULT_CONFIG_PATH: string = 'src/tests/psi_distribution/lcd_client_config.json';
 
 async function run_program() {
 	const program = new Command();
@@ -41,7 +41,7 @@ async function run(config_path: string) {
 		psi_distributor_deployment_result,
 		0.8,
 		0.6,
-		 1000,
+		1000,
 		900,
 		75,
 		25
