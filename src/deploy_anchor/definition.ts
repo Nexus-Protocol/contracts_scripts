@@ -9,7 +9,7 @@ import {
 import { AnchorDistrConfig, AnchorInterstConfig, AnchorLiquidationConfig, AnchorMarkerConfig, AnchorOracleConfig, AnchorOverseerConfig } from './config';
 import {Cw20CodeId, TokenConfig} from './../config';
 
-const path_to_anchor_artifacts = "/Users/qdo_ln/terra/anchor/money-market-contracts/artifacts/moneymarket_";
+const path_to_anchor_artifacts = "/Users/qdo_ln/terra/nexus/contracts_scripts/wasm_artifacts/anchor/mm/moneymarket_";
 
 const anchor_market_wasm = `${path_to_anchor_artifacts}market.wasm`;
 const anchor_oracle_wasm = `${path_to_anchor_artifacts}oracle.wasm`;
