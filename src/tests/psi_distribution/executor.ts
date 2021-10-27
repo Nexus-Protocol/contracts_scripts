@@ -1,12 +1,9 @@
 import {
-	psi_distributor_init,
-	send_tokens_and_distribute,
-	parse_distribution_response
+	execute_psi_distribution_test, psi_distributor_init,
 } from "./definition";
 import { readFileSync } from 'fs';
 import {Command, option} from 'commander';
 import {get_lcd_config_with_wallet, LCDConfig} from '../../utils';
-import * as assert from 'assert';
 
 interface Config {
 	lcd_client: LCDConfig,
@@ -36,27 +33,97 @@ async function run(config_path: string) {
 	const [lcd_client, sender] = await get_lcd_config_with_wallet(config.lcd_client);
 
 	const psi_distributor_deployment_result = await psi_distributor_init(lcd_client, sender);
-	console.log(`psi_distributor_addr: ${JSON.stringify(psi_distributor_deployment_result)}`);
 
-	const psi_distribution_response = await send_tokens_and_distribute(
+	await execute_psi_distribution_test(
+		"Normal case #1",
 		lcd_client,
 		sender,
-		psi_distributor_deployment_result.psi_distributor_config.psi_token_addr,
-		psi_distributor_deployment_result.psi_distributor_addr,
-		1000);
+		psi_distributor_deployment_result,
+		0.8,
+		0.6,
+		 1000,
+		900,
+		75,
+		25
+	);
 
-	if (psi_distribution_response === undefined) {
-		throw new Error(
-			`Invalid translation`
-		);
-	} else {
-		const rewards_distribution = await parse_distribution_response(psi_distribution_response);
-		assert(rewards_distribution[0] === "900");
-		assert(rewards_distribution[1] === "75");
-		assert(rewards_distribution[2] === "25");
-		console.log(`rewards_distribution: ${JSON.stringify(rewards_distribution)}`);
-	}
-	console.log(`psi_distribution_response: ${JSON.stringify(psi_distribution_response)}`);
+	await execute_psi_distribution_test(
+		"Normal case #2",
+		lcd_client,
+		sender,
+		psi_distributor_deployment_result,
+		1,
+		0,
+		1000,
+		500,
+		375,
+		125
+	);
+
+	await execute_psi_distribution_test(
+		"Manual_ltv equals to borrow_ltv_aim",
+		lcd_client,
+		sender,
+		psi_distributor_deployment_result,
+		0.8,
+		0.8,
+		1000,
+		1000,
+		0,
+		0
+	);
+
+	await execute_psi_distribution_test(
+		"Manual_ltv greater than borrow_ltv_aim",
+		lcd_client,
+		sender,
+		psi_distributor_deployment_result,
+		0.8,
+		0.81,
+		1000,
+		1000,
+		0,
+		0
+	);
+
+	await execute_psi_distribution_test(
+		"Small amount 1",
+		lcd_client,
+		sender,
+		psi_distributor_deployment_result,
+		0.8,
+		0.6,
+		9,
+		9,
+		0,
+		0
+	);
+
+	await execute_psi_distribution_test(
+		"Small amount 2",
+		lcd_client,
+		sender,
+		psi_distributor_deployment_result,
+		0.8,
+		0.6,
+		10,
+		9,
+		1,
+		0
+	);
+
+	await execute_psi_distribution_test(
+		"Small amount 3",
+		lcd_client,
+		sender,
+		psi_distributor_deployment_result,
+		0.8,
+		0.6,
+		40,
+		36,
+		3,
+		1
+	);
 }
 
 run_program()
