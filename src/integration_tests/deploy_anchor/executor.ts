@@ -1,13 +1,13 @@
 import {anchor_init} from "./definition";
 import { readFileSync } from 'fs';
-import {Command, option} from 'commander';
-import {get_lcd_config_with_wallet, LCDConfig} from './../utils';
+import {Command} from 'commander';
+import {get_lcd_config_with_wallet, LCDConfig} from '../../utils';
 
 interface Config {
 	lcd_client: LCDConfig,
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/deploy_anchor/lcd_client_config.json';
+const DEFAULT_CONFIG_PATH: string = 'src/integration_tests/deploy_anchor/lcd_client_config.json';
 
 async function run_program() {
 	const program = new Command();

@@ -364,7 +364,7 @@ export async function get_lcd_config(lcd_config: LCDConfig): Promise<LCDClient> 
 	return lcd_client;
 }
 
-export async function  get_random_addr(){
+export async function get_random_addr(){
 	const source ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 	const seed = get_random_seed(source, 64);
 	const owner = new MnemonicKey({account: 1, index: 1, mnemonic: seed});

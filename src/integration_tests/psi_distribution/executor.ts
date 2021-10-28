@@ -2,7 +2,6 @@ import {
 	execute_psi_distribution_test, psi_distributor_init,
 } from "./definition";
 import {Command} from 'commander';
-import {LCDConfig} from '../../utils';
 import {LocalTerra, LCDClient, Wallet} from '@terra-money/terra.js';
 
 async function run_program() {
@@ -16,10 +15,7 @@ async function run_program() {
 }
 
 async function run() {
-	//TODO: move to separate function (for integration_tests only)
-	const localterra = new LocalTerra()
-	const lcd_client: LCDClient = localterra;
-	const sender: Wallet = localterra.wallets["test1"];
+	const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
 
 	const psi_distributor_deployment_result = await psi_distributor_init(lcd_client, sender);
 
@@ -113,6 +109,14 @@ async function run() {
 		3,
 		1
 	);
+}
+
+async function get_lcd_config_with_wallet_for_integration_tests_only(): Promise<[LCDClient, Wallet]> {
+	const localterra = new LocalTerra()
+	const lcd_client: LCDClient = localterra;
+	const sender: Wallet = localterra.wallets["test1"];
+
+	return [lcd_client, sender];
 }
 
 run_program()

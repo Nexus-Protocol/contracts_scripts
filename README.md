@@ -39,9 +39,9 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 
 # Usage
 
-### upload basset vault
+[start localterra](#start-localterra) before run scripts.
 
-TODO: add localterra instructions
+### upload basset vault
 
 - `npm run upload-basset-vault` - full upload cycle (governance, psi token, psi-ust swap pair, community pool, basset vault, nasset-psi swap pair)
 
@@ -83,12 +83,6 @@ TODO: add localterra instructions
 
 # Integration tests
 
-TODO: add localterra instructions
+[start localterra](#start-localterra) before run scripts.
 
-- `npm test` or `npm tst` or `npm t` - run integration tests
-
-P.S.
-- currently only psi_distribution_test done;
-TODO:
-- implement other tests;
-- add cli args to run particular test with cli;
+- `npm run integration-tests`  - run integration tests

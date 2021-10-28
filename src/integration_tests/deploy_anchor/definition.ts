@@ -4,18 +4,20 @@ import {
 	execute_contract,
 	create_contract,
 	instantiate_contract
-} from './../utils';
+} from '../../utils';
 import { AnchorDistrConfig, AnchorInterstConfig, AnchorLiquidationConfig, AnchorMarkerConfig, AnchorOracleConfig, AnchorOverseerConfig } from './config';
-import {Cw20CodeId, TokenConfig} from './../config';
+import {Cw20CodeId, TokenConfig} from '../../config';
 
-const path_to_anchor_artifacts = "/Users/qdo_ln/terra/nexus/contracts_scripts/wasm_artifacts/anchor/mm/moneymarket_";
-
-const anchor_market_wasm = `${path_to_anchor_artifacts}market.wasm`;
-const anchor_oracle_wasm = `${path_to_anchor_artifacts}oracle.wasm`;
-const anchor_liquidation_wasm = `${path_to_anchor_artifacts}liquidation.wasm`;
-const anchor_distribution_model_wasm = `${path_to_anchor_artifacts}distribution_model.wasm`;
-const anchor_interest_model_wasm = `${path_to_anchor_artifacts}interest_model.wasm`;
-const anchor_overseer_wasm = `${path_to_anchor_artifacts}overseer.wasm`;
+//=============================================================================
+const artifacts_path = "wasm_artifacts";
+const path_to_anchor_mm_artifacts = `${artifacts_path}/anchor/mm`;
+//=============================================================================
+const anchor_market_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_market.wasm`;
+const anchor_oracle_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_oracle.wasm`;
+const anchor_liquidation_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_liquidation.wasm`;
+const anchor_distribution_model_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_distribution_model.wasm`;
+const anchor_interest_model_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_interest_model.wasm`;
+const anchor_overseer_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_overseer.wasm`;
 
 //STEPS:
 // 1. deploy cw20 token

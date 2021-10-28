@@ -73,7 +73,10 @@ export async function psi_distributor_init (
     let nasset_token_rewards_mock_addr = await create_contract(
         lcd_client,
         sender,
-        "nasset_tokens_reward_mock", nasset_token_rewards_mock_wasm, emptyJson());
+        "nasset_tokens_reward_mock",
+        nasset_token_rewards_mock_wasm,
+        emptyJson()
+    );
 
     // deploy psi_distributor
     let psi_distributor_code_id = await store_contract(lcd_client, sender, psi_distributor_wasm);
