@@ -31,12 +31,13 @@ export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm
 	}
 }
 
-async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object): Promise<BlockTxBroadcastResult> {
+async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds?: Coin[]): Promise<BlockTxBroadcastResult> {
 	const messages: Msg[] = [new MsgInstantiateContract(
 		sender.key.accAddress,
 		 	admin,
 			code_id,
-			init_msg
+			init_msg,
+			init_funds
 	)];
 
 	while (true) {
@@ -49,8 +50,8 @@ async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, a
 	}
 }
 
-export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object): Promise<string> {
-	let result = await instantiate_contract_raw(lcd_client, sender, admin, code_id, init_msg);
+export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds?: Coin[]): Promise<string> {
+	let result = await instantiate_contract_raw(lcd_client, sender, admin, code_id, init_msg, init_funds);
 	return getContractAddress(result)
 }
 
@@ -361,4 +362,19 @@ export async function get_lcd_config(lcd_config: LCDConfig): Promise<LCDClient> 
 	}
 
 	return lcd_client;
+}
+
+export async function  get_random_addr(){
+	const source ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	const seed = get_random_seed(source, 64);
+	const owner = new MnemonicKey({account: 1, index: 1, mnemonic: seed});
+	return owner.accAddress;
+}
+
+function get_random_seed(source: string, seed_length: number){
+	let result = '';
+	for (let i = 0; i < seed_length; i++) {
+		result = result.concat(source.charAt(Math.random() * source.length));
+	}
+	return result;
 }

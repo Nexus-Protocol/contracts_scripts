@@ -41,6 +41,8 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 
 ### upload basset vault
 
+TODO: add localterra instructions
+
 - `npm run upload-basset-vault` - full upload cycle (governance, psi token, psi-ust swap pair, community pool, basset vault, nasset-psi swap pair)
 
 ### airdrop
@@ -78,3 +80,15 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 ### claim lp rewards for psi-nasset pool
 
 - `npm run claim-lp-rewards` - run cycle that claim nAsset holding rewards for PSI-nAsset liquidity pool with some delay
+
+# Integration tests
+
+TODO: add localterra instructions
+
+- `npm test` or `npm tst` or `npm t` - run integration tests
+
+P.S.
+- currently only psi_distribution_test done;
+TODO:
+- implement other tests;
+- add cli args to run particular test with cli;
