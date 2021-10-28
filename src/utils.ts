@@ -348,6 +348,14 @@ export async function get_lcd_config_with_wallet(lcd_config: LCDConfig): Promise
 	return [lcd_client, sender];
 }
 
+export async function get_lcd_config_with_wallet_for_integration_tests_only(): Promise<[LCDClient, Wallet]> {
+	const localterra = new LocalTerra()
+	const lcd_client: LCDClient = localterra;
+	const sender: Wallet = localterra.wallets["test1"];
+
+	return [lcd_client, sender];
+}
+
 export async function get_lcd_config(lcd_config: LCDConfig): Promise<LCDClient> {
 	let lcd_client: LCDClient;
 	if (lcd_config.localterra) {
