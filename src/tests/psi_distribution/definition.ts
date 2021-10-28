@@ -2,7 +2,7 @@ import {BlockTxBroadcastResult, isTxError, LCDClient, Wallet} from "@terra-money
 import {
     create_contract,
     execute_contract,
-    get_random_addr_mock,
+    get_random_addr,
     instantiate_contract,
     store_contract
 } from "../../utils";
@@ -67,7 +67,7 @@ export async function psi_distributor_init (
     );
     console.log(`=======================`);
 
-    let community_pool_random_addr_mock = await get_random_addr_mock(lcd_client, sender, cw20_code_id);
+    let community_pool_random_addr_mock = await get_random_addr();
 
     let nasset_token_rewards_mock_addr = await create_contract(
         lcd_client,

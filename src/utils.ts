@@ -365,15 +365,17 @@ export async function get_lcd_config(lcd_config: LCDConfig): Promise<LCDClient> 
 	return lcd_client;
 }
 
-export async function get_random_addr_mock(lcd_client: LCDClient, sender: Wallet, code_id: number): Promise<string> {
-	let init_msg = {
-		name: "Random contract address mock",
-		symbol: "mock",
-		decimals: 6,
-		initial_balances: [],
-	};
+export async function  get_random_addr(){
+	const source ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	const seed = get_random_seed(source, 64);
+	const owner = new MnemonicKey({account: 1, index: 1, mnemonic: seed});
+	return owner.accAddress;
+}
 
-	let mock_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
-	console.log(`Random mock addr instantiated\n\taddress: ${mock_addr}`);
-	return mock_addr;
+function get_random_seed(source: string, seed_length: number){
+	let result = '';
+	for (let i = 0; i < seed_length; i++) {
+		result = result.concat(source.charAt(Math.random() * source.length));
+	}
+	return result;
 }
