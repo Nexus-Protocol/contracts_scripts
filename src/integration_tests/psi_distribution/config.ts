@@ -65,6 +65,13 @@ export function BassetVaultStrategyMockConfig( borrow_ltv_aim: Decimal256): Bass
 
 //========================================================================================
 
-
 export function emptyJson(
 ) {return {}}
+
+//========================================================================================
+
+export interface PsiDistributionInfo{
+    nasset_holder_rewards: string,
+    governance_rewards: string,
+    community_pool_rewards: string,
+}

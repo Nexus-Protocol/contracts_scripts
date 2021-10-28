@@ -348,14 +348,6 @@ export async function get_lcd_config_with_wallet(lcd_config: LCDConfig): Promise
 	return [lcd_client, sender];
 }
 
-export async function get_lcd_config_with_wallet_for_integration_tests_only(): Promise<[LCDClient, Wallet]> {
-	const localterra = new LocalTerra()
-	const lcd_client: LCDClient = localterra;
-	const sender: Wallet = localterra.wallets["test1"];
-
-	return [lcd_client, sender];
-}
-
 export async function get_lcd_config(lcd_config: LCDConfig): Promise<LCDClient> {
 	let lcd_client: LCDClient;
 	if (lcd_config.localterra) {
@@ -370,19 +362,4 @@ export async function get_lcd_config(lcd_config: LCDConfig): Promise<LCDClient> 
 	}
 
 	return lcd_client;
-}
-
-export async function get_random_addr(){
-	const source ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	const seed = get_random_seed(source, 64);
-	const owner = new MnemonicKey({account: 1, index: 1, mnemonic: seed});
-	return owner.accAddress;
-}
-
-function get_random_seed(source: string, seed_length: number){
-	let result = '';
-	for (let i = 0; i < seed_length; i++) {
-		result = result.concat(source.charAt(Math.random() * source.length));
-	}
-	return result;
 }

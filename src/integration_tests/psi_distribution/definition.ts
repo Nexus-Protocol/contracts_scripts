@@ -1,19 +1,20 @@
-import {BlockTxBroadcastResult, isTxError, LCDClient, Wallet} from "@terra-money/terra.js";
+import {BlockTxBroadcastResult, getContractEvents, isTxError, LCDClient, Wallet} from "@terra-money/terra.js";
 import {
     create_contract,
     execute_contract,
-    get_random_addr,
     instantiate_contract,
     store_contract
 } from "../../utils";
 import {
     BassetVaultStrategyMockConfig,
     emptyJson,
+    PsiDistributionInfo,
     PsiDistributorConfig,
     PsiDistributorDeploymentResult,
 } from "./config";
 import {Cw20CodeId, TokenConfig} from "../../config";
 import * as assert from "assert";
+import {get_random_addr} from "../utils";
 
 //=============================================================================
 const artifacts_path = "wasm_artifacts";
@@ -155,23 +156,39 @@ async function distribute (lcd_client: LCDClient, sender: Wallet, contract_addr:
     return response;
 }
 
-async function parse_distribution_response(result: BlockTxBroadcastResult) {
+async function parse_distribution_response(result: BlockTxBroadcastResult): Promise<PsiDistributionInfo> {
+
     if (isTxError(result)) {
         throw new Error(
             `Error while instantiating: ${result.code} - ${result.raw_log}`
         );
     }
 
-    const event = result.logs[0].events.find((event) => {
-        return event.type == "from_contract";
-    });
+    let contract_events = getContractEvents(result);
 
+    let psi_distribution_info: PsiDistributionInfo = {
+        nasset_holder_rewards: '',
+        governance_rewards: '',
+        community_pool_rewards: '',
+    };
 
-    let nasset_holder_rewards = event?.attributes[2].value as string;
-    let governance_rewards = event?.attributes[3].value as string;
-    let community_pool_rewards = event?.attributes[4].value as string;
+    for (let contract_event of contract_events){
+        let nasset_holder_rewards = contract_event["nasset_holder_rewards"];
+        if(nasset_holder_rewards !== undefined){
+            psi_distribution_info.nasset_holder_rewards = nasset_holder_rewards;
+        }
 
-    return [nasset_holder_rewards, governance_rewards, community_pool_rewards];
+        let governance_rewards = contract_event["governance_rewards"];
+        if(governance_rewards !== undefined){
+            psi_distribution_info.governance_rewards = governance_rewards;
+        }
+
+        let community_pool_rewards = contract_event["community_pool_rewards"];
+        if(community_pool_rewards !== undefined){
+            psi_distribution_info.community_pool_rewards = community_pool_rewards;
+        }
+    }
+    return psi_distribution_info;
 }
 
 export async function execute_psi_distribution_test(
@@ -202,10 +219,10 @@ export async function execute_psi_distribution_test(
             `Invalid translation`
         );
     } else {
-        const distribution_results = await parse_distribution_response(psi_distributor_response);
-        assert(distribution_results[0] === expect_nassest_holder_rewards.toString());
-        assert( distribution_results[1] === expect_governance_rewards.toString());
-        assert(distribution_results[2] === expect_community_pool_rewards.toString());
+        const psi_distribution_info = await parse_distribution_response(psi_distributor_response);
+        assert(psi_distribution_info.nasset_holder_rewards === expect_nassest_holder_rewards.toString());
+        assert( psi_distribution_info.governance_rewards === expect_governance_rewards.toString());
+        assert(psi_distribution_info.community_pool_rewards === expect_community_pool_rewards.toString());
         console.log(`psi_distribution test: "${test_name}" passed!`);
     }
 }

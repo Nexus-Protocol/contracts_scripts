@@ -2,7 +2,7 @@ import {
 	execute_psi_distribution_test, psi_distributor_init,
 } from "./definition";
 import {Command} from 'commander';
-import {get_lcd_config_with_wallet_for_integration_tests_only} from "../../utils";
+import {get_lcd_config_with_wallet_for_integration_tests_only} from "../utils";
 
 async function run_program() {
 	const program = new Command();
