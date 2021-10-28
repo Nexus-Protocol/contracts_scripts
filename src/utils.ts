@@ -64,8 +64,8 @@ export async function execute_contract(lcd_client: LCDClient, sender: Wallet, co
 	return result
 }
 
-export async function send_message(lcd_client: LCDClient, sender: Wallet, messages: Msg[]) {
-	let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
+export async function send_message(lcd_client: LCDClient, sender: Wallet, messages: Msg[], tax?: Coin[]) {
+	let result = await calc_fee_and_send_tx(lcd_client, sender, messages, tax);
 	return result
 }
 
@@ -192,9 +192,9 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, c
 // ============================================================
 // ============================================================
 
-export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[]): Promise<BlockTxBroadcastResult | undefined> {
+export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[], tax?: Coin[]): Promise<BlockTxBroadcastResult | undefined> {
 	try {
-		const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages);
+		const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);
 		if (estimated_tx_fee === undefined) {
 			return undefined;
 		}
@@ -213,13 +213,23 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 }
 
 
-async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[]): Promise<StdFee | undefined> {
+async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[], tax?: Coin[]): Promise<StdFee | undefined> {
 	try {
 		const estimated_fee_res = await lcd_client.tx.estimateFee(sender.key.accAddress, msgs, {
 			gasPrices: new Coins([new Coin("uusd", 0.15)]),
 			gasAdjustment: 1.2,
 			feeDenoms: ["uusd"],
 		});
+
+		if (tax !== undefined) {
+			let fee_coins: Coins = estimated_fee_res.amount;
+			for (const tax_coin of tax) {
+				fee_coins.add(tax_coin);
+			}
+			const fee_with_tax = new StdFee(estimated_fee_res.gas, fee_coins);
+			return fee_with_tax;
+		}
+
 		return estimated_fee_res;
 	} catch (err) {
 		console.error(`get_tax_rate return err: ${err}`)
