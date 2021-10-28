@@ -9,7 +9,7 @@ interface Config {
 	lcd_client: LCDConfig,
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/tests/psi_distribution/lcd_client_config.json';
+const DEFAULT_CONFIG_PATH: string = 'src/integration_tests/psi_distribution/lcd_client_config.json';
 
 async function run_program() {
 	const program = new Command();

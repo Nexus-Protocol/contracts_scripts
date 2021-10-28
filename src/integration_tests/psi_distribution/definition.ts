@@ -15,11 +15,12 @@ import {
 import {Cw20CodeId, TokenConfig} from "../../config";
 import * as assert from "assert";
 
-const path_to_basset_vault_contracts = "/Users/qdo_ln/terra/nexus/contracts_scripts/wasm_artifacts/nexus/basset_vaults";
-const path_to_mocks = "/Users/qdo_ln/terra/nexus/contracts_scripts/wasm_artifacts/nexus/mocks";
-
-const psi_distributor_wasm = `${path_to_basset_vault_contracts}/basset_vault_psi_distributor.wasm`;
-
+//=============================================================================
+const artifacts_path = "wasm_artifacts";
+const path_to_basset_vault_artifacts = `${artifacts_path}/nexus/basset_vaults`;
+const path_to_mocks = `${artifacts_path}/nexus/mocks`;
+//=============================================================================
+const psi_distributor_wasm = `${path_to_basset_vault_artifacts}/basset_vault_psi_distributor.wasm`;
 const nasset_token_rewards_mock_wasm = `${path_to_mocks}/basset_vault_nasset_rewards_mock_update_global_index.wasm`;
 const mock_ltv_aim_wasm = `${path_to_mocks}/basset_vault_strategy_mock_ltv_aim.wasm`;
 

@@ -13,7 +13,7 @@
 		"honest-work": "ts-node src/basset_honest_work/executor.ts",
 		"claim-lp-rewards": "ts-node src/claim_lp_rewards/executor.ts",
 		"deploy-anchor": "ts-node src/deploy_anchor/executor.ts",
-		"psi-distribution-test": "ts-node src/tests/psi_distribution/executor.ts"
+		"psi-distribution-test": "ts-node src/integration_tests/psi_distribution/executor.ts"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.11",
