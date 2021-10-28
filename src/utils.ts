@@ -296,9 +296,18 @@ export interface AwsSecrets {
 
 export interface LCDConfig {
 	localterra: boolean,
-	url: string,
-	chain_id: string,
+	url?: string,
+	chain_id?: string,
 	aws_secrets?: AwsSecrets
+}
+
+function check_non_localterra(lcd_config: LCDConfig) {
+	if (!lcd_config.localterra) {
+		if (lcd_config.url === undefined || lcd_config.chain_id === undefined) {
+			console.error(`wrong LCDConfig: 'url' or/and 'chain_id' is not set`);
+			process.exit(1);
+		}
+	}
 }
 
 export async function get_lcd_config_with_wallet(lcd_config: LCDConfig): Promise<[LCDClient, Wallet]> {
@@ -309,9 +318,10 @@ export async function get_lcd_config_with_wallet(lcd_config: LCDConfig): Promise
 		lcd_client = localterra;
 		sender = localterra.wallets["test1"];
 	} else if (lcd_config.aws_secrets !== undefined) {
+		check_non_localterra(lcd_config);
 		lcd_client = new LCDClient({
-			URL: lcd_config.url,
-			chainID: lcd_config.chain_id
+			URL: lcd_config.url!,
+			chainID: lcd_config.chain_id!
 		});
 
 		const seed = await get_seed_from_aws_secrets(lcd_config.aws_secrets.region, lcd_config.aws_secrets.secret_name);
@@ -324,9 +334,10 @@ export async function get_lcd_config_with_wallet(lcd_config: LCDConfig): Promise
 		const owner = new MnemonicKey({mnemonic: seed});
 		sender = new Wallet(lcd_client, owner);
 	} else {
+		check_non_localterra(lcd_config);
 		lcd_client = new LCDClient({
-			URL: lcd_config.url,
-			chainID: lcd_config.chain_id
+			URL: lcd_config.url!,
+			chainID: lcd_config.chain_id!
 		});
 		const seed = await prompt_for_seed();
 		const owner = new MnemonicKey({mnemonic: seed});
@@ -342,9 +353,10 @@ export async function get_lcd_config(lcd_config: LCDConfig): Promise<LCDClient> 
 		const localterra = new LocalTerra()
 		lcd_client = localterra;
 	} else {
+		check_non_localterra(lcd_config);
 		lcd_client = new LCDClient({
-			URL: lcd_config.url,
-			chainID: lcd_config.chain_id
+			URL: lcd_config.url!,
+			chainID: lcd_config.chain_id!
 		});
 	}
 
