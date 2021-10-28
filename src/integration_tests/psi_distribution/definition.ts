@@ -105,7 +105,9 @@ async function set_borrow_ltv_aim(lcd_client: LCDClient, sender: Wallet, strateg
     await execute_contract(lcd_client, sender, strategy_mock_ltv_aim_addr, {
         governance: {
             governance_msg: {
-                update_config: {borrow_ltv_aim: borrow_ltv_aim.toString()}
+                update_config: {
+                    borrow_ltv_aim: borrow_ltv_aim.toString(),
+                }
             }
         }
     });
@@ -121,11 +123,6 @@ async function set_manual_ltv(lcd_client: LCDClient, sender: Wallet, psi_distrib
             }
         }
     });
-}
-
-async function query_config(lcd_client: LCDClient, contract_addr: string) {
-    let config_response = await lcd_client.wasm.contractQuery(contract_addr, {config: {}});
-    return JSON.stringify( config_response );
 }
 
 async function send_tokens_and_distribute(lcd_client: LCDClient, sender: Wallet, token_contract: string, psi_distributor_addr: string, amount: number) : Promise<BlockTxBroadcastResult | undefined> {
@@ -167,11 +164,11 @@ async function parse_distribution_response(result: BlockTxBroadcastResult) {
     });
 
 
-    let nassest_holder_rewards = event?.attributes[2].value as string;
+    let nasset_holder_rewards = event?.attributes[2].value as string;
     let governance_rewards = event?.attributes[3].value as string;
     let community_pool_rewards = event?.attributes[4].value as string;
 
-    return [nassest_holder_rewards, governance_rewards, community_pool_rewards];
+    return [nasset_holder_rewards, governance_rewards, community_pool_rewards];
 }
 
 export async function execute_psi_distribution_test(

@@ -1,12 +1,12 @@
 # Test plan
 ## Test 1: [Psi distribution](psi_distribution)
-1. Set up
+1. Setup
    1. Deploy psi_token.
    2. Deploy mock `basset_vault_strategy_mock_aim_ltv`
       1. API similar to `basset_vault_strategy`;
       2. mock stores single `aim_ltv` field in config; 
-      3. one extra handled message : 
-      ```rust
+      3. handled message : 
+      ```
           governance: {
                governance_msg: {
                    update_config: {borrow_ltv_aim: borrow_ltv_aim.toString()}
@@ -22,4 +22,4 @@
    3. Mint some psi_tokens for `psi_distributor`;
    4. Send `PsiDistributorAnyoneMsg::DistributeRewards {}`.
    5. Read response and check rewards recipients and values (all possible cases).
-3. absence of assert error means that tests passed.
+3. Absence of assert errors means that tests passed.

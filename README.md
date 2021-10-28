@@ -78,3 +78,13 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 ### claim lp rewards for psi-nasset pool
 
 - `npm run claim-lp-rewards` - run cycle that claim nAsset holding rewards for PSI-nAsset liquidity pool with some delay
+
+# Integration tests
+
+- `npm test` or `npm tst` or `npm t` - run integration tests
+
+P.S.
+- currently only psi_distribution_test done;
+TODO:
+- implement other tests;
+- add cli args to run particular test with cli;
