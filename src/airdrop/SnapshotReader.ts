@@ -50,15 +50,13 @@ class SnapshotDirReader {
 
 		let result = new Map();
 		const files_in_dir = readdirSync(this.DirPath);
+		const total_files = files_in_dir.length;
 		for (const file of files_in_dir) {
 			const full_filepath = `${this.DirPath}/${file}`;
 			if (lstatSync(full_filepath).isFile()) {
 				const snapshot_reader = new SnapshotFileReader(full_filepath, this.MinAncStaked);
 				const stakers = snapshot_reader.read_stakers();
-				if (result.size === 0) {
-					result = stakers;
-				}
-				result = merge_maps(result, stakers);
+				result = merge_maps(result, stakers, total_files);
 			}
 		}
 
@@ -68,15 +66,16 @@ class SnapshotDirReader {
 
 export {SnapshotFileReader, SnapshotDirReader};
 
-function merge_maps(map1: Map<string, Decimal>, map2: Map<string, Decimal>): Map<string, Decimal> {
+function merge_maps(map1: Map<string, Decimal>, map2: Map<string, Decimal>, total_number_of_files: number): Map<string, Decimal> {
 	let result = new Map(map1);
 
 	for (const [key2, value2] of map2) {
-		let value1 = result.get(key2);
+		const value1 = result.get(key2);
+		const value_to_add = value2.div(total_number_of_files);
 		if (value1 !== undefined) {
-			result.set(key2, value2.add(value1).div(2));
+			result.set(key2, value_to_add.add(value1));
 		} else {
-			result.set(key2, value2.div(2));
+			result.set(key2, value_to_add);
 		}
 	}
 
