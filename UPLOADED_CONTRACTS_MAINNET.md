@@ -39,10 +39,56 @@ airdrop_contract instantiated
         address: terra1992lljnteewpz0g398geufylawcmmvgh8l8v96
 =======================
 staking_contract uploaded
-        code_id: 543
+        code_id: 819
 =======================
 staking_contract instantiated
         Psi-UST staking address: terra12kzewegufqprmzl20nhsuwjjq6xu8t8ppzt30a
-        Psi-nLuna staking address: later
-        Psi-nETH staking address: later
+	Psi-nLuna staking address: terra1hs4ev0ghwn4wr888jwm56eztfpau6rjcd8mczc
+        Psi-nETH staking address: terra1lws09x0slx892ux526d6atwwgdxnjg58uan8ph
+=======================
+nasset_token uploaded
+        code_id: 782
+=======================
+nasset_token_config_holder uploaded
+        code_id: 783
+=======================
+nasset_token_rewards uploaded
+        code_id: 785
+=======================
+psi_distributor uploaded
+        code_id: 786
+=======================
+basset_vault_strategy uploaded
+        code_id: 787
+basset_vault uploaded
+        code_id: 789
+=======================
+basset_vault_strategy_for_bluna instantiated
+        address: terra1fxc9epfhest8sndrayfkxc9y6arva4sqtp7drg
+=======================
+basset_vault_for_bluna instantiated
+        address: terra1cda4adzngjzcn8quvfu2229s8tedl5t306352x
+        nasset_token address: terra10f2mt82kjnkxqj2gepgwl637u2w4ue2z5nhz5j
+        nasset_token_config_holder address: terra1rsupnpjmnjj93a8s7twgmutvknuvzvktcd32n0
+        nasset_token_rewards address: terra1hjv3quqsrw3jy7pulgutj0tgxrcrnw2zs2j0k7
+        psi_distributor address: terra1z6qyzj0t8ryrefhys43plpu8le7wlj8h59esxx
+=======================
+Psi-nLuna pair contract instantiated
+        address: terra1zvn8z6y8u2ndwvsjhtpsjsghk6pa6ugwzxp6vx
+        lp token address: terra1tuw46dwfvahpcwf3ulempzsn9a0vhazut87zec
+=======================
+basset_vault_strategy_for_beth instantiated
+        address: terra1h3y2mk0dwfy72fkwcm8h62y6uyy4k27m2m68kt
+=======================
+basset_vault_for_beth instantiated
+        address: terra1tfrecwlvzcv9h697q3g0d08vd53ssu5w4war4n
+        nasset_token address: terra178v546c407pdnx5rer3hu8s2c0fc924k74ymnn
+        nasset_token_config_holder address: terra1v58xln8ry8lx4pdt2lzpw57grksewtgqehuvah
+        nasset_token_rewards address: terra1fhqsu40s0lk3p308mcakzjecj6ts6j2guepfr4
+        psi_distributor address: terra1f3nfuq7wj7mx3dlxqgtyh0w395g0cgxx9q44cx
+=======================
+Psi-nETH pair contract instantiated
+        address: terra14zhkur7l7ut7tx6kvj28fp5q982lrqns59mnp3
+        lp token address: terra1y8kxhfg22px5er32ctsgjvayaj8q36tr590qtp
+=======================
 ```
