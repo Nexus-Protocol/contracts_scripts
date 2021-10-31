@@ -5,6 +5,7 @@ import {get_lcd_config_with_wallet, LCDConfig} from './../utils';
 
 interface Config {
 	basset_vault_addr: string,
+	ms_sleep_between_checks: number,
 	lcd_client: LCDConfig
 }
 
@@ -31,7 +32,7 @@ async function run(config_path: string) {
 	const config: Config = JSON.parse(readFileSync(config_path, 'utf-8'))
 	const [lcd_client, sender] = await get_lcd_config_with_wallet(config.lcd_client);
 
-	await start_rebalance_loop(lcd_client, sender, config.basset_vault_addr);
+	await start_rebalance_loop(lcd_client, sender, config.basset_vault_addr, config.ms_sleep_between_checks);
 }
 
 run_program()

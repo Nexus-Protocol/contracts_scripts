@@ -90,7 +90,7 @@ export async function query_rebalance(lcd_client: LCDClient, basset_vault_addr: 
 	return result;
 }
 
-export async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_vault_addr: string): Promise<BlockTxBroadcastResult> {
+export async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_vault_addr: string): Promise<BlockTxBroadcastResult | undefined> {
 	const rebalance_msg = {
 		anyone: {
 			anyone_msg: {
@@ -99,34 +99,35 @@ export async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_va
 		}
 	};
 
-	while (true) {
-		let result = await execute_contract(lcd_client, sender, basset_vault_addr, rebalance_msg);
-		if (result !== undefined && isTxSuccess(result)) {
-			return result;
-		} else {
-			await sleep(1000);
-		}
-	}
+	let result = await execute_contract(lcd_client, sender, basset_vault_addr, rebalance_msg);
+	return result;
 }
 
-export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet, basset_vault_addr: string) {
+export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet, basset_vault_addr: string, ms_sleep_between_checks: number) {
 	let price_printer: number = 0;
 	while (true) {
 		const query_rebalance_resp = await query_rebalance(lcd_client, basset_vault_addr);
 		if (query_rebalance_resp.rabalance_needed()) {
 			console.log(`${get_date_str()} :: rebalance needed: ${query_rebalance_resp.to_string()}`)
 			const rebalance_response = await rebalance(lcd_client, sender, basset_vault_addr);
-			console.log(`${get_date_str()} :: Rebalance Successfull`);
-			const contract_events = getContractEvents(rebalance_response);
-			for (let contract_event of contract_events) {
-				if (contract_event.contract_address === basset_vault_addr) {
-					Object.keys(contract_event).forEach(key => {
-						console.log(`\t[${key}]: ${contract_event[key]}`)
-					})
+			if (rebalance_response === undefined) {
+				console.log(`${get_date_str()} :: send message return undefined`);
+				await sleep(7000);
+			} else if (isTxSuccess(rebalance_response)) {
+				console.log(`${get_date_str()} :: Rebalance Successfull`);
+				const contract_events = getContractEvents(rebalance_response);
+				for (let contract_event of contract_events) {
+					if (contract_event.contract_address === basset_vault_addr) {
+						Object.keys(contract_event).forEach(key => {
+							console.log(`\t[${key}]: ${contract_event[key]}`)
+						})
+					}
 				}
+				console.log(`=======================`);
+				await sleep(7000);
+			} else {
+				await sleep(7000);
 			}
-			console.log(`=======================`);
-			await sleep(3000);
 		} else {
 			if (price_printer % 1000 === 0) {
 				console.log(`${get_date_str()} :: rebalance not needed`);
@@ -135,7 +136,7 @@ export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet
 				price_printer += 1;
 			}
 
-			await sleep(200);
+			await sleep(ms_sleep_between_checks);
 		}
 	}
 }
