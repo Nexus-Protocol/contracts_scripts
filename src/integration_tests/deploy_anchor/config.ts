@@ -1,4 +1,4 @@
-import { Wallet, Coin } from "@terra-money/terra.js"
+import {Wallet} from "@terra-money/terra.js"
 
 export type Uint256 = string;
 export type Decimal256 = string;
@@ -155,20 +155,20 @@ export function AnchorOverseerConfig(
 
 // ============================================================
 
-export interface AnchorInterstConfig {
+export interface AnchorInterestConfig {
     base_rate: Decimal256,
     interest_multiplier: Decimal256,
     owner: Addr,
 }
 
-export function AnchorInterstConfig(
+export function AnchorInterestConfig(
     wallet: Wallet,
-    ): AnchorInterstConfig{
+): AnchorInterestConfig {
     return {
         owner: wallet.key.accAddress,
         base_rate: '0.000000004076272770',
         interest_multiplier: '0.000000085601728176',
-	}
+    }
 }
 
 // ============================================================
@@ -187,13 +187,31 @@ export function RegisterContractsConfig(
     distribution_model: Addr,
     collector_contract: Addr,
     distributor_contract: Addr,
-    ): RegisterContractsConfig{
+): RegisterContractsConfig {
     return {
         overseer_contract: overseer_contract,
         interest_model: interest_model,
         distribution_model: distribution_model,
         collector_contract: collector_contract,
         distributor_contract: distributor_contract,
-	}
+    }
 }
 
+// ============================================================
+export interface AnchorMarketInfo {
+    contract_addr: Addr,
+    overseer_addr: Addr,
+    anchor_token_addr: Addr,
+}
+
+export function AnchorMarketInfo(
+    contract_addr: Addr,
+    overseer_addr: Addr,
+    anchor_token_addr: Addr,
+): AnchorMarketInfo {
+    return {
+        contract_addr: contract_addr,
+        overseer_addr: overseer_addr,
+        anchor_token_addr: anchor_token_addr,
+    }
+}
