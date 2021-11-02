@@ -1,24 +1,24 @@
-import {Coin, LCDClient, Wallet} from '@terra-money/terra.js';
+import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {
-	TokenConfig,
-	GovernanceConfig,
+	BassetVaultConfigForbEth,
+	BassetVaultConfigForbLuna,
+	BassetVaultStrategyConfigForbEth,
+	BassetVaultStrategyConfigForbLuna,
+	CommunityPoolConfig,
 	Cw20CodeId,
+	GovernanceConfig,
 	init_terraswap_factory,
 	PSiTokensOwner,
-	CommunityPoolConfig,
-	BassetVaultStrategyConfigForbLuna,
-	BassetVaultStrategyConfigForbEth,
-	BassetVaultConfigForbEth,
-	BassetVaultConfigForbLuna
+	TokenConfig
 } from './../config';
 import {
-	store_contract,
-	instantiate_contract,
-	execute_contract,
 	create_contract,
+	create_token_to_token_terraswap_pair,
 	create_usd_to_token_terraswap_pair,
+	execute_contract,
 	init_basset_vault,
-	create_token_to_token_terraswap_pair
+	instantiate_contract,
+	store_contract
 } from './../utils';
 import {AnchorMarketInfo} from "../integration_tests/deploy_anchor/config";
 
@@ -144,8 +144,10 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 
 		if (anchor_market_info !== null && anchor_market_info !== undefined) {
 			basset_vault_config_for_bluna.anchor_addr = anchor_market_info.anchor_token_addr;
+			basset_vault_config_for_bluna.aterra_addr = anchor_market_info.aterra_token_addr;
 			basset_vault_config_for_bluna.a_market_addr = anchor_market_info.contract_addr;
 			basset_vault_config_for_bluna.a_overseer_addr = anchor_market_info.overseer_addr;
+			basset_vault_config_for_bluna.anc_stable_swap_addr = anchor_market_info.anc_stable_swap_addr;
 		}
 
 		let basset_vault_info_for_bluna = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_bluna);
@@ -170,8 +172,10 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 
 		if (anchor_market_info !== null && anchor_market_info !== undefined) {
 			basset_vault_config_for_beth.anchor_addr = anchor_market_info.anchor_token_addr;
+			basset_vault_config_for_beth.aterra_addr = anchor_market_info.aterra_token_addr;
 			basset_vault_config_for_beth.a_market_addr = anchor_market_info.contract_addr;
 			basset_vault_config_for_beth.a_overseer_addr = anchor_market_info.overseer_addr;
+			basset_vault_config_for_beth.anc_stable_swap_addr = anchor_market_info.anc_stable_swap_addr;
 		}
 
 		let basset_vault_info_for_beth = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_beth);

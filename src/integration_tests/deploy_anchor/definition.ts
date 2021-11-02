@@ -1,5 +1,11 @@
 import {Coin, LCDClient, Wallet} from '@terra-money/terra.js';
-import {create_contract, execute_contract, instantiate_contract, store_contract} from '../../utils';
+import {
+	create_contract,
+	create_usd_to_token_terraswap_pair,
+	execute_contract,
+	instantiate_contract,
+	store_contract
+} from '../../utils';
 import {
 	AnchorDistrConfig,
 	AnchorInterestConfig,
@@ -9,7 +15,7 @@ import {
 	AnchorOracleConfig,
 	AnchorOverseerConfig
 } from './config';
-import {Cw20CodeId, TokenConfig} from '../../config';
+import {Cw20CodeId, init_terraswap_factory, TokenConfig} from '../../config';
 
 //=============================================================================
 const artifacts_path = "wasm_artifacts";
@@ -23,7 +29,10 @@ const anchor_interest_model_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_i
 const anchor_overseer_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_overseer.wasm`;
 
 //STEPS:
-// 1. deploy cw20 token
+// 1. deploy cw20 tokens
+// 1.1 store cw20 contract
+// 1.2 instantiate ANC_token
+// 1.3 instantiate aterra_token
 // 2. deploy Market
 // 3. deploy InterestModel
 // 4. deploy Oracle
@@ -32,10 +41,22 @@ const anchor_overseer_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_oversee
 // 7. deploy Overseer
 // 8. deploy Interest model
 // 9. register all contracts in Market
+// 10. deploy acn_stable_swap
+// TODO: 11. deploy anchor_custody_contract for bLuna (reward_contract = bAsset_vault_contract will be set after its instantiation)
+// 11.0 Store anchor_basset_hub
+// 11.1 Instantiate anchor_bAsset_hub (bLuna)
+// 11.2 Deploy anchor_bAsset_reward (bLuna)
+// 11.3 Deploy anchor_bAsset_token (bLuna)
+// 11.4 Deploy moneymarket_custody_bluna
+// TODO: 12. deploy anchor_custody_contract for bEth (reward_contract = bAsset_vault_contract will be set after its instantiation)
+// 12.0 Check that step 11.0 done
+// 12.1 Instantiate anchor_bAsset_hub (bEth)
+// 12.2 Deploy anchor_bEth_rewards
+// 12.3 Deploy anchor_bEth_token
+// 12.4 Deploy moneymarket_custody_bEth
 
-export async function init_anc_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
+export async function init_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
 	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
-	console.log(`anc_token instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
 }
 
@@ -46,18 +67,31 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	console.log(`=======================`);
 
 	let anchor_token_config = {
+		name: "Anchor governance token",
+		symbol: "ANC",
+		decimals: 6,
+		initial_balances: [],
+	};
+
+	let anchor_token_addr = await init_token(lcd_client, sender, cw20_code_id, anchor_token_config);
+	console.log(`anchor_token instantiated\n\taddress: ${anchor_token_addr}`);
+	console.log(`=======================`);
+
+	let aterra_token_config = {
 		name: "Anchor Terra USD",
 		symbol: "aUST",
 		decimals: 6,
 		initial_balances: [],
 	};
-	let anc_token_addr = await init_anc_token(lcd_client, sender, cw20_code_id, anchor_token_config);
+
+	let aterra_token_addr = await init_token(lcd_client, sender, cw20_code_id, aterra_token_config);
+	console.log(`aterra_token instantiated\n\taddress: ${aterra_token_addr}`);
 	console.log(`=======================`);
 
 	console.log(`Instantiating Anchor contracts...\n\t`);
 
 	//instantiate Market
-	let anchor_market_code_id = await store_contract(lcd_client, sender, anchor_market_wasm );
+	let anchor_market_code_id = await store_contract(lcd_client, sender, anchor_market_wasm);
 	console.log(`anchor_market uploaded\n\tcode_id: ${anchor_market_code_id}`);
 	let anchor_market_config = AnchorMarkerConfig(sender, cw20_code_id);
 
@@ -71,6 +105,7 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	);
 	console.log(`anchor_market instantiated\n\taddress: ${anchor_market_addr}`);
 	console.log(`=======================`);
+
 	//instantiate oracle
 	let anchor_oracle_config = AnchorOracleConfig(sender);
 	let anchor_oracle_addr = await create_contract(lcd_client, sender, "anchor_oracle", anchor_oracle_wasm, anchor_oracle_config);
@@ -107,5 +142,11 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	console.log(`contracts have been registered`);
 	console.log(`=======================`);
 
-	return AnchorMarketInfo(anchor_market_addr, anchor_overseer_addr, anc_token_addr);
+	// instantiate ANC-UST pair contract
+	let terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, sender, cw20_code_id);
+	let anc_ust_pair_contract = await create_usd_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, anchor_token_addr);
+	console.log(`ANC-UST pair contract instantiated\n\taddress: ${anc_ust_pair_contract.pair_contract_addr}\n\tlp token address: ${anc_ust_pair_contract.liquidity_token_addr}`);
+	console.log(`=======================`);
+
+	return AnchorMarketInfo(anchor_market_addr, anchor_overseer_addr, anchor_token_addr, aterra_token_addr, anc_ust_pair_contract.pair_contract_addr);
 }
