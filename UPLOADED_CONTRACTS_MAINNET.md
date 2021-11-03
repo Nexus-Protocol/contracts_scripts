@@ -39,7 +39,7 @@ airdrop_contract instantiated
         address: terra1992lljnteewpz0g398geufylawcmmvgh8l8v96
 =======================
 staking_contract uploaded
-        code_id: 819
+        code_id: 921
 =======================
 staking_contract instantiated
         Psi-UST staking address: terra12kzewegufqprmzl20nhsuwjjq6xu8t8ppzt30a
