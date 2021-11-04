@@ -7,7 +7,7 @@ import {
 	store_contract
 } from '../../utils';
 import {
-	AnchorCustodyBlunaConfig,
+	AnchorCustodyBassetConfig,
 	AnchorDistrConfig,
 	AnchorHubBLunaConfig,
 	AnchorInterestConfig,
@@ -17,7 +17,9 @@ import {
 	AnchorOracleConfig,
 	AnchorOverseerConfig,
 	BassetRewardConfig,
-	BassetTokenConfig
+	BassetTokenConfig,
+	BethRewardConfig,
+	BethTokenConfig
 } from './config';
 import {Cw20CodeId, init_terraswap_factory, TokenConfig} from '../../config';
 
@@ -25,6 +27,7 @@ import {Cw20CodeId, init_terraswap_factory, TokenConfig} from '../../config';
 const artifacts_path = "wasm_artifacts";
 const path_to_anchor_mm_artifacts = `${artifacts_path}/anchor/mm`;
 const path_to_anchor_basset_artifacts = `${artifacts_path}/anchor/basset`;
+const path_to_anchor_beth_artifacts = `${artifacts_path}/anchor/beth`;
 //=============================================================================
 const anchor_market_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_market.wasm`;
 const anchor_oracle_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_oracle.wasm`;
@@ -33,10 +36,14 @@ const anchor_distribution_model_wasm = `${path_to_anchor_mm_artifacts}/moneymark
 const anchor_interest_model_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_interest_model.wasm`;
 const anchor_overseer_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_overseer.wasm`;
 const anchor_custody_bluna_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_custody_bluna.wasm`;
+const anchor_custody_beth_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_custody_beth.wasm`;
 //=============================================================================
 const anchor_basset_hub_wasm = `${path_to_anchor_basset_artifacts}/anchor_basset_hub.wasm`;
 const anchor_basset_reward_wasm = `${path_to_anchor_basset_artifacts}/anchor_basset_reward.wasm`;
 const anchor_basset_token_wasm = `${path_to_anchor_basset_artifacts}/anchor_basset_token.wasm`;
+//=============================================================================
+const anchor_beth_reward_wasm = `${path_to_anchor_beth_artifacts}/anchor_beth_reward.wasm`;
+const anchor_beth_token_wasm = `${path_to_anchor_beth_artifacts}/anchor_beth_token.wasm`;
 
 //STEPS:
 // 1. deploy cw20 tokens
@@ -58,8 +65,8 @@ const anchor_basset_token_wasm = `${path_to_anchor_basset_artifacts}/anchor_bass
 // 11.2 Deploy anchor_bAsset_reward (bLuna)
 // 11.3 Deploy anchor_bAsset_token (bLuna)
 // 11.4 Deploy moneymarket_custody_bluna
-// TODO: 12. deploy anchor_custody_contract for bEth (reward_contract = bAsset_vault_contract will be set after its instantiation)
-// 12.0 Check that step 11.0 done
+// 12. deploy anchor_custody_contract for bEth (reward_contract = bAsset_vault_contract will be set after its instantiation)
+// 12.0 Check whether step 11.0 is done
 // 12.1 Instantiate anchor_bAsset_hub (bEth)
 // 12.2 Deploy anchor_bEth_rewards
 // 12.3 Deploy anchor_bEth_token
@@ -192,13 +199,15 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	);
 	console.log(`=======================`);
 
-	let anchor_custody_bluna_config = AnchorCustodyBlunaConfig(
+	let anchor_custody_bluna_config = AnchorCustodyBassetConfig(
 		sender.key.accAddress,
 		basset_token_addr,
 		anchor_overseer_addr,
 		anchor_market_addr,
 		basset_reward_addr,
-		anchor_liquidation_addr
+		anchor_liquidation_addr,
+		"bLuna",
+		"BLUNA"
 	);
 	let anchor_custody_bluna_addr = await create_contract(
 		lcd_client,
@@ -206,6 +215,46 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 		"bluna_custody",
 		anchor_custody_bluna_wasm,
 		anchor_custody_bluna_config
+	);
+	console.log(`=======================`);
+
+	//deploy anchor_custody_contract for bEth
+	let beth_reward_config = BethRewardConfig(sender.key.accAddress);
+	let beth_reward_addr = await create_contract(
+		lcd_client,
+		sender,
+		"beth_reward",
+		anchor_beth_reward_wasm,
+		beth_reward_config
+	);
+	console.log(`=======================`);
+
+	let beth_token_config = BethTokenConfig(beth_reward_addr);
+	let beth_token_addr = await create_contract(
+		lcd_client,
+		sender,
+		"beth_token",
+		anchor_beth_token_wasm,
+		beth_token_config
+	);
+	console.log(`=======================`);
+
+	let anchor_custody_beth_config = AnchorCustodyBassetConfig(
+		sender.key.accAddress,
+		beth_token_addr,
+		anchor_overseer_addr,
+		anchor_market_addr,
+		beth_reward_addr,
+		anchor_liquidation_addr,
+		"bETH",
+		"BETH"
+	);
+	let anchor_custody_beth_addr = await create_contract(
+		lcd_client,
+		sender,
+		"beth_custody",
+		anchor_custody_beth_wasm,
+		anchor_custody_beth_config
 	);
 	console.log(`=======================`);
 

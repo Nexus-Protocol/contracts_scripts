@@ -278,13 +278,15 @@ export interface AnchorCustodyBlunaConfig {
     },
 }
 
-export function AnchorCustodyBlunaConfig(
+export function AnchorCustodyBassetConfig(
     owner: Addr,
     collateral_token: Addr,
     overseer_contract: Addr,
     market_contract: Addr,
     reward_contract: Addr,
     liquidation_contract: Addr,
+    basset_name: string,
+    basset_symbol: string,
 ): AnchorCustodyBlunaConfig {
     return {
         owner: owner,
@@ -295,10 +297,46 @@ export function AnchorCustodyBlunaConfig(
         liquidation_contract: liquidation_contract,
         stable_denom: "uusd",
         basset_info: {
-            name: "bLuna",
-            symbol: "BLUNA",
+            name: basset_name,
+            symbol: basset_symbol,
             decimals: 6
         }
+    }
+}
+
+// ============================================================
+export interface BethRewardConfig {
+    owner: Addr,
+    reward_denom: String,
+}
+
+export function BethRewardConfig(
+    owner: Addr,
+): BethRewardConfig {
+    return {
+        owner: owner,
+        reward_denom: "uusd",
+    }
+}
+
+// ============================================================
+export interface BethTokenConfig {
+    name: String,
+    symbol: String,
+    decimals: number,
+    initial_balances: [],
+    reward_contract: Addr,
+}
+
+export function BethTokenConfig(
+    reward_contract: Addr,
+): BethTokenConfig {
+    return {
+        name: "beth",
+        symbol: "BETH",
+        decimals: 6,
+        initial_balances: [],
+        reward_contract: reward_contract,
     }
 }
 
