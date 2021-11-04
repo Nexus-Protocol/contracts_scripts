@@ -189,7 +189,7 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	);
 	console.log(`=======================`);
 
-	let basset_token_config = BassetTokenConfig(anchor_basset_hub_bluna_addr);
+	let basset_token_config = BassetTokenConfig(anchor_basset_hub_bluna_addr, sender.key.accAddress);
 	let basset_token_addr = await create_contract(
 		lcd_client,
 		sender,
@@ -229,7 +229,7 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	);
 	console.log(`=======================`);
 
-	let beth_token_config = BethTokenConfig(beth_reward_addr);
+	let beth_token_config = BethTokenConfig(beth_reward_addr, sender.key.accAddress);
 	let beth_token_addr = await create_contract(
 		lcd_client,
 		sender,
@@ -258,5 +258,15 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	);
 	console.log(`=======================`);
 
-	return AnchorMarketInfo(anchor_market_addr, anchor_overseer_addr, anchor_token_addr, aterra_token_addr, anc_ust_pair_contract.pair_contract_addr);
+	return AnchorMarketInfo(
+		anchor_market_addr,
+		anchor_overseer_addr,
+		anchor_token_addr,
+		aterra_token_addr,
+		anc_ust_pair_contract.pair_contract_addr,
+		basset_token_addr,
+		beth_token_addr,
+		anchor_custody_bluna_addr,
+		anchor_custody_beth_addr
+	);
 }

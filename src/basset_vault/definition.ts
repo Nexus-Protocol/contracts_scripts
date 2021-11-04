@@ -148,6 +148,8 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 			basset_vault_config_for_bluna.a_market_addr = anchor_market_info.contract_addr;
 			basset_vault_config_for_bluna.a_overseer_addr = anchor_market_info.overseer_addr;
 			basset_vault_config_for_bluna.anc_stable_swap_addr = anchor_market_info.anc_stable_swap_addr;
+			basset_vault_config_for_bluna.basset_addr = anchor_market_info.bluna_token_addr;
+			basset_vault_config_for_bluna.a_custody_basset_addr = anchor_market_info.bluna_custody_addr;
 		}
 
 		let basset_vault_info_for_bluna = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_bluna);
@@ -176,6 +178,8 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 			basset_vault_config_for_beth.a_market_addr = anchor_market_info.contract_addr;
 			basset_vault_config_for_beth.a_overseer_addr = anchor_market_info.overseer_addr;
 			basset_vault_config_for_beth.anc_stable_swap_addr = anchor_market_info.anc_stable_swap_addr;
+			basset_vault_config_for_beth.basset_addr = anchor_market_info.beth_token_addr;
+			basset_vault_config_for_beth.a_custody_basset_addr = anchor_market_info.beth_custody_addr;
 		}
 
 		let basset_vault_info_for_beth = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_beth);

@@ -243,17 +243,24 @@ export interface BassetTokenConfig {
     symbol: String,
     decimals: number,
     initial_balances: [],
+    mint: {
+        minter: Addr,
+    },
     hub_contract: Addr,
 }
 
 export function BassetTokenConfig(
     hub_contract: Addr,
+    minter_addr: Addr,
 ): BassetTokenConfig {
     return {
         name: "bLuna",
         symbol: "BLUNA",
         decimals: 6,
         initial_balances: [],
+        mint: {
+            minter: minter_addr,
+        },
         hub_contract: hub_contract,
     }
 }
@@ -326,16 +333,23 @@ export interface BethTokenConfig {
     decimals: number,
     initial_balances: [],
     reward_contract: Addr,
+    mint: {
+        minter: Addr
+    }
 }
 
 export function BethTokenConfig(
     reward_contract: Addr,
+    minter_addr: Addr,
 ): BethTokenConfig {
     return {
         name: "beth",
         symbol: "BETH",
         decimals: 6,
         initial_balances: [],
+        mint: {
+            minter: minter_addr
+        },
         reward_contract: reward_contract,
     }
 }
@@ -347,6 +361,10 @@ export interface AnchorMarketInfo {
     anchor_token_addr: Addr,
     anc_stable_swap_addr: Addr,
     aterra_token_addr: Addr,
+    bluna_token_addr: Addr,
+    beth_token_addr: Addr,
+    bluna_custody_addr: Addr,
+    beth_custody_addr: Addr,
 }
 
 export function AnchorMarketInfo(
@@ -355,6 +373,10 @@ export function AnchorMarketInfo(
     anchor_token_addr: Addr,
     anc_stable_swap_addr: Addr,
     aterra_token_addr: Addr,
+    bluna_token_addr: Addr,
+    beth_token_addr: Addr,
+    bluna_custody_addr: Addr,
+    beth_custody_addr: Addr,
 ): AnchorMarketInfo {
     return {
         contract_addr: contract_addr,
@@ -362,6 +384,10 @@ export function AnchorMarketInfo(
         anchor_token_addr: anchor_token_addr,
         aterra_token_addr: aterra_token_addr,
         anc_stable_swap_addr: anc_stable_swap_addr,
+        bluna_token_addr: bluna_token_addr,
+        beth_token_addr: beth_token_addr,
+        bluna_custody_addr: bluna_custody_addr,
+        beth_custody_addr: beth_custody_addr,
     }
 }
 
