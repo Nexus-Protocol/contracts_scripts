@@ -5,6 +5,8 @@ export type Decimal256 = string;
 export type Addr = string;
 export type OfBlocksPerEpochPeriod = number;
 
+const LOCALTERRA_DEFAULT_VALIDATOR_ADDR = "terravaloper1dcegyrekltswvyy0xy69ydgxn9x8x32zdy3ua5";
+
 export interface AnchorMarkerConfig {
     // Anchor token distribution speed
     anc_emission_rate: Decimal256,
@@ -198,6 +200,109 @@ export function RegisterContractsConfig(
 }
 
 // ============================================================
+export interface AnchorHubConfig {
+    epoch_period: number,
+    underlying_coin_denom: Decimal256,
+    unbonding_period: number,
+    peg_recovery_fee: Decimal256,
+    er_threshold: Decimal256,
+    reward_denom: Decimal256,
+    validator: Addr,
+}
+
+export function AnchorHubBLunaConfig(): AnchorHubConfig {
+    return {
+        epoch_period: 30,
+        underlying_coin_denom: "uluna",
+        unbonding_period: 210,
+        peg_recovery_fee: "0",
+        er_threshold: "1",
+        reward_denom: "uusd",
+        validator: LOCALTERRA_DEFAULT_VALIDATOR_ADDR,
+    }
+}
+
+// ============================================================
+export interface BassetRewardConfig {
+    hub_contract: Addr,
+    reward_denom: String,
+}
+
+export function BassetRewardConfig(
+    hub_contract: Addr,
+): BassetRewardConfig {
+    return {
+        hub_contract: hub_contract,
+        reward_denom: "uusd",
+    }
+}
+
+// ============================================================
+export interface BassetTokenConfig {
+    name: String,
+    symbol: String,
+    decimals: number,
+    initial_balances: [],
+    hub_contract: Addr,
+}
+
+export function BassetTokenConfig(
+    hub_contract: Addr,
+): BassetTokenConfig {
+    return {
+        name: "bLuna",
+        symbol: "BLUNA",
+        decimals: 6,
+        initial_balances: [],
+        hub_contract: hub_contract,
+    }
+}
+
+// ============================================================
+export interface AnchorCustodyBlunaConfig {
+    // owner address
+    owner: Addr,
+    // bAsset token address
+    collateral_token: Addr,
+    overseer_contract: Addr,
+    market_contract: Addr,
+    reward_contract: Addr,
+    liquidation_contract: Addr,
+    /// Expected reward denom. If bAsset reward is not same with
+    /// it, we try to convert the reward to the `stable_denom`.
+    stable_denom: String,
+    basset_info: {
+        name: String,
+        symbol: String,
+        decimals: number,
+    },
+}
+
+export function AnchorCustodyBlunaConfig(
+    owner: Addr,
+    collateral_token: Addr,
+    overseer_contract: Addr,
+    market_contract: Addr,
+    reward_contract: Addr,
+    liquidation_contract: Addr,
+): AnchorCustodyBlunaConfig {
+    return {
+        owner: owner,
+        collateral_token: collateral_token,
+        overseer_contract: overseer_contract,
+        market_contract: market_contract,
+        reward_contract: reward_contract,
+        liquidation_contract: liquidation_contract,
+        stable_denom: "uusd",
+        basset_info: {
+            name: "bLuna",
+            symbol: "BLUNA",
+            decimals: 6
+        }
+    }
+}
+
+// ============================================================
 export interface AnchorMarketInfo {
     contract_addr: Addr,
     overseer_addr: Addr,
@@ -221,3 +326,4 @@ export function AnchorMarketInfo(
         anc_stable_swap_addr: anc_stable_swap_addr,
     }
 }
+

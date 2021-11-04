@@ -1,14 +1,30 @@
-import { readFileSync } from 'fs';
-import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, LocalTerra, MnemonicKey, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
+import {readFileSync} from 'fs';
+import {
+	BlockTxBroadcastResult,
+	Coin,
+	Coins,
+	getCodeId,
+	getContractAddress,
+	getContractEvents,
+	LCDClient,
+	LocalTerra,
+	MnemonicKey,
+	Msg,
+	MsgExecuteContract,
+	MsgInstantiateContract,
+	MsgStoreCode,
+	StdFee,
+	Wallet
+} from '@terra-money/terra.js';
 import {BassetVaultConfig} from './config';
 import {SecretsManager} from 'aws-sdk';
 import * as prompt from 'prompt';
 import {isTxSuccess} from './transaction';
 
-export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object): Promise<string> {
+export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object, init_funds?: Coin[]): Promise<string> {
 	let code_id = await store_contract(lcd_client, sender, wasm_path);
 	console.log(`${contract_name} uploaded\n\tcode_id: ${code_id}`);
-	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg, init_funds);
 	console.log(`${contract_name} instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
 }
@@ -212,7 +228,6 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 		return undefined;
 	}
 }
-
 
 async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[], tax?: Coin[]): Promise<StdFee | undefined> {
 	try {

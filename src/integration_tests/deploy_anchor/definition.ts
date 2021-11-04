@@ -7,19 +7,24 @@ import {
 	store_contract
 } from '../../utils';
 import {
+	AnchorCustodyBlunaConfig,
 	AnchorDistrConfig,
+	AnchorHubBLunaConfig,
 	AnchorInterestConfig,
 	AnchorLiquidationConfig,
 	AnchorMarkerConfig,
 	AnchorMarketInfo,
 	AnchorOracleConfig,
-	AnchorOverseerConfig
+	AnchorOverseerConfig,
+	BassetRewardConfig,
+	BassetTokenConfig
 } from './config';
 import {Cw20CodeId, init_terraswap_factory, TokenConfig} from '../../config';
 
 //=============================================================================
 const artifacts_path = "wasm_artifacts";
 const path_to_anchor_mm_artifacts = `${artifacts_path}/anchor/mm`;
+const path_to_anchor_basset_artifacts = `${artifacts_path}/anchor/basset`;
 //=============================================================================
 const anchor_market_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_market.wasm`;
 const anchor_oracle_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_oracle.wasm`;
@@ -27,6 +32,11 @@ const anchor_liquidation_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_liqu
 const anchor_distribution_model_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_distribution_model.wasm`;
 const anchor_interest_model_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_interest_model.wasm`;
 const anchor_overseer_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_overseer.wasm`;
+const anchor_custody_bluna_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_custody_bluna.wasm`;
+//=============================================================================
+const anchor_basset_hub_wasm = `${path_to_anchor_basset_artifacts}/anchor_basset_hub.wasm`;
+const anchor_basset_reward_wasm = `${path_to_anchor_basset_artifacts}/anchor_basset_reward.wasm`;
+const anchor_basset_token_wasm = `${path_to_anchor_basset_artifacts}/anchor_basset_token.wasm`;
 
 //STEPS:
 // 1. deploy cw20 tokens
@@ -42,7 +52,7 @@ const anchor_overseer_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_oversee
 // 8. deploy Interest model
 // 9. register all contracts in Market
 // 10. deploy acn_stable_swap
-// TODO: 11. deploy anchor_custody_contract for bLuna (reward_contract = bAsset_vault_contract will be set after its instantiation)
+// 11. deploy anchor_custody_contract for bLuna (reward_contract = bAsset_vault_contract will be set after its instantiation)
 // 11.0 Store anchor_basset_hub
 // 11.1 Instantiate anchor_bAsset_hub (bLuna)
 // 11.2 Deploy anchor_bAsset_reward (bLuna)
@@ -146,6 +156,57 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	let terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, sender, cw20_code_id);
 	let anc_ust_pair_contract = await create_usd_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, anchor_token_addr);
 	console.log(`ANC-UST pair contract instantiated\n\taddress: ${anc_ust_pair_contract.pair_contract_addr}\n\tlp token address: ${anc_ust_pair_contract.liquidity_token_addr}`);
+	console.log(`=======================`);
+
+	//deploy anchor_custody_contract for bLuna
+	let anchor_basset_hub_code_id = await store_contract(lcd_client, sender, anchor_basset_hub_wasm);
+	let anchor_basset_hub_bluna_config = AnchorHubBLunaConfig();
+	let anchor_basset_hub_bluna_addr = await instantiate_contract(
+		lcd_client,
+		sender,
+		sender.key.accAddress,
+		anchor_basset_hub_code_id,
+		anchor_basset_hub_bluna_config,
+		[new Coin("uluna", 100_000_000)]
+	);
+	console.log(`anchor_basset_hub_bluna instantiated\n\taddress: ${anchor_basset_hub_bluna_addr}`);
+	console.log(`=======================`);
+
+	let basset_reward_config = BassetRewardConfig(anchor_basset_hub_bluna_addr);
+	let basset_reward_addr = await create_contract(
+		lcd_client,
+		sender,
+		"basset_reward",
+		anchor_basset_reward_wasm,
+		basset_reward_config
+	);
+	console.log(`=======================`);
+
+	let basset_token_config = BassetTokenConfig(anchor_basset_hub_bluna_addr);
+	let basset_token_addr = await create_contract(
+		lcd_client,
+		sender,
+		"basset_token",
+		anchor_basset_token_wasm,
+		basset_token_config
+	);
+	console.log(`=======================`);
+
+	let anchor_custody_bluna_config = AnchorCustodyBlunaConfig(
+		sender.key.accAddress,
+		basset_token_addr,
+		anchor_overseer_addr,
+		anchor_market_addr,
+		basset_reward_addr,
+		anchor_liquidation_addr
+	);
+	let anchor_custody_bluna_addr = await create_contract(
+		lcd_client,
+		sender,
+		"bluna_custody",
+		anchor_custody_bluna_wasm,
+		anchor_custody_bluna_config
+	);
 	console.log(`=======================`);
 
 	return AnchorMarketInfo(anchor_market_addr, anchor_overseer_addr, anchor_token_addr, aterra_token_addr, anc_ust_pair_contract.pair_contract_addr);
