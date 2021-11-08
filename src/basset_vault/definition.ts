@@ -132,9 +132,16 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 	console.log(`basset_vault uploaded\n\tcode_id: ${basset_vault_code_id}`);
 	console.log(`=======================`);
 	// bLUNA
+		let basset_vault_for_bluna_addr;
 	{
 		// instantiate basset_vault_strategy for bLuna
 		let basset_vault_strategy_config_for_bluna = BassetVaultStrategyConfigForbLuna(lcd_client, governance_contract_addr);
+
+		if (anchor_market_info != null && anchor_market_info !== undefined) {
+			basset_vault_strategy_config_for_bluna.basset_token_addr = anchor_market_info.bluna_token_addr;
+			basset_vault_strategy_config_for_bluna.oracle_contract_addr = anchor_market_info.oracle_addr;
+		}
+
 		let basset_vault_strategy_contract_addr_for_bluna = await instantiate_contract(lcd_client, sender, sender.key.accAddress, basset_vault_strategy_code_id, basset_vault_strategy_config_for_bluna);
 		console.log(`basset_vault_strategy_for_bluna instantiated\n\taddress: ${basset_vault_strategy_contract_addr_for_bluna}`);
 		console.log(`=======================`);
@@ -153,6 +160,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		}
 
 		let basset_vault_info_for_bluna = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_bluna);
+		basset_vault_for_bluna_addr = basset_vault_info_for_bluna.addr;
 		console.log(`basset_vault_for_bluna instantiated\n\taddress: ${basset_vault_info_for_bluna.addr}\n\tnasset_token address: ${basset_vault_info_for_bluna.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_bluna.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_bluna.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_bluna.psi_distributor_addr}`);
 		console.log(`=======================`);
 
@@ -162,9 +170,14 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		console.log(`=======================`);
 	}
 	// bETH
+	let basset_vault_for_beth_addr;
 	{
 		// instantiate basset_vault_strategy for bETH
 		let basset_vault_strategy_config_for_beth = BassetVaultStrategyConfigForbEth(lcd_client, governance_contract_addr);
+		if (anchor_market_info != null && anchor_market_info !== undefined) {
+			basset_vault_strategy_config_for_beth.basset_token_addr = anchor_market_info.beth_token_addr;
+			basset_vault_strategy_config_for_beth.oracle_contract_addr = anchor_market_info.oracle_addr;
+		}
 		let basset_vault_strategy_contract_addr_for_beth = await instantiate_contract(lcd_client, sender, sender.key.accAddress, basset_vault_strategy_code_id, basset_vault_strategy_config_for_beth);
 		console.log(`basset_vault_strategy_for_beth instantiated\n\taddress: ${basset_vault_strategy_contract_addr_for_beth}`);
 		console.log(`=======================`);
@@ -183,12 +196,16 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		}
 
 		let basset_vault_info_for_beth = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_beth);
+		basset_vault_for_beth_addr = basset_vault_info_for_beth.addr;
 		console.log(`basset_vault_for_beth instantiated\n\taddress: ${basset_vault_info_for_beth.addr}\n\tnasset_token address: ${basset_vault_info_for_beth.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_beth.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_beth.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_beth.psi_distributor_addr}`);
 		console.log(`=======================`);
+
 
 		// instantiate nasset_psi_swap_contract for bETH
 		let neth_psi_pair_contract = await create_token_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, basset_vault_info_for_beth.nasset_token_addr, psi_token_addr);
 		console.log(`Psi-nETH pair contract instantiated\n\taddress: ${neth_psi_pair_contract.pair_contract_addr}\n\tlp token address: ${neth_psi_pair_contract.liquidity_token_addr}`);
 		console.log(`=======================`);
 	}
+
+	return [basset_vault_for_bluna_addr, basset_vault_for_beth_addr];
 }

@@ -358,6 +358,7 @@ export function BethTokenConfig(
 export interface AnchorMarketInfo {
     contract_addr: Addr,
     overseer_addr: Addr,
+    oracle_addr: Addr,
     anchor_token_addr: Addr,
     anc_stable_swap_addr: Addr,
     aterra_token_addr: Addr,
@@ -370,6 +371,7 @@ export interface AnchorMarketInfo {
 export function AnchorMarketInfo(
     contract_addr: Addr,
     overseer_addr: Addr,
+    oracle_addr: Addr,
     anchor_token_addr: Addr,
     anc_stable_swap_addr: Addr,
     aterra_token_addr: Addr,
@@ -381,6 +383,7 @@ export function AnchorMarketInfo(
     return {
         contract_addr: contract_addr,
         overseer_addr: overseer_addr,
+        oracle_addr: oracle_addr,
         anchor_token_addr: anchor_token_addr,
         aterra_token_addr: aterra_token_addr,
         anc_stable_swap_addr: anc_stable_swap_addr,

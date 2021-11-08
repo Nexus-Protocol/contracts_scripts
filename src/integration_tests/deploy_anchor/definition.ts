@@ -261,6 +261,7 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	return AnchorMarketInfo(
 		anchor_market_addr,
 		anchor_overseer_addr,
+		anchor_oracle_addr,
 		anchor_token_addr,
 		aterra_token_addr,
 		anc_ust_pair_contract.pair_contract_addr,
