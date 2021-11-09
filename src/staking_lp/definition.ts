@@ -24,7 +24,7 @@ export function create_distribution_schedule(distribution_schedule_raw: Distribu
 	return {
 		start_time: start_time_secs,
 		end_time: end_time_secs,
-		amount: (parseInt(distribution_schedule_raw.tokens_amount) * 1_000_000).toString()
+		amount: (parseFloat(distribution_schedule_raw.tokens_amount) * 1_000_000).toString()
 	};
 }
 
