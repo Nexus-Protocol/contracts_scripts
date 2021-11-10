@@ -166,17 +166,15 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	console.log(`=======================`);
 
 	//deploy anchor_custody_contract for bLuna
-	let anchor_basset_hub_code_id = await store_contract(lcd_client, sender, anchor_basset_hub_wasm);
 	let anchor_basset_hub_bluna_config = AnchorHubBLunaConfig();
-	let anchor_basset_hub_bluna_addr = await instantiate_contract(
+	let anchor_basset_hub_bluna_addr = await create_contract(
 		lcd_client,
 		sender,
-		sender.key.accAddress,
-		anchor_basset_hub_code_id,
+		"basset_hub",
+		anchor_basset_hub_wasm,
 		anchor_basset_hub_bluna_config,
 		[new Coin("uluna", 100_000_000)]
 	);
-	console.log(`anchor_basset_hub_bluna instantiated\n\taddress: ${anchor_basset_hub_bluna_addr}`);
 	console.log(`=======================`);
 
 	let basset_reward_config = BassetRewardConfig(anchor_basset_hub_bluna_addr);
@@ -199,6 +197,14 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	);
 	console.log(`=======================`);
 
+	await execute_contract(lcd_client, sender, anchor_basset_hub_bluna_addr, {
+		update_config: {
+			"reward_contract": basset_reward_addr,
+			"token_contract": basset_token_addr
+		}
+	});
+	console.log(`Basset_reward and basset_token contracts are registered in basset_hub contract`);
+
 	let anchor_custody_bluna_config = AnchorCustodyBassetConfig(
 		sender.key.accAddress,
 		basset_token_addr,
@@ -217,6 +223,19 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 		anchor_custody_bluna_config
 	);
 	console.log(`=======================`);
+
+	await execute_contract(lcd_client, sender, anchor_overseer_addr, {
+		whitelist: {
+			name: basset_token_config.name,
+			symbol: basset_token_config.symbol,
+			collateral_token: basset_token_addr,
+			custody_contract: anchor_custody_bluna_addr,
+			max_ltv: "0.6",
+		}
+	});
+	console.log(`bLuna has been registered as collateral`);
+	console.log(`=======================`);
+
 
 	//deploy anchor_custody_contract for bEth
 	let beth_reward_config = BethRewardConfig(sender.key.accAddress);
@@ -258,10 +277,24 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promis
 	);
 	console.log(`=======================`);
 
+	await execute_contract(lcd_client, sender, anchor_overseer_addr, {
+		whitelist: {
+			name: beth_token_config.name,
+			symbol: beth_token_config.symbol,
+			collateral_token: beth_token_addr,
+			custody_contract: anchor_custody_beth_addr,
+			max_ltv: "0.6",
+		}
+	});
+	console.log(`bETH has been registered as collateral`);
+	console.log(`=======================`);
+
+
 	return AnchorMarketInfo(
 		anchor_market_addr,
 		anchor_overseer_addr,
 		anchor_oracle_addr,
+		anchor_basset_hub_bluna_addr,
 		anchor_token_addr,
 		aterra_token_addr,
 		anc_ust_pair_contract.pair_contract_addr,

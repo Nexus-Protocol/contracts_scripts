@@ -5,7 +5,7 @@ export type Decimal256 = string;
 export type Addr = string;
 export type OfBlocksPerEpochPeriod = number;
 
-const LOCALTERRA_DEFAULT_VALIDATOR_ADDR = "terravaloper1dcegyrekltswvyy0xy69ydgxn9x8x32zdy3ua5";
+export const LOCALTERRA_DEFAULT_VALIDATOR_ADDR = "terravaloper1dcegyrekltswvyy0xy69ydgxn9x8x32zdy3ua5";
 
 export interface AnchorMarkerConfig {
     // Anchor token distribution speed
@@ -215,7 +215,7 @@ export function AnchorHubBLunaConfig(): AnchorHubConfig {
         epoch_period: 30,
         underlying_coin_denom: "uluna",
         unbonding_period: 210,
-        peg_recovery_fee: "0",
+        peg_recovery_fee: "0.001",
         er_threshold: "1",
         reward_denom: "uusd",
         validator: LOCALTERRA_DEFAULT_VALIDATOR_ADDR,
@@ -359,6 +359,7 @@ export interface AnchorMarketInfo {
     contract_addr: Addr,
     overseer_addr: Addr,
     oracle_addr: Addr,
+    basset_hub_addr: Addr,
     anchor_token_addr: Addr,
     anc_stable_swap_addr: Addr,
     aterra_token_addr: Addr,
@@ -372,6 +373,7 @@ export function AnchorMarketInfo(
     contract_addr: Addr,
     overseer_addr: Addr,
     oracle_addr: Addr,
+    basset_hub_addr: Addr,
     anchor_token_addr: Addr,
     anc_stable_swap_addr: Addr,
     aterra_token_addr: Addr,
@@ -384,6 +386,7 @@ export function AnchorMarketInfo(
         contract_addr: contract_addr,
         overseer_addr: overseer_addr,
         oracle_addr: oracle_addr,
+        basset_hub_addr: basset_hub_addr,
         anchor_token_addr: anchor_token_addr,
         aterra_token_addr: aterra_token_addr,
         anc_stable_swap_addr: anc_stable_swap_addr,
