@@ -71,11 +71,12 @@ export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet
 	return getContractAddress(result)
 }
 
-export async function execute_contract(lcd_client: LCDClient, sender: Wallet, contract_addr: string, execute_msg: object): Promise<BlockTxBroadcastResult | undefined> {
+export async function execute_contract(lcd_client: LCDClient, sender: Wallet, contract_addr: string, execute_msg: object, coins?: Coin[]): Promise<BlockTxBroadcastResult | undefined> {
 	const messages: Msg[] = [new MsgExecuteContract(
 		sender.key.accAddress,
 		contract_addr,
-		execute_msg
+		execute_msg,
+		coins
 	)];
 	let result = await send_message(lcd_client, sender, messages);
 	return result
