@@ -1,45 +1,60 @@
 import {BlockTxBroadcastResult, Coin, LCDClient, Wallet} from '@terra-money/terra.js';
 import {full_init as full_basset_vault_init} from "../../basset_vault/definition";
-import {anchor_init} from "../deploy_anchor/definition";
+import {anchor_init_with_mocks} from "../deploy_anchor/definition";
 import {execute_contract, sleep} from "../../utils";
-import {LOCALTERRA_DEFAULT_VALIDATOR_ADDR} from "../deploy_anchor/config"
+import {AnchorAndNexusDeploymentResult, LOCALTERRA_DEFAULT_VALIDATOR_ADDR} from "../deploy_anchor/config"
 import {isTxSuccess} from "../../transaction";
 
 //STEPS
 // 1. Deploy anchor_market_contracts
 // 2. Deploy basset_vault_init
 
-export async function init(lcd_client: LCDClient, sender: Wallet, psi_token_initial_owner: string) {
+export async function test(lcd_client: LCDClient, sender: Wallet, deployment_result: AnchorAndNexusDeploymentResult) {
 
-    const anchor_market_info = await anchor_init(lcd_client, sender);
+    const anchor_market_addr = deployment_result.anchor_market_info.contract_addr;
+    const bluna_custody_addr = deployment_result.anchor_market_info.bluna_custody_addr;
+    //==========================================
+    const basset_vault_for_bluna_addr = deployment_result.basset_vault_info_for_bluna.addr;
+    const nluna_token_addr = deployment_result.basset_vault_info_for_bluna.nasset_token_addr;
+    //==========================================
+
+    let set_collateral_result = await execute_contract(lcd_client, sender, bluna_custody_addr, {
+        set_collateral: {
+            borrower_addr: basset_vault_for_bluna_addr,
+            amount: "151515",
+        }
+    });
+
+    let borrower_info = await lcd_client.wasm.contractQuery(bluna_custody_addr, {
+        borrower: {
+            address: basset_vault_for_bluna_addr
+        }
+    });
+
+
+}
+
+export async function anchor_nexus_full_init(
+    lcd_client: LCDClient,
+    sender: Wallet,
+    psi_token_initial_owner: string,
+    bluna_init_price: number,
+    beth_init_price: number
+) {
+    const anchor_market_info = await anchor_init_with_mocks(lcd_client, sender);
     let [basset_vault_info_for_bluna, basset_vault_info_for_beth] = await full_basset_vault_init(lcd_client, sender, psi_token_initial_owner, anchor_market_info);
 
     const oracle_addr = anchor_market_info.oracle_addr;
-    const bluna_hub_addr = anchor_market_info.basset_hub_addr;
     const bluna_token_addr = anchor_market_info.bluna_token_addr;
     const beth_token_addr = anchor_market_info.beth_token_addr;
 
     await register_basset_price_feeder(lcd_client, sender, oracle_addr, bluna_token_addr);
     await register_basset_price_feeder(lcd_client, sender, oracle_addr, beth_token_addr);
 
-    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, 1.0);
-    await feed_price(lcd_client, sender, oracle_addr, beth_token_addr, 10.0);
+    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_init_price);
+    await feed_price(lcd_client, sender, oracle_addr, beth_token_addr, beth_init_price);
 
-    await bond_and_send_luna(lcd_client, sender, bluna_token_addr, bluna_hub_addr, basset_vault_info_for_bluna.addr, 100);
-    console.log(`============check===========`);
-    let borrower_response = await lcd_client.wasm.contractQuery(anchor_market_info.contract_addr, {
-        borrower_info: {
-            borrower: basset_vault_info_for_bluna.addr,
-        }
-    });
-    console.log(`borrower_response - ${JSON.stringify(borrower_response)}`);
-
-    let nluna_vault_balance = await lcd_client.wasm.contractQuery(basset_vault_info_for_bluna.nasset_token_addr, {
-        balance: {
-            address: sender.key.accAddress,
-        }
-    });
-    console.log(`nluna_vault_balance - ${JSON.stringify(nluna_vault_balance)}`);
+    return AnchorAndNexusDeploymentResult(anchor_market_info, basset_vault_info_for_bluna, basset_vault_info_for_beth);
 }
 
 async function register_basset_price_feeder(lcd_client: LCDClient, sender: Wallet, oracle_addr: string, basset_token_addr: string) {
@@ -62,8 +77,8 @@ async function feed_price(lcd_client: LCDClient, sender: Wallet, oracle_addr: st
     return result;
 }
 
-async function bond_and_send_luna(lcd_client: LCDClient, sender: Wallet, bluna_token_addr: string, bluna_hub_addr: string, recipient_addr: string, amount: number) {
-    await execute_contract(lcd_client, sender, bluna_hub_addr,
+async function bond_and_deposit_luna(lcd_client: LCDClient, sender: Wallet, bluna_token_addr: string, bluna_hub_addr: string, recipient_addr: string, amount: number) {
+    const bond_result = await execute_contract(lcd_client, sender, bluna_hub_addr,
         {
             bond: {
                 validator: LOCALTERRA_DEFAULT_VALIDATOR_ADDR,
@@ -74,7 +89,7 @@ async function bond_and_send_luna(lcd_client: LCDClient, sender: Wallet, bluna_t
 
     const deposit_msg = {deposit: {}};
 
-    const result = await execute_contract(lcd_client, sender, bluna_token_addr, {
+    const send_result = await execute_contract(lcd_client, sender, bluna_token_addr, {
         send: {
             contract: recipient_addr,
             amount: amount.toString(),
@@ -82,7 +97,7 @@ async function bond_and_send_luna(lcd_client: LCDClient, sender: Wallet, bluna_t
         }
     });
 
-    return result;
+    return [bond_result, send_result];
 }
 
 async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_vault_addr: string): Promise<BlockTxBroadcastResult> {

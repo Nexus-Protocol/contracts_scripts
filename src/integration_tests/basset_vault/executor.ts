@@ -1,6 +1,6 @@
 import {Command} from 'commander';
 import {get_lcd_config_with_wallet_for_integration_tests_only} from "../utils";
-import {init} from "./definition";
+import {anchor_nexus_full_init, test} from "./definition";
 
 async function run_program() {
 	const program = new Command();
@@ -15,7 +15,8 @@ async function run_program() {
 async function run() {
 	const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
 
-	await init(lcd_client, sender, sender.key.accAddress);
+	const deployment_result = await anchor_nexus_full_init(lcd_client, sender, sender.key.accAddress, 1, 10);
+	await test(lcd_client, sender, deployment_result);
 }
 
 run_program()

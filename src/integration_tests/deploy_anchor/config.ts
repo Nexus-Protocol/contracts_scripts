@@ -1,4 +1,5 @@
 import {Wallet} from "@terra-money/terra.js"
+import {BassetVaultInfo} from "../../utils";
 
 export type Uint256 = string;
 export type Decimal256 = string;
@@ -394,6 +395,25 @@ export function AnchorMarketInfo(
         beth_token_addr: beth_token_addr,
         bluna_custody_addr: bluna_custody_addr,
         beth_custody_addr: beth_custody_addr,
+    }
+}
+
+// ============================================================
+export interface AnchorAndNexusDeploymentResult {
+    anchor_market_info: AnchorMarketInfo,
+    basset_vault_info_for_bluna: BassetVaultInfo,
+    basset_vault_info_for_beth: BassetVaultInfo,
+}
+
+export function AnchorAndNexusDeploymentResult(
+    anchor_market_info: AnchorMarketInfo,
+    basset_vault_info_for_bluna: BassetVaultInfo,
+    basset_vault_info_for_beth: BassetVaultInfo,
+): AnchorAndNexusDeploymentResult {
+    return {
+        anchor_market_info: anchor_market_info,
+        basset_vault_info_for_bluna: basset_vault_info_for_bluna,
+        basset_vault_info_for_beth: basset_vault_info_for_beth,
     }
 }
 

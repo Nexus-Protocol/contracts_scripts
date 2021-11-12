@@ -28,6 +28,7 @@ const artifacts_path = "wasm_artifacts";
 const path_to_anchor_mm_artifacts = `${artifacts_path}/anchor/mm`;
 const path_to_anchor_basset_artifacts = `${artifacts_path}/anchor/basset`;
 const path_to_anchor_beth_artifacts = `${artifacts_path}/anchor/beth`;
+const path_to_anchor_mocks = `${artifacts_path}/anchor/mocks`
 //=============================================================================
 const anchor_market_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_market.wasm`;
 const anchor_oracle_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_oracle.wasm`;
@@ -38,12 +39,16 @@ const anchor_overseer_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_oversee
 const anchor_custody_bluna_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_custody_bluna.wasm`;
 const anchor_custody_beth_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_custody_beth.wasm`;
 //=============================================================================
+const anchor_custody_bluna_mock_set_collateral_wasm = `${path_to_anchor_mocks}/moneymarket_custody_bluna_mock_set_collateral.wasm`;
+const anchor_custody_beth_mock_set_collateral_wasm = `${path_to_anchor_mocks}/moneymarket_custody_beth_mock_set_collateral.wasm`;
+//=============================================================================
 const anchor_basset_hub_wasm = `${path_to_anchor_basset_artifacts}/anchor_basset_hub.wasm`;
 const anchor_basset_reward_wasm = `${path_to_anchor_basset_artifacts}/anchor_basset_reward.wasm`;
 const anchor_basset_token_wasm = `${path_to_anchor_basset_artifacts}/anchor_basset_token.wasm`;
 //=============================================================================
 const anchor_beth_reward_wasm = `${path_to_anchor_beth_artifacts}/anchor_beth_reward.wasm`;
 const anchor_beth_token_wasm = `${path_to_anchor_beth_artifacts}/anchor_beth_token.wasm`;
+//=============================================================================
 
 //STEPS:
 // 1. deploy cw20 tokens
@@ -77,7 +82,32 @@ export async function init_token(lcd_client: LCDClient, sender: Wallet, code_id:
 	return contract_addr;
 }
 
-export async function anchor_init(lcd_client: LCDClient, sender: Wallet): Promise<AnchorMarketInfo> {
+export async function anchor_init(lcd_client: LCDClient, sender: Wallet) {
+	const result = await anchor_init_verbose(
+		lcd_client,
+		sender,
+		anchor_custody_bluna_wasm,
+		anchor_custody_beth_wasm
+	);
+	return result;
+}
+
+export async function anchor_init_with_mocks(lcd_client: LCDClient, sender: Wallet) {
+	const result = await anchor_init_verbose(
+		lcd_client,
+		sender,
+		anchor_custody_bluna_mock_set_collateral_wasm,
+		anchor_custody_beth_mock_set_collateral_wasm
+	);
+	return result;
+}
+
+async function anchor_init_verbose(
+	lcd_client: LCDClient,
+	sender: Wallet,
+	anchor_custody_bluna_wasm: string,
+	anchor_custody_beth_wasm: string
+): Promise<AnchorMarketInfo> {
 
 	//deploy cw20_code_id
 	let cw20_code_id = await Cw20CodeId(lcd_client, sender);
