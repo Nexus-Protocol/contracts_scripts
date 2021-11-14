@@ -1,6 +1,6 @@
 import {getContractEvents, LCDClient, Wallet} from '@terra-money/terra.js';
 import {airdrop_contract_wasm} from './../basset_vault/definition';
-import {execute_contract, create_contract, sleep} from './../utils';
+import {execute_contract, create_contract} from './../utils';
 
 export interface AirdropConfig {
 	owner: string,
@@ -19,23 +19,21 @@ export async function register_merkle_tree(lcd_client: LCDClient, sender: Wallet
 		}
 	};
 
-	while (true) {
-		let register_merkle_tree_result = await execute_contract(lcd_client, sender, airdrop_contract_addr, register_merkle_root_msg);
-		if (register_merkle_tree_result !== undefined) {
-			let stage;
-			let tx_events = getContractEvents(register_merkle_tree_result);
-			for (let event of tx_events) {
-				let stage_from_event = event["stage"];
-				if (stage_from_event !== undefined) {
-					stage = parseInt( stage_from_event );
-				}
+	let register_merkle_tree_result = await execute_contract(lcd_client, sender, airdrop_contract_addr, register_merkle_root_msg);
+	if (register_merkle_tree_result !== undefined) {
+		let stage;
+		let tx_events = getContractEvents(register_merkle_tree_result);
+		for (let event of tx_events) {
+			let stage_from_event = event["stage"];
+			if (stage_from_event !== undefined) {
+				stage = parseInt( stage_from_event );
 			}
-
-			console.log(`merkle_tree registered\n\tstage: ${stage}`);
-			console.log(`=======================`);
-			return;
-		} else {
-			await sleep(1000);
 		}
+
+		console.log(`merkle_tree registered\n\tstage: ${stage}`);
+		console.log(`=======================`);
+		return;
+	} else {
+		console.log(`merkle_tree registered return undefined. Check blockchain!`);
 	}
 }
