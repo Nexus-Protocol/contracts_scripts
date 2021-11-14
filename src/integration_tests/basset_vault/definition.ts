@@ -13,25 +13,20 @@ export async function test(lcd_client: LCDClient, sender: Wallet, deployment_res
 
     const anchor_market_addr = deployment_result.anchor_market_info.contract_addr;
     const bluna_custody_addr = deployment_result.anchor_market_info.bluna_custody_addr;
+    const aterra_token_addr = deployment_result.anchor_market_info.aterra_token_addr;
     //==========================================
     const basset_vault_for_bluna_addr = deployment_result.basset_vault_info_for_bluna.addr;
     const nluna_token_addr = deployment_result.basset_vault_info_for_bluna.nasset_token_addr;
     //==========================================
 
-    let set_collateral_result = await execute_contract(lcd_client, sender, bluna_custody_addr, {
-        set_collateral: {
-            borrower_addr: basset_vault_for_bluna_addr,
-            amount: "151515",
-        }
-    });
+    await set_collateral_amount(lcd_client, sender, bluna_custody_addr, basset_vault_for_bluna_addr, 100)
 
-    let borrower_info = await lcd_client.wasm.contractQuery(bluna_custody_addr, {
-        borrower: {
-            address: basset_vault_for_bluna_addr
-        }
-    });
+    await set_loan_amount(lcd_client, sender, anchor_market_addr, basset_vault_for_bluna_addr, 50)
 
+    await mint(lcd_client, sender, aterra_token_addr, basset_vault_for_bluna_addr, 100)
 
+    let rebalance_result = await rebalance(lcd_client, sender, basset_vault_for_bluna_addr);
+    console.log(`rebalance result : ${JSON.stringify(rebalance_result)}`);
 }
 
 export async function anchor_nexus_full_init(
@@ -136,4 +131,34 @@ async function honest_work(lcd_client: LCDClient, sender: Wallet, basset_vault_a
             await sleep(1000);
         }
     }
+}
+
+async function set_collateral_amount(lcd_client: LCDClient, sender: Wallet, basset_custody_addr: string, basset_vault_addr: string, amount: number) {
+    const result = await execute_contract(lcd_client, sender, basset_custody_addr, {
+        set_collateral: {
+            borrower_addr: basset_vault_addr,
+            amount: amount.toString(),
+        }
+    });
+    return result;
+}
+
+async function set_loan_amount(lcd_client: LCDClient, sender: Wallet, anchor_market_addr: string, basset_vault_addr: string, amount: number) {
+    const result = await execute_contract(lcd_client, sender, anchor_market_addr, {
+        set_loan: {
+            borrower_addr: basset_vault_addr,
+            amount: amount.toString(),
+        }
+    });
+    return result;
+}
+
+async function mint(lcd_client: LCDClient, sender: Wallet, token_addr: string, recipient: string, amount: number) {
+    const result = await execute_contract(lcd_client, sender, token_addr, {
+        mint: {
+            recipient: recipient,
+            amount: amount.toString(),
+        }
+    });
+    return result;
 }

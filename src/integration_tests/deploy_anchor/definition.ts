@@ -39,6 +39,7 @@ const anchor_overseer_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_oversee
 const anchor_custody_bluna_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_custody_bluna.wasm`;
 const anchor_custody_beth_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_custody_beth.wasm`;
 //=============================================================================
+const anchor_market_mock_set_loan_wasm = `${path_to_anchor_mocks}/moneymarket_market_mock_set_loan.wasm`
 const anchor_custody_bluna_mock_set_collateral_wasm = `${path_to_anchor_mocks}/moneymarket_custody_bluna_mock_set_collateral.wasm`;
 const anchor_custody_beth_mock_set_collateral_wasm = `${path_to_anchor_mocks}/moneymarket_custody_beth_mock_set_collateral.wasm`;
 //=============================================================================
@@ -86,6 +87,7 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet) {
 	const result = await anchor_init_verbose(
 		lcd_client,
 		sender,
+		anchor_market_wasm,
 		anchor_custody_bluna_wasm,
 		anchor_custody_beth_wasm
 	);
@@ -96,8 +98,9 @@ export async function anchor_init_with_mocks(lcd_client: LCDClient, sender: Wall
 	const result = await anchor_init_verbose(
 		lcd_client,
 		sender,
+		anchor_market_mock_set_loan_wasm,
 		anchor_custody_bluna_mock_set_collateral_wasm,
-		anchor_custody_beth_mock_set_collateral_wasm
+		anchor_custody_beth_mock_set_collateral_wasm,
 	);
 	return result;
 }
@@ -105,6 +108,7 @@ export async function anchor_init_with_mocks(lcd_client: LCDClient, sender: Wall
 async function anchor_init_verbose(
 	lcd_client: LCDClient,
 	sender: Wallet,
+	anchor_market_wasm: string,
 	anchor_custody_bluna_wasm: string,
 	anchor_custody_beth_wasm: string
 ): Promise<AnchorMarketInfo> {
@@ -118,6 +122,9 @@ async function anchor_init_verbose(
 		symbol: "ANC",
 		decimals: 6,
 		initial_balances: [],
+		mint: {
+			minter: sender.key.accAddress,
+		},
 	};
 
 	let anchor_token_addr = await init_token(lcd_client, sender, cw20_code_id, anchor_token_config);
@@ -129,6 +136,9 @@ async function anchor_init_verbose(
 		symbol: "aUST",
 		decimals: 6,
 		initial_balances: [],
+		mint: {
+			minter: sender.key.accAddress,
+		},
 	};
 
 	let aterra_token_addr = await init_token(lcd_client, sender, cw20_code_id, aterra_token_config);
@@ -326,8 +336,8 @@ async function anchor_init_verbose(
 		anchor_oracle_addr,
 		anchor_basset_hub_bluna_addr,
 		anchor_token_addr,
-		aterra_token_addr,
 		anc_ust_pair_contract.pair_contract_addr,
+		aterra_token_addr,
 		basset_token_addr,
 		beth_token_addr,
 		anchor_custody_bluna_addr,
