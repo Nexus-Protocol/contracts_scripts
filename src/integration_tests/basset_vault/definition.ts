@@ -246,17 +246,7 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
         }
     });
     let actual_loan = +actual_borrower_info.loan_amount;
-
     let comparison = Math.abs(actual_loan - expected_loan);
-
-    console.log(`=========>before rebalance`);
-    console.log(`luna_to_bond: ${luna_to_bond}`);
-    console.log(`bluna_to_deposit: ${bluna_to_deposit}`);
-    console.log(`collateral: ${collateral}`);
-    console.log(`expected_loan: ${expected_loan}`);
-    console.log(`actual_loan: ${actual_loan}`);
-    console.log(`comparison: ${comparison}`);
-
     assert(comparison < 100); // inaccuracy is 0,01 %
 
     await sleep(26000);
@@ -272,15 +262,6 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
     });
     actual_loan = +actual_borrower_info.loan_amount;
     comparison = Math.abs(actual_loan - expected_loan);
-
-    console.log(`=========>after rebalance`);
-    console.log(`luna_to_bond: ${luna_to_bond}`);
-    console.log(`bluna_to_deposit: ${bluna_to_deposit}`);
-    console.log(`collateral: ${collateral}`);
-    console.log(`expected_loan: ${expected_loan}`);
-    console.log(`actual_loan: ${actual_loan}`);
-    console.log(`comparison: ${comparison}`);
-
     assert(comparison < 200); // inaccuracy is 0,02 % (the more sub messages the more inaccurate tax calculations in the third-party protocols the less precision )
     console.log(`basset_vault_for_bluna test: "expired_bluna_price" passed!`);
 }
