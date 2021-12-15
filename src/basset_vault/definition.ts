@@ -13,7 +13,6 @@ import {
 } from './../config';
 import {
 	create_contract,
-	create_token_to_token_terraswap_pair,
 	create_usd_to_token_terraswap_pair,
 	execute_contract,
 	init_basset_vault,
@@ -87,8 +86,8 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 	console.log(`=======================`);
 
 	// set psi token addr to governance contract
-	await execute_contract(lcd_client, sender, governance_contract_addr, 
-	       {
+	await execute_contract(lcd_client, sender, governance_contract_addr,
+		{
 			anyone: {
 				anyone_msg: {
 					register_token: {
@@ -98,7 +97,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 			}
 		}
 	);
-	console.log(`psi_token address setted in governance contract`);
+	console.log(`psi_token address set in governance contract`);
 	console.log(`=======================`);
 	
 	// instantiate Psi-UST pair contract
@@ -147,7 +146,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		console.log(`=======================`);
 
 		// instantiate basset_vault for bLuna
-		let basset_vault_config_for_bluna = BassetVaultConfigForbLuna(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_bluna);
+		let basset_vault_config_for_bluna = BassetVaultConfigForbLuna(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_bluna, terraswap_factory_contract_addr);
 
 		if (anchor_market_info !== null && anchor_market_info !== undefined) {
 			basset_vault_config_for_bluna.anchor_addr = anchor_market_info.anchor_token_addr;
@@ -160,12 +159,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		}
 
 		basset_vault_info_for_bluna = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_bluna);
-		console.log(`basset_vault_for_bluna instantiated\n\taddress: ${basset_vault_info_for_bluna.addr}\n\tnasset_token address: ${basset_vault_info_for_bluna.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_bluna.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_bluna.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_bluna.psi_distributor_addr}`);
-		console.log(`=======================`);
-
-		// instantiate nasset_psi_swap_contract for bLuna
-		let nluna_psi_pair_contract = await create_token_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, basset_vault_info_for_bluna.nasset_token_addr, psi_token_addr);
-		console.log(`Psi-nLuna pair contract instantiated\n\taddress: ${nluna_psi_pair_contract.pair_contract_addr}\n\tlp token address: ${nluna_psi_pair_contract.liquidity_token_addr}`);
+		console.log(`basset_vault_for_bluna instantiated\n\taddress: ${basset_vault_info_for_bluna.addr}\n\tnasset_token address: ${basset_vault_info_for_bluna.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_bluna.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_bluna.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_bluna.psi_distributor_addr}\n\tnluna_psi_swap_contract_addr: ${basset_vault_info_for_bluna.nasset_psi_swap_contract_addr}`);
 		console.log(`=======================`);
 	}
 	// bETH
@@ -182,7 +176,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		console.log(`=======================`);
 
 		// instantiate basset_vault for bETH
-		let basset_vault_config_for_beth = BassetVaultConfigForbEth(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_beth);
+		let basset_vault_config_for_beth = BassetVaultConfigForbEth(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_beth, terraswap_factory_contract_addr);
 
 		if (anchor_market_info !== null && anchor_market_info !== undefined) {
 			basset_vault_config_for_beth.anchor_addr = anchor_market_info.anchor_token_addr;
@@ -195,12 +189,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		}
 
 		basset_vault_info_for_beth = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_beth);
-		console.log(`basset_vault_for_beth instantiated\n\taddress: ${basset_vault_info_for_beth.addr}\n\tnasset_token address: ${basset_vault_info_for_beth.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_beth.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_beth.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_beth.psi_distributor_addr}`);
-		console.log(`=======================`);
-
-		// instantiate nasset_psi_swap_contract for bETH
-		let neth_psi_pair_contract = await create_token_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, basset_vault_info_for_beth.nasset_token_addr, psi_token_addr);
-		console.log(`Psi-nETH pair contract instantiated\n\taddress: ${neth_psi_pair_contract.pair_contract_addr}\n\tlp token address: ${neth_psi_pair_contract.liquidity_token_addr}`);
+		console.log(`basset_vault_for_beth instantiated\n\taddress: ${basset_vault_info_for_beth.addr}\n\tnasset_token address: ${basset_vault_info_for_beth.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_beth.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_beth.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_beth.psi_distributor_addr}\n\tneth_psi_swap_contract_addr: ${basset_vault_info_for_beth.nasset_psi_swap_contract_addr}`);
 		console.log(`=======================`);
 	}
 

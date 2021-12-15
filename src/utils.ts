@@ -166,7 +166,8 @@ export interface BassetVaultInfo {
 	nasset_token_config_holder_addr: string,
 	nasset_token_addr: string,
 	nasset_token_rewards_addr: string,
-	psi_distributor_addr: string
+	psi_distributor_addr: string,
+	nasset_psi_swap_contract_addr: string,
 }
 
 export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: BassetVaultConfig): Promise<BassetVaultInfo> {
@@ -178,7 +179,8 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, c
 		nasset_token_addr: '',
 		nasset_token_config_holder_addr: '',
 		nasset_token_rewards_addr: '',
-		psi_distributor_addr: ''
+		psi_distributor_addr: '',
+		nasset_psi_swap_contract_addr: ''
 	};
 	let contract_events = getContractEvents(init_contract_res);
 	for (let contract_event of contract_events) {
@@ -202,6 +204,10 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, c
 			basset_vault_info.psi_distributor_addr = psi_distributor_addr;
 		}
 
+		let nasset_psi_swap_contract_addr = contract_event["nasset_psi_swap_contract_addr"];
+		if (nasset_psi_swap_contract_addr !== undefined) {
+			basset_vault_info.nasset_psi_swap_contract_addr = nasset_psi_swap_contract_addr;
+		}
 	}
 	return basset_vault_info;
 }
