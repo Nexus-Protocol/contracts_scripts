@@ -1,9 +1,12 @@
-import { Wallet, Coin } from "@terra-money/terra.js"
+import {Wallet} from "@terra-money/terra.js"
+import {BassetVaultInfo} from "../../utils";
 
 export type Uint256 = string;
 export type Decimal256 = string;
 export type Addr = string;
 export type OfBlocksPerEpochPeriod = number;
+
+export const LOCALTERRA_DEFAULT_VALIDATOR_ADDR = "terravaloper1dcegyrekltswvyy0xy69ydgxn9x8x32zdy3ua5";
 
 export interface AnchorMarkerConfig {
     // Anchor token distribution speed
@@ -155,20 +158,20 @@ export function AnchorOverseerConfig(
 
 // ============================================================
 
-export interface AnchorInterstConfig {
+export interface AnchorInterestConfig {
     base_rate: Decimal256,
     interest_multiplier: Decimal256,
     owner: Addr,
 }
 
-export function AnchorInterstConfig(
+export function AnchorInterestConfig(
     wallet: Wallet,
-    ): AnchorInterstConfig{
+): AnchorInterestConfig {
     return {
         owner: wallet.key.accAddress,
         base_rate: '0.000000004076272770',
         interest_multiplier: '0.000000085601728176',
-	}
+    }
 }
 
 // ============================================================
@@ -187,13 +190,230 @@ export function RegisterContractsConfig(
     distribution_model: Addr,
     collector_contract: Addr,
     distributor_contract: Addr,
-    ): RegisterContractsConfig{
+): RegisterContractsConfig {
     return {
         overseer_contract: overseer_contract,
         interest_model: interest_model,
         distribution_model: distribution_model,
         collector_contract: collector_contract,
         distributor_contract: distributor_contract,
-	}
+    }
+}
+
+// ============================================================
+export interface AnchorHubConfig {
+    epoch_period: number,
+    underlying_coin_denom: Decimal256,
+    unbonding_period: number,
+    peg_recovery_fee: Decimal256,
+    er_threshold: Decimal256,
+    reward_denom: Decimal256,
+    validator: Addr,
+}
+
+export function AnchorHubBLunaConfig(): AnchorHubConfig {
+    return {
+        epoch_period: 30,
+        underlying_coin_denom: "uluna",
+        unbonding_period: 210,
+        peg_recovery_fee: "0.001",
+        er_threshold: "1",
+        reward_denom: "uusd",
+        validator: LOCALTERRA_DEFAULT_VALIDATOR_ADDR,
+    }
+}
+
+// ============================================================
+export interface BassetRewardConfig {
+    hub_contract: Addr,
+    reward_denom: String,
+}
+
+export function BassetRewardConfig(
+    hub_contract: Addr,
+): BassetRewardConfig {
+    return {
+        hub_contract: hub_contract,
+        reward_denom: "uusd",
+    }
+}
+
+// ============================================================
+export interface BassetTokenConfig {
+    name: String,
+    symbol: String,
+    decimals: number,
+    initial_balances: [],
+    mint: {
+        minter: Addr,
+    },
+    hub_contract: Addr,
+}
+
+export function BassetTokenConfig(
+    hub_contract: Addr,
+    minter_addr: Addr,
+): BassetTokenConfig {
+    return {
+        name: "bLuna",
+        symbol: "BLUNA",
+        decimals: 6,
+        initial_balances: [],
+        mint: {
+            minter: minter_addr,
+        },
+        hub_contract: hub_contract,
+    }
+}
+
+// ============================================================
+export interface AnchorCustodyBlunaConfig {
+    // owner address
+    owner: Addr,
+    // bAsset token address
+    collateral_token: Addr,
+    overseer_contract: Addr,
+    market_contract: Addr,
+    reward_contract: Addr,
+    liquidation_contract: Addr,
+    /// Expected reward denom. If bAsset reward is not same with
+    /// it, we try to convert the reward to the `stable_denom`.
+    stable_denom: String,
+    basset_info: {
+        name: String,
+        symbol: String,
+        decimals: number,
+    },
+}
+
+export function AnchorCustodyBassetConfig(
+    owner: Addr,
+    collateral_token: Addr,
+    overseer_contract: Addr,
+    market_contract: Addr,
+    reward_contract: Addr,
+    liquidation_contract: Addr,
+    basset_name: string,
+    basset_symbol: string,
+): AnchorCustodyBlunaConfig {
+    return {
+        owner: owner,
+        collateral_token: collateral_token,
+        overseer_contract: overseer_contract,
+        market_contract: market_contract,
+        reward_contract: reward_contract,
+        liquidation_contract: liquidation_contract,
+        stable_denom: "uusd",
+        basset_info: {
+            name: basset_name,
+            symbol: basset_symbol,
+            decimals: 6
+        }
+    }
+}
+
+// ============================================================
+export interface BethRewardConfig {
+    owner: Addr,
+    reward_denom: String,
+}
+
+export function BethRewardConfig(
+    owner: Addr,
+): BethRewardConfig {
+    return {
+        owner: owner,
+        reward_denom: "uusd",
+    }
+}
+
+// ============================================================
+export interface BethTokenConfig {
+    name: String,
+    symbol: String,
+    decimals: number,
+    initial_balances: [],
+    reward_contract: Addr,
+    mint: {
+        minter: Addr
+    }
+}
+
+export function BethTokenConfig(
+    reward_contract: Addr,
+    minter_addr: Addr,
+): BethTokenConfig {
+    return {
+        name: "beth",
+        symbol: "BETH",
+        decimals: 6,
+        initial_balances: [],
+        mint: {
+            minter: minter_addr
+        },
+        reward_contract: reward_contract,
+    }
+}
+
+// ============================================================
+export interface AnchorMarketInfo {
+    contract_addr: Addr,
+    overseer_addr: Addr,
+    oracle_addr: Addr,
+    basset_hub_addr: Addr,
+    anchor_token_addr: Addr,
+    anc_stable_swap_addr: Addr,
+    aterra_token_addr: Addr,
+    bluna_token_addr: Addr,
+    beth_token_addr: Addr,
+    bluna_custody_addr: Addr,
+    beth_custody_addr: Addr,
+}
+
+export function AnchorMarketInfo(
+    contract_addr: Addr,
+    overseer_addr: Addr,
+    oracle_addr: Addr,
+    basset_hub_addr: Addr,
+    anchor_token_addr: Addr,
+    anc_stable_swap_addr: Addr,
+    aterra_token_addr: Addr,
+    bluna_token_addr: Addr,
+    beth_token_addr: Addr,
+    bluna_custody_addr: Addr,
+    beth_custody_addr: Addr,
+): AnchorMarketInfo {
+    return {
+        contract_addr: contract_addr,
+        overseer_addr: overseer_addr,
+        oracle_addr: oracle_addr,
+        basset_hub_addr: basset_hub_addr,
+        anchor_token_addr: anchor_token_addr,
+        aterra_token_addr: aterra_token_addr,
+        anc_stable_swap_addr: anc_stable_swap_addr,
+        bluna_token_addr: bluna_token_addr,
+        beth_token_addr: beth_token_addr,
+        bluna_custody_addr: bluna_custody_addr,
+        beth_custody_addr: beth_custody_addr,
+    }
+}
+
+// ============================================================
+export interface AnchorAndNexusDeploymentResult {
+    anchor_market_info: AnchorMarketInfo,
+    basset_vault_info_for_bluna: BassetVaultInfo,
+    basset_vault_info_for_beth: BassetVaultInfo,
+}
+
+export function AnchorAndNexusDeploymentResult(
+    anchor_market_info: AnchorMarketInfo,
+    basset_vault_info_for_bluna: BassetVaultInfo,
+    basset_vault_info_for_beth: BassetVaultInfo,
+): AnchorAndNexusDeploymentResult {
+    return {
+        anchor_market_info: anchor_market_info,
+        basset_vault_info_for_bluna: basset_vault_info_for_bluna,
+        basset_vault_info_for_beth: basset_vault_info_for_beth,
+    }
 }
 
