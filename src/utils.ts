@@ -1,14 +1,30 @@
-import { readFileSync } from 'fs';
-import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, LocalTerra, MnemonicKey, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
+import {readFileSync} from 'fs';
+import {
+	BlockTxBroadcastResult,
+	Coin,
+	Coins,
+	getCodeId,
+	getContractAddress,
+	getContractEvents,
+	LCDClient,
+	LocalTerra,
+	MnemonicKey,
+	Msg,
+	MsgExecuteContract,
+	MsgInstantiateContract,
+	MsgStoreCode,
+	StdFee,
+	Wallet
+} from '@terra-money/terra.js';
 import {BassetVaultConfig} from './config';
 import {SecretsManager} from 'aws-sdk';
 import * as prompt from 'prompt';
 import {isTxSuccess} from './transaction';
 
-export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object): Promise<string> {
+export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object, init_funds?: Coin[]): Promise<string> {
 	let code_id = await store_contract(lcd_client, sender, wasm_path);
 	console.log(`${contract_name} uploaded\n\tcode_id: ${code_id}`);
-	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg, init_funds);
 	console.log(`${contract_name} instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
 }
@@ -31,13 +47,13 @@ export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm
 	}
 }
 
-async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds?: Coin[]): Promise<BlockTxBroadcastResult> {
+export async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds?: Coin[]): Promise<BlockTxBroadcastResult> {
 	const messages: Msg[] = [new MsgInstantiateContract(
 		sender.key.accAddress,
-		 	admin,
-			code_id,
-			init_msg,
-			init_funds
+		admin,
+		code_id,
+		init_msg,
+		init_funds
 	)];
 
 	while (true) {
@@ -55,11 +71,12 @@ export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet
 	return getContractAddress(result)
 }
 
-export async function execute_contract(lcd_client: LCDClient, sender: Wallet, contract_addr: string, execute_msg: object): Promise<BlockTxBroadcastResult | undefined> {
+export async function execute_contract(lcd_client: LCDClient, sender: Wallet, contract_addr: string, execute_msg: object, coins?: Coin[]): Promise<BlockTxBroadcastResult | undefined> {
 	const messages: Msg[] = [new MsgExecuteContract(
 		sender.key.accAddress,
 		contract_addr,
-		execute_msg
+		execute_msg,
+		coins
 	)];
 	let result = await send_message(lcd_client, sender, messages);
 	return result
@@ -212,7 +229,6 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 		return undefined;
 	}
 }
-
 
 async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[], tax?: Coin[]): Promise<StdFee | undefined> {
 	try {
