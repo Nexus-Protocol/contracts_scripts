@@ -1,39 +1,40 @@
 {
-	"name": "uploader",
-	"version": "2.0.0",
-	"description": "",
-	"scripts": {
-		"upload-basset-vault": "ts-node src/basset_vault/executor.ts",
-		"vesting": "ts-node src/vesting/executor.ts",
-		"airdrop": "ts-node src/airdrop/executor.ts",
-		"staking-lp": "ts-node src/staking_lp/executor.ts",
-		"lp-simulation": "ts-node src/lp_simulation/executor.ts",
-		"calc-airdrop": "ts-node src/airdrop/calc_airdrop_merkle_root.ts",
-		"rebalance": "ts-node src/rebalance/executor.ts",
-		"honest-work": "ts-node src/basset_honest_work/executor.ts",
-		"claim-lp-rewards": "ts-node src/claim_lp_rewards/executor.ts",
-		"deploy-anchor": "ts-node src/integration_tests/deploy_anchor/executor.ts",
-		"integration-tests": "ts-node src/integration_tests/psi_distribution/executor.ts"
-	},
-	"devDependencies": {
-		"@types/express": "^4.17.11",
-		"@types/node": "^16.3.3",
-		"@types/prompt": "^1.1.0",
-		"ts-node": "^9.1.1",
-		"ts-node-dev": "^1.1.6",
-		"tslib": "^2.3.0",
-		"typescript": "^4.2.4",
-		"@aws-sdk/types": "^3.29.0"
-	},
-	"dependencies": {
-		"@terra-money/terra.js": "^2.0.8",
-		"axios": "^0.21.1",
-		"commander": "^7.2.0",
-		"express": "^4.17.1",
-		"prompt": "^1.1.0",
-		"keccak256": "^1.0.2",
-		"merkletreejs": "0.2.16",
-		"decimal.js": "^10.3.1",
-		"aws-sdk": "^2.989.0"
+  "name": "uploader",
+  "version": "2.0.0",
+  "description": "",
+  "scripts": {
+    "upload-basset-vault": "ts-node src/basset_vault/executor.ts",
+    "vesting": "ts-node src/vesting/executor.ts",
+    "airdrop": "ts-node src/airdrop/executor.ts",
+    "staking-lp": "ts-node src/staking_lp/executor.ts",
+    "lp-simulation": "ts-node src/lp_simulation/executor.ts",
+    "calc-airdrop": "ts-node src/airdrop/calc_airdrop_merkle_root.ts",
+    "rebalance": "ts-node src/rebalance/executor.ts",
+    "honest-work": "ts-node src/basset_honest_work/executor.ts",
+    "claim-lp-rewards": "ts-node src/claim_lp_rewards/executor.ts",
+    "deploy-anchor": "ts-node src/integration_tests/deploy_anchor/executor.ts",
+    "integration-tests": "ts-node src/integration_tests/psi_distribution/executor.ts",
+    "bv_integration_test": "ts-node src/integration_tests/basset_vault/executor.ts"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.11",
+    "@types/node": "^16.3.3",
+    "@types/prompt": "^1.1.0",
+    "ts-node": "^9.1.1",
+    "ts-node-dev": "^1.1.6",
+    "tslib": "^2.3.0",
+    "typescript": "^4.2.4",
+    "@aws-sdk/types": "^3.29.0"
+  },
+  "dependencies": {
+    "@terra-money/terra.js": "^2.0.8",
+    "axios": "^0.21.1",
+    "commander": "^7.2.0",
+    "express": "^4.17.1",
+    "prompt": "^1.1.0",
+    "keccak256": "^1.0.2",
+    "merkletreejs": "0.2.16",
+    "decimal.js": "^10.3.1",
+    "aws-sdk": "^2.989.0"
 	}
 }
