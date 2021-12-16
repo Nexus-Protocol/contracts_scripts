@@ -13,6 +13,15 @@ async function run_program() {
     const program = new Command();
 
     program
+        .action(async () => {
+            const addresses_holder_addr = await deploy();
+            await run_normal_case(addresses_holder_addr);
+            await run_borrow_more_on_bluna_price_increasing(addresses_holder_addr);
+            await run_repay_on_bluna_price_decreasing(addresses_holder_addr);
+            await run_expired_basset_price_rebalance(addresses_holder_addr);
+        });
+
+    program
         .command('deploy')
         .action(async () => {
             await deploy();
@@ -67,7 +76,8 @@ run_program()
 
 async function deploy() {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
-    await anchor_nexus_full_init(lcd_client, sender, sender.key.accAddress, 1, 100);
+    const addresses_holder_addr = await anchor_nexus_full_init(lcd_client, sender, sender.key.accAddress, 1, 100);
+    return addresses_holder_addr;
 }
 
 async function run_normal_case(addresses_holder_addr: string) {

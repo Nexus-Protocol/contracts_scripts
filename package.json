@@ -14,7 +14,7 @@
     "claim-lp-rewards": "ts-node src/claim_lp_rewards/executor.ts",
     "deploy-anchor": "ts-node src/integration_tests/deploy_anchor/executor.ts",
     "integration-tests": "ts-node src/integration_tests/psi_distribution/executor.ts",
-    "bv_integration_test": "ts-node src/integration_tests/basset_vault/executor.ts"
+    "bv_integration_tests": "ts-node src/integration_tests/basset_vault/executor.ts"
   },
   "devDependencies": {
     "@types/express": "^4.17.11",

@@ -215,7 +215,7 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
     actual_loan = +actual_borrower_info.loan_amount;
     comparison = Math.abs(actual_loan - expected_loan);
     assert(comparison < 100); // precision is 0,01 %
-    console.log(`basset_vault_for_bluna test: " decrease_bluna_price" passed!`);
+    console.log(`basset_vault_for_bluna test: "decrease_bluna_price" passed!`);
 }
 
 export async function expired_basset_price_rebalance(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
