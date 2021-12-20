@@ -85,4 +85,5 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 
 [start localterra](#start-localterra) before run scripts.
 
-- `npm run integration-tests`  - run integration tests
+- `npm run psi-distr-integration-tests`  - run psi distribution integration tests
+- `npm run bvault-integration-tests`  - run basset vault integration tests
