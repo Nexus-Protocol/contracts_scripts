@@ -1,13 +1,13 @@
-import {BlockTxBroadcastResult, LCDClient, Msg, MsgExecuteContract, Wallet} from '@terra-money/terra.js';
-import {AirdropAccount, anc_tokens_as_str, build_merkel_tree, tokens_to_drop_as_str} from "./airdrop_merkle_tree"
-import {Command} from 'commander';
-import {lstatSync, readFileSync} from 'fs';
-import {SnapshotDirReader, SnapshotFileReader} from "./SnapshotReader";
-import {Decimal} from 'decimal.js'
-import {writeFile} from 'fs';
-import {Airdrop} from "./Airdrop";
-import {get_lcd_config_with_wallet, LCDConfig, send_message} from './../utils';
-import {isTxSuccess} from './../transaction';
+import { BlockTxBroadcastResult, LCDClient, Msg, MsgExecuteContract, Wallet } from '@terra-money/terra.js';
+import { AirdropAccount, anc_tokens_as_str, build_merkel_tree, tokens_to_drop_as_str } from "./airdrop_merkle_tree"
+import { Command } from 'commander';
+import { lstatSync, readFileSync } from 'fs';
+import { SnapshotDirReader, SnapshotFileReader } from "./SnapshotReader";
+import { Decimal } from 'decimal.js'
+import { writeFile } from 'fs';
+import { Airdrop } from "./Airdrop";
+import { get_lcd_config_with_wallet, LCDConfig, send_message } from './../utils';
+import { isTxSuccess } from './../transaction';
 
 interface Config {
 	lcd_client: LCDConfig,
@@ -30,7 +30,7 @@ async function run() {
 			const psi_tokens_to_airdrop: number = parseInt(options.tokensAmount);
 			const airdrop = build_merkel_tree(stakers, psi_tokens_to_airdrop, options.psiToAncRatioCfgPath);
 			const root = airdrop.getMerkleRoot();
-			console.log(`Merkle Root: \"${root}\"`);
+			console.log(`Merkle Root: "${root}"`);
 
 			const airdrop_accounts = airdrop.getAccounts();
 			save_stakers_as_csv(airdrop_accounts, options.outputPath);
@@ -50,7 +50,7 @@ async function run() {
 			const stage: number = parseInt(options.stage);
 			const airdrop = build_merkel_tree(stakers, psi_tokens_to_airdrop, options.psiToAncRatioCfgPath);
 			const root = airdrop.getMerkleRoot();
-			console.log(`Merkle Root: \"${root}\"`);
+			console.log(`Merkle Root: "${root}"`);
 
 			save_users_proof(airdrop, options.outputPath, stage);
 		});
@@ -67,7 +67,7 @@ async function run() {
 			const psi_tokens_to_airdrop: number = parseInt(options.tokensAmount);
 			const airdrop = build_merkel_tree(stakers, psi_tokens_to_airdrop, options.psiToAncRatioCfgPath);
 			const root = airdrop.getMerkleRoot();
-			console.log(`Merkle Root: \"${root}\"`);
+			console.log(`Merkle Root: "${root}"`);
 
 			const airdrop_accounts = airdrop.getAccounts();
 			await send_all_airdrop(lcd_client, sender, airdrop_accounts, config.psi_token_addr);
@@ -139,11 +139,11 @@ function read_stakers(snapshot_path: string, min_anc_staked: number): Map<string
 }
 
 function save_stakers_as_json(accounts_arr: Array<AirdropAccount>, filepath: string) {
-	const accounts = {accounts: accounts_arr};
-	writeFile(`${filepath}.json`, JSON.stringify(accounts, null, '\t'), function(err) {
-	    if (err) {
-		console.log(err);
-	    }
+	const accounts = { accounts: accounts_arr };
+	writeFile(`${filepath}.json`, JSON.stringify(accounts, null, '\t'), function (err) {
+		if (err) {
+			console.log(err);
+		}
 	});
 }
 
@@ -154,10 +154,10 @@ function save_stakers_as_csv(airdrop_accounts: Array<AirdropAccount>, filepath: 
 		const staker_str = `${airdrop.address},${tokens_to_drop_as_str(airdrop)},${anc_tokens_as_str(airdrop)},${psi_tokens_per_anc}\n`;
 		csv_content += staker_str;
 	}
-	writeFile(`${filepath}.csv`, csv_content, function(err) {
-	    if (err) {
-		console.log(err);
-	    }
+	writeFile(`${filepath}.csv`, csv_content, function (err) {
+		if (err) {
+			console.log(err);
+		}
 	});
 }
 
@@ -175,7 +175,7 @@ interface UsersAirdropData {
 
 function save_users_proof(airdrop: Airdrop, filepath: string, stage: number) {
 	const users: UserAirdropData[] = [];
-	
+
 	const airdrop_accounts = airdrop.getAccounts();
 	for (const airdrop_account of airdrop_accounts) {
 		const user_proofs = airdrop.getMerkleProof(airdrop_account);
@@ -193,22 +193,22 @@ function save_users_proof(airdrop: Airdrop, filepath: string, stage: number) {
 		users: users
 
 	};
-	writeFile(`${filepath}.json`, JSON.stringify(users_airdrop_data, null, '\t'), function(err) {
-	    if (err) {
-		console.log(err);
-	    }
+	writeFile(`${filepath}.json`, JSON.stringify(users_airdrop_data, null, '\t'), function (err) {
+		if (err) {
+			console.log(err);
+		}
 	});
 }
 
 run()
-    .then(text => {
-        console.log(text);
-    })
+	.then(text => {
+		console.log(text);
+	})
 	.catch(err => {
-        console.log(err);
-    });
+		console.log(err);
+	});
 
-async function get_lcd_and_wallet(options: any): Promise<[Config, LCDClient, Wallet]> {
+async function get_lcd_and_wallet(options: { config: string | undefined; }): Promise<[Config, LCDClient, Wallet]> {
 	let config_path: string;
 	if (options.config === undefined) {
 		config_path = DEFAULT_CONFIG_PATH;

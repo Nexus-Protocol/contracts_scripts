@@ -1,14 +1,14 @@
-import {LCDClient, Wallet} from '@terra-money/terra.js';
-import {staking_contract_wasm} from './../basset_vault/definition';
-import {execute_contract, instantiate_contract, store_contract, to_utc_seconds} from './../utils';
-import {DistributionScheduleRaw, Config} from './executor';
+import { LCDClient, Wallet } from '@terra-money/terra.js';
+import { staking_contract_wasm } from './../basset_vault/definition';
+import { execute_contract, instantiate_contract, store_contract, to_utc_seconds } from './../utils';
+import { DistributionScheduleRaw, Config } from './executor';
 
 interface StakingConfig {
 	owner: string,
 	psi_token: string,
 	staking_token: string,
 	terraswap_factory: string,
-	distribution_schedule: any[],
+	distribution_schedule: DistributionSchedule[],
 }
 
 interface DistributionSchedule {
@@ -59,10 +59,10 @@ export async function init_lp_staking_contract(lcd_client: LCDClient, sender: Wa
 
 export async function add_distribution_schedules(lcd_client: LCDClient, sender: Wallet, staking_contract_addr: string, distribution_schedules: DistributionSchedule[]) {
 	await execute_contract(lcd_client, sender, staking_contract_addr, {
-			add_schedules: {
-			       schedules: distribution_schedules
-		       }
+		add_schedules: {
+			schedules: distribution_schedules
 		}
+	}
 	);
 	console.log(`distribution schedules added`);
 	console.log(`=======================`);
@@ -70,9 +70,9 @@ export async function add_distribution_schedules(lcd_client: LCDClient, sender: 
 
 
 export async function query_state(lcd_client: LCDClient, staking_contract_addr: string) {
-	const config_response = await lcd_client.wasm.contractQuery(staking_contract_addr, {config: {}});
-	console.log(`config:\n${JSON.stringify( config_response )}`)
+	const config_response = await lcd_client.wasm.contractQuery(staking_contract_addr, { config: {} });
+	console.log(`config:\n${JSON.stringify(config_response)}`)
 
-	const state_response = await lcd_client.wasm.contractQuery(staking_contract_addr, {state: {}});
-	console.log(`state:\n${JSON.stringify( state_response )}`)
+	const state_response = await lcd_client.wasm.contractQuery(staking_contract_addr, { state: {} });
+	console.log(`state:\n${JSON.stringify(state_response)}`)
 }

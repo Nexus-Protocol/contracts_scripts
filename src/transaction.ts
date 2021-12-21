@@ -1,7 +1,8 @@
 import { BlockTxBroadcastResult, TxError } from '@terra-money/terra.js';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isTxFailed(tx: any): boolean {
-  return tx.code !== undefined
+	return tx.code !== undefined
 }
 
 export function isTxSuccess(tx: BlockTxBroadcastResult, write_to_log = true): boolean {

@@ -1,6 +1,6 @@
-import {MerkleTree} from 'merkletreejs';
-import {AirdropAccount, tokens_to_drop_as_str} from './airdrop_merkle_tree';
-const keccak256 = require('keccak256');
+import { MerkleTree } from 'merkletreejs';
+import { AirdropAccount, tokens_to_drop_as_str } from './airdrop_merkle_tree';
+import keccak256 from 'keccak256';
 
 class Airdrop {
 	private tree: MerkleTree;
@@ -8,7 +8,7 @@ class Airdrop {
 
 	constructor(accounts: Array<AirdropAccount>) {
 		this.accounts = accounts;
-		const leaves: any[] = [];
+		const leaves = [];
 		for (const account of accounts) {
 			const leaf_str = account.address + tokens_to_drop_as_str(account);
 			const leaf = keccak256(leaf_str);

@@ -1,9 +1,9 @@
 import { readFileSync } from 'fs';
-import {BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, LocalTerra, MnemonicKey, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet} from '@terra-money/terra.js';
-import {BassetVaultConfig} from './config';
-import {SecretsManager} from 'aws-sdk';
+import { BlockTxBroadcastResult, Coin, Coins, getCodeId, getContractAddress, getContractEvents, LCDClient, LocalTerra, MnemonicKey, Msg, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode, StdFee, Wallet } from '@terra-money/terra.js';
+import { BassetVaultConfig } from './config';
+import { SecretsManager } from 'aws-sdk';
 import * as prompt from 'prompt';
-import {isTxSuccess} from './transaction';
+import { isTxSuccess } from './transaction';
 
 export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object): Promise<string> {
 	const code_id = await store_contract(lcd_client, sender, wasm_path);
@@ -18,10 +18,10 @@ export async function create_contract(lcd_client: LCDClient, sender: Wallet, con
 // ============================================================
 
 export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm_path: string): Promise<number> {
-	const contract_wasm = readFileSync(wasm_path, {encoding: 'base64'});
+	const contract_wasm = readFileSync(wasm_path, { encoding: 'base64' });
 	const messages: Msg[] = [new MsgStoreCode(sender.key.accAddress, contract_wasm)];
 
-	while (true) {
+	for (; ;) {
 		const result = await calc_fee_and_send_tx(lcd_client, sender, messages);
 		if (result !== undefined && isTxSuccess(result)) {
 			return parseInt(getCodeId(result));
@@ -34,13 +34,13 @@ export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm
 async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds?: Coin[]): Promise<BlockTxBroadcastResult> {
 	const messages: Msg[] = [new MsgInstantiateContract(
 		sender.key.accAddress,
-		 	admin,
-			code_id,
-			init_msg,
-			init_funds
+		admin,
+		code_id,
+		init_msg,
+		init_funds
 	)];
 
-	while (true) {
+	for (; ;) {
 		const result = await calc_fee_and_send_tx(lcd_client, sender, messages);
 		if (result !== undefined && isTxSuccess(result)) {
 			return result;
@@ -89,7 +89,7 @@ export async function create_usd_to_token_terraswap_pair(lcd_client: LCDClient, 
 		}
 	};
 
-	while (true) {
+	for (; ;) {
 		const pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr, create_pair_msg);
 		if (pair_creation_result !== undefined && isTxSuccess(pair_creation_result)) {
 			return parse_pair_creation(pair_creation_result);
@@ -103,13 +103,13 @@ export async function create_token_to_token_terraswap_pair(lcd_client: LCDClient
 	const create_pair_msg = {
 		create_pair: {
 			asset_infos: [
-				{token: {contract_addr: token_1_addr}},
-				{token: {contract_addr: token_2_addr}},
+				{ token: { contract_addr: token_1_addr } },
+				{ token: { contract_addr: token_2_addr } },
 			]
 		}
 	};
 
-	while (true) {
+	for (; ;) {
 		const pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr, create_pair_msg);
 		if (pair_creation_result !== undefined && isTxSuccess(pair_creation_result)) {
 			return parse_pair_creation(pair_creation_result);
@@ -127,12 +127,12 @@ function parse_pair_creation(pair_creation_result: BlockTxBroadcastResult): Terr
 	const contract_events = getContractEvents(pair_creation_result);
 	for (const contract_event of contract_events) {
 		const pair_contract_addr = contract_event["pair_contract_addr"];
-		if ( pair_contract_addr !== undefined ) {
+		if (pair_contract_addr !== undefined) {
 			pair_info.pair_contract_addr = pair_contract_addr;
 		}
 
 		const liquidity_token_addr = contract_event["liquidity_token_addr"];
-		if ( liquidity_token_addr !== undefined ) {
+		if (liquidity_token_addr !== undefined) {
 			pair_info.liquidity_token_addr = liquidity_token_addr;
 		}
 	}
@@ -253,9 +253,9 @@ export function get_date_str(): string {
 }
 
 export function to_utc_seconds(date_str: string): number {
-    const date = new Date(date_str)
-    const time_zone_offset_in_ms = date.getTimezoneOffset() * 60 * 1_000
-    return (date.getTime() - time_zone_offset_in_ms) / 1_000
+	const date = new Date(date_str)
+	const time_zone_offset_in_ms = date.getTimezoneOffset() * 60 * 1_000
+	return (date.getTime() - time_zone_offset_in_ms) / 1_000
 }
 
 const seed_prompt = [
@@ -278,10 +278,10 @@ export function prompt_for_seed(): Promise<string> {
 
 export async function get_seed_from_aws_secrets(region: string, secret_name: string): Promise<string | undefined> {
 	const client = new SecretsManager({
-	    region: region
+		region: region
 	});
 
-	return client.getSecretValue({SecretId: secret_name}).promise().then((data) => {
+	return client.getSecretValue({ SecretId: secret_name }).promise().then((data) => {
 		if (data.SecretString !== undefined) {
 			return JSON.parse(data.SecretString).seed;
 		} else {
@@ -332,7 +332,9 @@ export async function get_lcd_config_with_wallet(lcd_config: LCDConfig): Promise
 	} else if (lcd_config.aws_secrets !== undefined) {
 		check_non_localterra(lcd_config);
 		lcd_client = new LCDClient({
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			URL: lcd_config.url!,
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			chainID: lcd_config.chain_id!
 		});
 
@@ -343,16 +345,18 @@ export async function get_lcd_config_with_wallet(lcd_config: LCDConfig): Promise
 			process.exit(1);
 		}
 
-		const owner = new MnemonicKey({mnemonic: seed, account: account_id, index: index_id});
+		const owner = new MnemonicKey({ mnemonic: seed, account: account_id, index: index_id });
 		sender = new Wallet(lcd_client, owner);
 	} else {
 		check_non_localterra(lcd_config);
 		lcd_client = new LCDClient({
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			URL: lcd_config.url!,
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			chainID: lcd_config.chain_id!
 		});
 		const seed = await prompt_for_seed();
-		const owner = new MnemonicKey({mnemonic: seed, account: account_id, index: index_id});
+		const owner = new MnemonicKey({ mnemonic: seed, account: account_id, index: index_id });
 		sender = new Wallet(lcd_client, owner);
 	}
 
@@ -367,7 +371,9 @@ export async function get_lcd_config(lcd_config: LCDConfig): Promise<LCDClient> 
 	} else {
 		check_non_localterra(lcd_config);
 		lcd_client = new LCDClient({
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			URL: lcd_config.url!,
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			chainID: lcd_config.chain_id!
 		});
 	}

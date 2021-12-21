@@ -1,8 +1,8 @@
-import {LCDClient, Wallet} from '@terra-money/terra.js';
-import {readFileSync} from 'fs';
-import {Command} from 'commander';
-import {add_vesting_account, create_vesting_account, init_vesting_contract, query_state} from "./definition";
-import {get_lcd_config_with_wallet, LCDConfig} from './../utils';
+import { LCDClient, Wallet } from '@terra-money/terra.js';
+import { readFileSync } from 'fs';
+import { Command } from 'commander';
+import { add_vesting_account, create_vesting_account, init_vesting_contract, query_state } from "./definition";
+import { get_lcd_config_with_wallet, LCDConfig } from './../utils';
 
 export interface Config {
 	lcd_client: LCDConfig,
@@ -62,14 +62,14 @@ async function run_program() {
 }
 
 run_program()
-    .then(text => {
-        console.log(text);
-    })
+	.then(text => {
+		console.log(text);
+	})
 	.catch(err => {
-        console.log(err);
-    });
+		console.log(err);
+	});
 
-async function get_lcd_and_wallet(options: any): Promise<[Config, LCDClient, Wallet]> {
+async function get_lcd_and_wallet(options: { config: string | undefined; }): Promise<[Config, LCDClient, Wallet]> {
 	let config_path: string;
 	if (options.config === undefined) {
 		config_path = DEFAULT_CONFIG_PATH;

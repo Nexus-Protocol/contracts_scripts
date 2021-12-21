@@ -1,8 +1,8 @@
 import { LCDClient, Wallet } from '@terra-money/terra.js';
 import { readFileSync } from 'fs';
-import {Command} from 'commander';
-import {execute_contract, get_date_str, get_lcd_config_with_wallet, LCDConfig, sleep} from './../utils';
-import {isTxSuccess} from './../transaction';
+import { Command } from 'commander';
+import { execute_contract, get_date_str, get_lcd_config_with_wallet, LCDConfig, sleep } from './../utils';
+import { isTxSuccess } from './../transaction';
 
 interface Config {
 	nasset_token_rewards_addr: string,
@@ -60,7 +60,7 @@ export async function start_claim_rewards_loop(lcd_client: LCDClient, sender: Wa
 		}
 	};
 
-	while (true) {
+	for (; ;) {
 		const result = await execute_contract(lcd_client, sender, nasset_token_rewards_addr, claim_rewards_msg);
 		if (result !== undefined && isTxSuccess(result)) {
 			console.log(`${get_date_str()} :: Successfully claim rewards for '${claim_rewards_for_address}'`);
@@ -73,9 +73,9 @@ export async function start_claim_rewards_loop(lcd_client: LCDClient, sender: Wa
 }
 
 run_program()
-    .then(text => {
-        console.log(text);
-    })
+	.then(text => {
+		console.log(text);
+	})
 	.catch(err => {
-        console.log(err);
-    });
+		console.log(err);
+	});

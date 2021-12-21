@@ -1,4 +1,4 @@
-import { Wallet, Coin } from "@terra-money/terra.js"
+import { Wallet } from "@terra-money/terra.js"
 
 export type Uint256 = string;
 export type Decimal256 = string;
@@ -21,14 +21,14 @@ export interface AnchorMarkerConfig {
 export function AnchorMarkerConfig(
     wallet: Wallet,
     aterra_code_id: number,
-    ): AnchorMarkerConfig {
-    return{
+): AnchorMarkerConfig {
+    return {
         owner_addr: wallet.key.accAddress,
         stable_denom: 'uusd',
         aterra_code_id: aterra_code_id,
         anc_emission_rate: '6793787.950524103374549206',
         max_borrow_factor: '0.95'
-    }    
+    }
 }
 
 // ============================================================
@@ -38,13 +38,13 @@ export interface AnchorOracleConfig {
     owner: Addr,
 }
 
-export function AnchorOracleConfig (
+export function AnchorOracleConfig(
     wallet: Wallet
-    ): AnchorOracleConfig{
+): AnchorOracleConfig {
     return {
-		base_asset: 'uusd',
+        base_asset: 'uusd',
         owner: wallet.key.accAddress
-	}
+    }
 }
 
 // ============================================================
@@ -68,9 +68,9 @@ export interface AnchorLiquidationConfig {
 export function AnchorLiquidationConfig(
     wallet: Wallet,
     oracle_contract: string,
-): AnchorLiquidationConfig{
+): AnchorLiquidationConfig {
     return {
-		owner: wallet.key.accAddress,
+        owner: wallet.key.accAddress,
         oracle_contract: oracle_contract,
         stable_denom: 'uusd',
         safe_ratio: '0.8',
@@ -78,7 +78,7 @@ export function AnchorLiquidationConfig(
         max_premium_rate: '0.3',
         liquidation_threshold: '500',
         price_timeframe: 60
-	}
+    }
 }
 
 // ============================================================
@@ -93,18 +93,18 @@ export interface AnchorDistrConfig {
 
 export function AnchorDistrConfig(
     wallet: Wallet,
-    ): AnchorDistrConfig{
+): AnchorDistrConfig {
     return {
-		owner: wallet.key.accAddress,
+        owner: wallet.key.accAddress,
         emission_cap: '20381363.851572310123647620',
         emission_floor: '6793787.950524103374549206',
         increment_multiplier: '1.007266723782294841',
         decrement_multiplier: '0.997102083349256160',
-	}
+    }
 }
 
 // ============================================================
- 
+
 export interface AnchorOverseerConfig {
     // Ratio to be used for purchasing ANC token from the interest buffer
     anc_purchase_factor: Decimal256,
@@ -136,9 +136,9 @@ export function AnchorOverseerConfig(
     liquidation_contract: string,
     market_contract: string,
     oracle_contract: string,
-    ): AnchorOverseerConfig{
+): AnchorOverseerConfig {
     return {
-		owner_addr: wallet.key.accAddress,
+        owner_addr: wallet.key.accAddress,
         oracle_contract: oracle_contract,
         market_contract: market_contract,
         liquidation_contract: liquidation_contract,
@@ -150,7 +150,7 @@ export function AnchorOverseerConfig(
         buffer_distribution_factor: '0.1',
         anc_purchase_factor: '0.1',
         price_timeframe: 60,
-	}
+    }
 }
 
 // ============================================================
@@ -163,17 +163,17 @@ export interface AnchorInterstConfig {
 
 export function AnchorInterstConfig(
     wallet: Wallet,
-    ): AnchorInterstConfig{
+): AnchorInterstConfig {
     return {
         owner: wallet.key.accAddress,
         base_rate: '0.000000004076272770',
         interest_multiplier: '0.000000085601728176',
-	}
+    }
 }
 
 // ============================================================
 
-export interface RegisterContractsConfig{
+export interface RegisterContractsConfig {
     overseer_contract: Addr,
     interest_model: Addr,
     distribution_model: Addr,
@@ -187,13 +187,13 @@ export function RegisterContractsConfig(
     distribution_model: Addr,
     collector_contract: Addr,
     distributor_contract: Addr,
-    ): RegisterContractsConfig{
+): RegisterContractsConfig {
     return {
         overseer_contract: overseer_contract,
         interest_model: interest_model,
         distribution_model: distribution_model,
         collector_contract: collector_contract,
         distributor_contract: distributor_contract,
-	}
+    }
 }
 

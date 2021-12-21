@@ -1,4 +1,4 @@
-import { LCDClient, Wallet, Coin} from '@terra-money/terra.js';
+import { LCDClient, Wallet, Coin } from '@terra-money/terra.js';
 import {
 	store_contract,
 	execute_contract,
@@ -6,7 +6,7 @@ import {
 	instantiate_contract
 } from '../../utils';
 import { AnchorDistrConfig, AnchorInterstConfig, AnchorLiquidationConfig, AnchorMarkerConfig, AnchorOracleConfig, AnchorOverseerConfig } from './config';
-import {Cw20CodeId, TokenConfig} from '../../config';
+import { Cw20CodeId, TokenConfig } from '../../config';
 
 //=============================================================================
 const artifacts_path = "wasm_artifacts";
@@ -36,7 +36,7 @@ export async function init_anc_token(lcd_client: LCDClient, sender: Wallet, code
 	return contract_addr;
 }
 
-export async function anchor_init(lcd_client: LCDClient, sender: Wallet){
+export async function anchor_init(lcd_client: LCDClient, sender: Wallet) {
 
 	//deploy cw20_code_id
 	const cw20_code_id = await Cw20CodeId(lcd_client, sender);
@@ -48,13 +48,13 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet){
 		decimals: 6,
 		initial_balances: [],
 	};
-	const anc_token_addr = await init_anc_token(lcd_client, sender, cw20_code_id, anchor_token_config);
+	const _anc_token_addr = await init_anc_token(lcd_client, sender, cw20_code_id, anchor_token_config);
 	console.log(`=======================`);
 
 	console.log(`Instantiating Anchor contracts...\n\t`);
 
 	//instantiate Market
-	const anchor_market_code_id = await store_contract(lcd_client, sender, anchor_market_wasm );
+	const anchor_market_code_id = await store_contract(lcd_client, sender, anchor_market_wasm);
 	console.log(`anchor_market uploaded\n\tcode_id: ${anchor_market_code_id}`);
 	const anchor_market_config = AnchorMarkerConfig(sender, cw20_code_id);
 
@@ -92,14 +92,14 @@ export async function anchor_init(lcd_client: LCDClient, sender: Wallet){
 
 	await execute_contract(lcd_client, sender, anchor_market_addr,
 		{
-				register_contracts: {
-					overseer_contract: anchor_overseer_addr,
-					interest_model: anchor_interest_model_addr,
-					distribution_model: anchor_distribution_model_addr,
-					collector_contract: sender.key.accAddress,
-					distributor_contract: anchor_distribution_model_addr,
-					}
-				}
+			register_contracts: {
+				overseer_contract: anchor_overseer_addr,
+				interest_model: anchor_interest_model_addr,
+				distribution_model: anchor_distribution_model_addr,
+				collector_contract: sender.key.accAddress,
+				distributor_contract: anchor_distribution_model_addr,
+			}
+		}
 	);
 	console.log(`contracts have been registered`);
 	console.log(`=======================`);

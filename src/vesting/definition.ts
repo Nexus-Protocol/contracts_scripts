@@ -1,12 +1,12 @@
-import {LCDClient, Wallet} from '@terra-money/terra.js';
-import {vesting_contract_wasm} from './../basset_vault/definition';
-import {execute_contract, create_contract, to_utc_seconds} from './../utils';
-import {VestingAccountRaw, Config} from './executor';
+import { LCDClient, Wallet } from '@terra-money/terra.js';
+import { vesting_contract_wasm } from './../basset_vault/definition';
+import { execute_contract, create_contract, to_utc_seconds } from './../utils';
+import { VestingAccountRaw, Config } from './executor';
 
 interface VestingConfig {
 	owner: string,
 	psi_token: string,
-        genesis_time: number,
+	genesis_time: number,
 }
 
 export function VestingConfig(psi_token_addr: string, genesis_time: number, multisig_address: string): VestingConfig {
@@ -70,10 +70,10 @@ export async function add_vesting_account(lcd_client: LCDClient, sender: Wallet,
 	}
 
 	await execute_contract(lcd_client, sender, vesting_contract_addr, {
-		       register_vesting_accounts: {
-			       vesting_accounts: vesting_accounts
-		       }
+		register_vesting_accounts: {
+			vesting_accounts: vesting_accounts
 		}
+	}
 	);
 	console.log(`vesting accounts registered`);
 	console.log(`=======================`);
@@ -81,7 +81,7 @@ export async function add_vesting_account(lcd_client: LCDClient, sender: Wallet,
 
 async function is_vesting_already_exists_for(lcd_client: LCDClient, vesting_contract_addr: string, address: string): Promise<boolean> {
 	try {
-		await lcd_client.wasm.contractQuery(vesting_contract_addr, {vesting_account: {address: address}});
+		await lcd_client.wasm.contractQuery(vesting_contract_addr, { vesting_account: { address: address } });
 		console.log(`vesting already exists for ${address}`);
 		return true;
 	} catch (err) {
@@ -90,9 +90,9 @@ async function is_vesting_already_exists_for(lcd_client: LCDClient, vesting_cont
 }
 
 export async function query_state(lcd_client: LCDClient, vesting_contract_addr: string) {
-	const config_response = await lcd_client.wasm.contractQuery(vesting_contract_addr, {config: {}});
-	console.log(`config:\n${JSON.stringify( config_response )}`)
+	const config_response = await lcd_client.wasm.contractQuery(vesting_contract_addr, { config: {} });
+	console.log(`config:\n${JSON.stringify(config_response)}`)
 
-	const vesting_accounts_response = await lcd_client.wasm.contractQuery(vesting_contract_addr, {vesting_accounts: {}});
-	console.log(`vesting_accounts:\n${JSON.stringify( vesting_accounts_response )}`)
+	const vesting_accounts_response = await lcd_client.wasm.contractQuery(vesting_contract_addr, { vesting_accounts: {} });
+	console.log(`vesting_accounts:\n${JSON.stringify(vesting_accounts_response)}`)
 }

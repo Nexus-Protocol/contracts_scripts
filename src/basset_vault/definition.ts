@@ -1,6 +1,6 @@
-import { LCDClient, Wallet} from '@terra-money/terra.js';
-import {TokenConfig, GovernanceConfig, Cw20CodeId, init_terraswap_factory, PSiTokensOwner, CommunityPoolConfig, BassetVaultStrategyConfigForbLuna, BassetVaultStrategyConfigForbEth, BassetVaultConfigForbEth, BassetVaultConfigForbLuna} from './../config';
-import {store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault, create_token_to_token_terraswap_pair} from './../utils';
+import { LCDClient, Wallet } from '@terra-money/terra.js';
+import { TokenConfig, GovernanceConfig, Cw20CodeId, init_terraswap_factory, PSiTokensOwner, CommunityPoolConfig, BassetVaultStrategyConfigForbLuna, BassetVaultStrategyConfigForbEth, BassetVaultConfigForbEth, BassetVaultConfigForbLuna } from './../config';
+import { store_contract, instantiate_contract, execute_contract, create_contract, create_usd_to_token_terraswap_pair, init_basset_vault, create_token_to_token_terraswap_pair } from './../utils';
 
 // ===================================================
 const artifacts_path = "wasm_artifacts";
@@ -67,8 +67,8 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 	console.log(`=======================`);
 
 	// set psi token addr to governance contract
-	await execute_contract(lcd_client, sender, governance_contract_addr, 
-	       {
+	await execute_contract(lcd_client, sender, governance_contract_addr,
+		{
 			anyone: {
 				anyone_msg: {
 					register_token: {
@@ -80,18 +80,18 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 	);
 	console.log(`psi_token address setted in governance contract`);
 	console.log(`=======================`);
-	
+
 	// instantiate Psi-UST pair contract
 	const terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, sender, cw20_code_id);
 	const psi_ust_pair_contract = await create_usd_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, psi_token_addr);
 	console.log(`Psi-UST pair contract instantiated\n\taddress: ${psi_ust_pair_contract.pair_contract_addr}\n\tlp token address: ${psi_ust_pair_contract.liquidity_token_addr}`);
 	console.log(`=======================`);
-	
+
 	// instantiate community_pool
 	const community_pool_config = CommunityPoolConfig(lcd_client, governance_contract_addr, psi_token_addr);
 	const community_pool_contract_addr = await init_community_pool(lcd_client, sender, community_pool_config);
 	console.log(`=======================`);
-	
+
 	// upload contracts for basset_vault
 	const nasset_token_code_id = await store_contract(lcd_client, sender, nasset_token_wasm);
 	console.log(`nasset_token uploaded\n\tcode_id: ${nasset_token_code_id}`);

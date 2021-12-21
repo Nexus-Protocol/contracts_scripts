@@ -1,8 +1,8 @@
 import { LCDClient, Wallet } from '@terra-money/terra.js';
 import { readFileSync } from 'fs';
-import {Command} from 'commander';
-import {execute_contract, get_date_str, get_lcd_config_with_wallet, LCDConfig, sleep} from './../utils';
-import {isTxSuccess} from './../transaction';
+import { Command } from 'commander';
+import { execute_contract, get_date_str, get_lcd_config_with_wallet, LCDConfig, sleep } from './../utils';
+import { isTxSuccess } from './../transaction';
 
 interface Config {
 	basset_vault_addr: string,
@@ -57,7 +57,7 @@ export async function start_honest_work_loop(lcd_client: LCDClient, sender: Wall
 		}
 	};
 
-	while (true) {
+	for (; ;) {
 		const result = await execute_contract(lcd_client, sender, basset_vault_addr, honest_work_msg);
 		if (result !== undefined && isTxSuccess(result)) {
 			console.log(`${get_date_str()} :: Honest work successfully executed`);
@@ -70,9 +70,9 @@ export async function start_honest_work_loop(lcd_client: LCDClient, sender: Wall
 }
 
 run_program()
-    .then(text => {
-        console.log(text);
-    })
+	.then(text => {
+		console.log(text);
+	})
 	.catch(err => {
-        console.log(err);
-    });
+		console.log(err);
+	});

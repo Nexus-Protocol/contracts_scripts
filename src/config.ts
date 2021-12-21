@@ -1,6 +1,6 @@
-import {LCDClient, Wallet} from '@terra-money/terra.js';
-import {cw20_contract_wasm, terraswap_factory_wasm, terraswap_pair_wasm} from "./basset_vault/definition"
-import {instantiate_contract, store_contract} from './utils';
+import { LCDClient, Wallet } from '@terra-money/terra.js';
+import { cw20_contract_wasm, terraswap_factory_wasm, terraswap_pair_wasm } from "./basset_vault/definition"
+import { instantiate_contract, store_contract } from './utils';
 
 // ================================================
 
@@ -35,8 +35,8 @@ export async function init_terraswap_factory(lcd_client: LCDClient, sender: Wall
 		const terraswap_pair_code_id = await store_contract(lcd_client, sender, terraswap_pair_wasm);
 		console.log(`terraswap_pair uploaded\n\tcode_id: ${terraswap_pair_code_id}`);
 		const terraswap_factory_init_msg = {
-			 pair_code_id: terraswap_pair_code_id,
-			 token_code_id: cw20_code_id,
+			pair_code_id: terraswap_pair_code_id,
+			token_code_id: cw20_code_id,
 		};
 		const terraswap_factory_contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, terraswap_factory_code_id, terraswap_factory_init_msg);
 		console.log(`terraswap_factory instantiated\n\taddress: ${terraswap_factory_contract_addr}`);
@@ -69,10 +69,10 @@ export interface Logo {
 }
 
 export interface InstantiateMarketingInfo {
-    project?: string,
-    description?: string,
-    marketing?: string,
-    logo?: Logo,
+	project?: string,
+	description?: string,
+	marketing?: string,
+	logo?: Logo,
 }
 
 export interface TokenConfig {
@@ -167,14 +167,14 @@ export function terraswap_factory_contract_addr(lcd_client: LCDClient): string {
 //
 // Mirror params
 // {
-  // "quorum": "0.09998",
-  // "threshold": "0.49989",
-  // "voting_period": 604800,
-  // "effective_delay": 86400,
-  // "expiration_period": 86400,
-  // "proposal_deposit": "100000000",
-  // "voter_weight": "0.5",
-  // "snapshot_period": 86400
+// "quorum": "0.09998",
+// "threshold": "0.49989",
+// "voting_period": 604800,
+// "effective_delay": 86400,
+// "expiration_period": 86400,
+// "proposal_deposit": "100000000",
+// "voter_weight": "0.5",
+// "snapshot_period": 86400
 // }
 
 export interface GovernanceConfig {
@@ -262,7 +262,7 @@ export interface BassetVaultStrategyConfig {
 }
 
 export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr: string): BassetVaultStrategyConfig {
-	 return {
+	return {
 		governance_contract_addr: governance_contract_addr,
 		oracle_contract_addr: "terra1cgg6yef7qcdm070qftghfulaxmllgmvk77nc7t",
 		basset_token_addr: "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp",
@@ -300,7 +300,7 @@ export function BassetVaultStrategyConfigForbLuna(lcd_client: LCDClient, governa
 }
 
 export function prod_BassetVaultStrategyConfigForbEth(governance_contract_addr: string): BassetVaultStrategyConfig {
-	 return {
+	return {
 		governance_contract_addr: governance_contract_addr,
 		oracle_contract_addr: "terra1cgg6yef7qcdm070qftghfulaxmllgmvk77nc7t",
 		basset_token_addr: "terra1dzhzukyezv0etz22ud940z7adyv7xgcjkahuun",
@@ -341,48 +341,48 @@ export function BassetVaultStrategyConfigForbEth(lcd_client: LCDClient, governan
 export interface BassetVaultConfig {
 	gov_addr: string,
 	community_addr: string,
-        // nasset_token_code_id
+	// nasset_token_code_id
 	nasset_t_ci: number,
-        // nasset_token_config_holder_code_id
+	// nasset_token_config_holder_code_id
 	nasset_t_ch_ci: number,
-        // nasset_token_rewards_code_id
+	// nasset_token_rewards_code_id
 	nasset_t_r_ci: number,
-        // psi_distributor_code_id
+	// psi_distributor_code_id
 	psi_distr_ci: number,
 	//Luna / ETH / Sol, will be converted to nLuna, nETH, nSol
-        // collateral_token_symbol
+	// collateral_token_symbol
 	collateral_ts: string,
-        // basset_token_addr: String,
-        basset_addr: string,
-        // anchor_token_addr
-        anchor_addr: string,
-        // anchor_market_contract_addr
-        a_market_addr: string,
-        // anchor_overseer_contract_addr
-        a_overseer_addr: string,
-        // anchor_custody_basset_contract_addr
-        a_custody_basset_addr: string,
-        // anc_stable_swap_contract_addr
-        anc_stable_swap_addr: string,
-        // psi_stable_swap_contract_addr
-        psi_stable_swap_addr: string,
-        // aterra_token_addr
-        aterra_addr: string,
-        // psi_token_addr
-        psi_addr: string,
-        // basset_vault_strategy_contract_addr
+	// basset_token_addr: String,
+	basset_addr: string,
+	// anchor_token_addr
+	anchor_addr: string,
+	// anchor_market_contract_addr
+	a_market_addr: string,
+	// anchor_overseer_contract_addr
+	a_overseer_addr: string,
+	// anchor_custody_basset_contract_addr
+	a_custody_basset_addr: string,
+	// anc_stable_swap_contract_addr
+	anc_stable_swap_addr: string,
+	// psi_stable_swap_contract_addr
+	psi_stable_swap_addr: string,
+	// aterra_token_addr
+	aterra_addr: string,
+	// psi_token_addr
+	psi_addr: string,
+	// basset_vault_strategy_contract_addr
 	basset_vs_addr: string,
 	stable_denom: string,
-        claiming_rewards_delay: number,
+	claiming_rewards_delay: number,
 	///UST value in balance should be more than loan
 	///on what portion.
 	///for example: 1.01 means 1% more than loan
-        over_loan_balance_value: string,
-        ///mean ltv that user manage by himself (advise: 60%)
-        manual_ltv: string,
-        ///fees, need to calc how much send to governance and community pools
-        fee_rate: string,
-        tax_rate: string,
+	over_loan_balance_value: string,
+	///mean ltv that user manage by himself (advise: 60%)
+	manual_ltv: string,
+	///fees, need to calc how much send to governance and community pools
+	fee_rate: string,
+	tax_rate: string,
 }
 
 export function prod_BassetVaultConfigForbLuna(
@@ -396,7 +396,7 @@ export function prod_BassetVaultConfigForbLuna(
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string
 ): BassetVaultConfig {
-	 return {
+	return {
 		gov_addr: governance_contract_addr,
 		community_addr: community_pool_contract_addr,
 		nasset_t_ci: nasset_token_code_id,
@@ -521,7 +521,7 @@ export function prod_BassetVaultConfigForbEth(
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string
 ): BassetVaultConfig {
-	 return {
+	return {
 		gov_addr: governance_contract_addr,
 		community_addr: community_pool_contract_addr,
 		nasset_t_ci: nasset_token_code_id,

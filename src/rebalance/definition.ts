@@ -1,6 +1,6 @@
-import {getContractEvents, BlockTxBroadcastResult, LCDClient,  Wallet} from '@terra-money/terra.js';
-import {isTxSuccess} from './../transaction';
-import {execute_contract, get_date_str, sleep} from './../utils';
+import { getContractEvents, BlockTxBroadcastResult, LCDClient, Wallet } from '@terra-money/terra.js';
+import { isTxSuccess } from './../transaction';
+import { execute_contract, get_date_str, sleep } from './../utils';
 
 enum RebalanceType {
 	Nothing,
@@ -42,7 +42,7 @@ class BorrowRebalance {
 		return `Borrow: { amount: ${this.amount}, advised_buffer_size: ${this.advised_buffer_size}, is_possible: ${this.is_possible} }`;
 	}
 
-	public static from_json(js: any): BorrowRebalance {
+	public static from_json(js: { Borrow: { amount: number; advised_buffer_size: number; is_possible: boolean; }; }): BorrowRebalance {
 		return new BorrowRebalance(js.Borrow.amount, js.Borrow.advised_buffer_size, js.Borrow.is_possible);
 	}
 }
@@ -66,13 +66,14 @@ class RepayRebalance {
 		return `Repay: { amount: ${this.amount}, advised_buffer_size: ${this.advised_buffer_size} }`;
 	}
 
-	public static from_json(js: any): RepayRebalance {
+	public static from_json(js: { Repay: { amount: number; advised_buffer_size: number; }; }): RepayRebalance {
 		return new RepayRebalance(js.Repay.amount, js.Repay.advised_buffer_size);
 	}
 }
 
 type RebalanceResponse = NothingToRebalance | BorrowRebalance | RepayRebalance;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function rebalance_response_from_json(json_val: any): RebalanceResponse {
 	if (json_val.Nothing !== undefined) {
 		return new NothingToRebalance();
@@ -84,7 +85,7 @@ export function rebalance_response_from_json(json_val: any): RebalanceResponse {
 }
 
 export async function query_rebalance(lcd_client: LCDClient, basset_vault_addr: string): Promise<RebalanceResponse> {
-	const rebalance_response = await lcd_client.wasm.contractQuery(basset_vault_addr, {rebalance: {}});
+	const rebalance_response = await lcd_client.wasm.contractQuery(basset_vault_addr, { rebalance: {} });
 
 	const result: RebalanceResponse = rebalance_response_from_json(rebalance_response);
 	return result;
@@ -105,7 +106,7 @@ export async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_va
 
 export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet, basset_vault_addr: string, ms_sleep_between_checks: number) {
 	let price_printer = 0;
-	while (true) {
+	for (; ;) {
 		const query_rebalance_resp = await query_rebalance(lcd_client, basset_vault_addr);
 		if (query_rebalance_resp.rabalance_needed()) {
 			console.log(`${get_date_str()} :: rebalance needed: ${query_rebalance_resp.to_string()}`)
