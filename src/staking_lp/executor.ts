@@ -19,7 +19,7 @@ export interface DistributionScheduleRaw {
 	tokens_amount: string,
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/staking_lp/config.json';
+const DEFAULT_CONFIG_PATH = 'src/staking_lp/config.json';
 
 async function run_program() {
 	const program = new Command();

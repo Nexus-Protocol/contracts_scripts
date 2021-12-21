@@ -8,7 +8,7 @@ interface Config {
 	multisig_address: string
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/lp_simulation/config.json';
+const DEFAULT_CONFIG_PATH = 'src/lp_simulation/config.json';
 
 async function run_program() {
 	const program = new Command();

@@ -14,7 +14,7 @@ interface Config {
 	psi_token_addr: string,
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/airdrop/config.json';
+const DEFAULT_CONFIG_PATH = 'src/airdrop/config.json';
 
 async function run() {
 	const program = new Command();
@@ -82,7 +82,7 @@ async function send_all_airdrop(lcd_client: LCDClient, sender: Wallet, airdrop_a
 	let airdropped_accounts = 0;
 	const total_accounts = airdrop_accounts.length;
 	while (total_accounts > (airdropped_accounts + 1)) {
-		let accounts_batch = [];
+		const accounts_batch = [];
 		for (const account_index of Array(batch_size).keys()) {
 			const current_index = airdropped_accounts + account_index;
 			if (current_index == total_accounts) {
@@ -105,7 +105,7 @@ async function send_all_airdrop(lcd_client: LCDClient, sender: Wallet, airdrop_a
 }
 
 async function send_batch_airdrop(lcd_client: LCDClient, sender: Wallet, airdrop_accounts: AirdropAccount[], psi_token_addr: string): Promise<BlockTxBroadcastResult | undefined> {
-	let send_msgs: Msg[] = [];
+	const send_msgs: Msg[] = [];
 	for (const airdrop_acc of airdrop_accounts) {
 		const msg = new MsgExecuteContract(
 			sender.key.accAddress,
@@ -120,7 +120,7 @@ async function send_batch_airdrop(lcd_client: LCDClient, sender: Wallet, airdrop
 		send_msgs.push(msg);
 	}
 
-	let tx_result: BlockTxBroadcastResult | undefined = await send_message(lcd_client, sender, send_msgs);
+	const tx_result: BlockTxBroadcastResult | undefined = await send_message(lcd_client, sender, send_msgs);
 	return tx_result;
 }
 
@@ -139,7 +139,7 @@ function read_stakers(snapshot_path: string, min_anc_staked: number): Map<string
 }
 
 function save_stakers_as_json(accounts_arr: Array<AirdropAccount>, filepath: string) {
-	let accounts = {accounts: accounts_arr};
+	const accounts = {accounts: accounts_arr};
 	writeFile(`${filepath}.json`, JSON.stringify(accounts, null, '\t'), function(err) {
 	    if (err) {
 		console.log(err);
@@ -151,7 +151,7 @@ function save_stakers_as_csv(airdrop_accounts: Array<AirdropAccount>, filepath: 
 	let csv_content = "address,psi_tokens_to_airdrop,anchor_tokens_staked,psi_tokens_per_anc\n";
 	for (const airdrop of airdrop_accounts) {
 		const psi_tokens_per_anc = airdrop.psi_tokens_to_airdrop.div(airdrop.anc_tokens);
-		let staker_str = `${airdrop.address},${tokens_to_drop_as_str(airdrop)},${anc_tokens_as_str(airdrop)},${psi_tokens_per_anc}\n`;
+		const staker_str = `${airdrop.address},${tokens_to_drop_as_str(airdrop)},${anc_tokens_as_str(airdrop)},${psi_tokens_per_anc}\n`;
 		csv_content += staker_str;
 	}
 	writeFile(`${filepath}.csv`, csv_content, function(err) {
@@ -174,7 +174,7 @@ interface UsersAirdropData {
 }
 
 function save_users_proof(airdrop: Airdrop, filepath: string, stage: number) {
-	let users: UserAirdropData[] = [];
+	const users: UserAirdropData[] = [];
 	
 	const airdrop_accounts = airdrop.getAccounts();
 	for (const airdrop_account of airdrop_accounts) {

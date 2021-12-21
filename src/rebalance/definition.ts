@@ -84,7 +84,7 @@ export function rebalance_response_from_json(json_val: any): RebalanceResponse {
 }
 
 export async function query_rebalance(lcd_client: LCDClient, basset_vault_addr: string): Promise<RebalanceResponse> {
-	let rebalance_response = await lcd_client.wasm.contractQuery(basset_vault_addr, {rebalance: {}});
+	const rebalance_response = await lcd_client.wasm.contractQuery(basset_vault_addr, {rebalance: {}});
 
 	const result: RebalanceResponse = rebalance_response_from_json(rebalance_response);
 	return result;
@@ -99,12 +99,12 @@ export async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_va
 		}
 	};
 
-	let result = await execute_contract(lcd_client, sender, basset_vault_addr, rebalance_msg);
+	const result = await execute_contract(lcd_client, sender, basset_vault_addr, rebalance_msg);
 	return result;
 }
 
 export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet, basset_vault_addr: string, ms_sleep_between_checks: number) {
-	let price_printer: number = 0;
+	let price_printer = 0;
 	while (true) {
 		const query_rebalance_resp = await query_rebalance(lcd_client, basset_vault_addr);
 		if (query_rebalance_resp.rabalance_needed()) {
@@ -116,7 +116,7 @@ export async function start_rebalance_loop(lcd_client: LCDClient, sender: Wallet
 			} else if (isTxSuccess(rebalance_response)) {
 				console.log(`${get_date_str()} :: Rebalance Successfull`);
 				const contract_events = getContractEvents(rebalance_response);
-				for (let contract_event of contract_events) {
+				for (const contract_event of contract_events) {
 					if (contract_event.contract_address === basset_vault_addr) {
 						Object.keys(contract_event).forEach(key => {
 							console.log(`\t[${key}]: ${contract_event[key]}`)

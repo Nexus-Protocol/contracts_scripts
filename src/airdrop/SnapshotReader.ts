@@ -16,13 +16,13 @@ class SnapshotFileReader {
 			process.exit(1);
 		}
 
-		let result = new Map();
-		let file_strings = readFileSync(this.FilePath, 'utf8');
+		const result = new Map();
+		const file_strings = readFileSync(this.FilePath, 'utf8');
 		for (const line of file_strings.split('\n')) {
-			let trimmed = line.trim();
+			const trimmed = line.trim();
 			if (trimmed !== "") {
-				let splitted = line.split(':');
-				let stake_amount = new Decimal(splitted[1].trim());
+				const splitted = line.split(':');
+				const stake_amount = new Decimal(splitted[1].trim());
 				if (stake_amount.gt(this.MinAncStaked)) {
 					result.set(splitted[0].toLowerCase().trim(), stake_amount.mul(new Decimal(1_000_000)));
 				}
@@ -67,7 +67,7 @@ class SnapshotDirReader {
 export {SnapshotFileReader, SnapshotDirReader};
 
 function merge_maps(map1: Map<string, Decimal>, map2: Map<string, Decimal>, total_number_of_files: number): Map<string, Decimal> {
-	let result = new Map(map1);
+	const result = new Map(map1);
 
 	for (const [key2, value2] of map2) {
 		const value1 = result.get(key2);

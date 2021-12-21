@@ -18,25 +18,25 @@ interface LpSimulationResult {
 	buyback_prices: number[],
 }
 async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
-	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+	const contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
 	// console.log(`psi_token instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
 }
 
 export async function main(lcd_client: LCDClient, sender: Wallet) {
 	//get cw20_code_id
-	let cw20_code_id = await Cw20CodeId(lcd_client, sender);
+	const cw20_code_id = await Cw20CodeId(lcd_client, sender);
 	console.log(`=======================`);
 
 	// instantiate terraswap_factory contract
-	let terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, sender, cw20_code_id);
+	const terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, sender, cw20_code_id);
 	console.log(`=======================`);
 
-	let psi_prices = [0.0025, 0.005, 0.01];
-	let lp_sizes = [500_000, 1_000_000, 2_000_000, 10_000_000, 30_000_000, 50_000_000];
-	let buyback_sizes = [35_000, 70_000, 140_000, 280_000, 560_000];
-	let purchase_counts = [3, 6, 12, 24];
-	let result_filename = get_file_name( "lp_simulation_result.csv" );
+	const psi_prices = [0.0025, 0.005, 0.01];
+	const lp_sizes = [500_000, 1_000_000, 2_000_000, 10_000_000, 30_000_000, 50_000_000];
+	const buyback_sizes = [35_000, 70_000, 140_000, 280_000, 560_000];
+	const purchase_counts = [3, 6, 12, 24];
+	const result_filename = get_file_name( "lp_simulation_result.csv" );
 	await write_csv_header(result_filename, purchase_counts);
 
 	for (const psi_price of psi_prices) {
@@ -44,13 +44,13 @@ export async function main(lcd_client: LCDClient, sender: Wallet) {
 			for (const buyback_size of buyback_sizes) {
 				for (const purchase_count of purchase_counts) {
 					// instantiate psi_token
-					let token_config = TokenConfig(lcd_client, sender.key.accAddress, PSiTokensOwner(lcd_client, sender, "mock_address"));
-					let psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, token_config);
+					const token_config = TokenConfig(lcd_client, sender.key.accAddress, PSiTokensOwner(lcd_client, sender, "mock_address"));
+					const psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, token_config);
 					// console.log(`=======================`);
 	
-					let psi_stable_swap_contract = await create_usd_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, psi_token_addr);
+					const psi_stable_swap_contract = await create_usd_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, psi_token_addr);
 					// console.log(`psi_stable_swap_contract created\n\taddress: ${psi_stable_swap_contract.pair_contract_addr}\n\tlp token address: ${psi_stable_swap_contract.liquidity_token_addr}`);
-					let lp_simulation_cfg = {
+					const lp_simulation_cfg = {
 						swap_pair_contract_addr: psi_stable_swap_contract.pair_contract_addr,
 						psi_token_addr: psi_token_addr,
 						psi_price: psi_price,
@@ -59,7 +59,7 @@ export async function main(lcd_client: LCDClient, sender: Wallet) {
 						purchase_count: purchase_count,
 						final_buy_ust_amount: 2000,
 					};
-					let lp_simulation_result = await run_simulation(lcd_client, sender, lp_simulation_cfg);
+					const lp_simulation_result = await run_simulation(lcd_client, sender, lp_simulation_cfg);
 					await append_result_to_csv(result_filename, lp_simulation_cfg, lp_simulation_result);
 					console.log(`=======================`);
 				}
@@ -98,19 +98,19 @@ async function run_simulation(lcd_client: LCDClient, sender: Wallet, lp_simulati
 	console.log(`\tlp_size: ${lp_simulation_cfg.lp_size}`);
 	console.log(`\tbuyback_size_total: ${lp_simulation_cfg.buyback_size}`);
 	console.log(`\tpurchase_count: ${lp_simulation_cfg.purchase_count}`);
-	let ust_amount = lp_simulation_cfg.lp_size / 2;
-	let psi_amount = lp_simulation_cfg.lp_size / 2 / lp_simulation_cfg.psi_price;
-	let provide_liquidity_resp = await provide_liquidity(lcd_client, sender, lp_simulation_cfg.swap_pair_contract_addr, lp_simulation_cfg.psi_token_addr, psi_amount, ust_amount);
+	const ust_amount = lp_simulation_cfg.lp_size / 2;
+	const psi_amount = lp_simulation_cfg.lp_size / 2 / lp_simulation_cfg.psi_price;
+	const provide_liquidity_resp = await provide_liquidity(lcd_client, sender, lp_simulation_cfg.swap_pair_contract_addr, lp_simulation_cfg.psi_token_addr, psi_amount, ust_amount);
 	// console.log(`liquidity provided successfully:\n\tassets: ${provide_liquidity_resp.assets}\n\tshare: ${provide_liquidity_resp.share}`);
 
-	let buyback_size = lp_simulation_cfg.buyback_size / lp_simulation_cfg.purchase_count;
+	const buyback_size = lp_simulation_cfg.buyback_size / lp_simulation_cfg.purchase_count;
 	let i = 0;
-	var result: LpSimulationResult = {
+	const result: LpSimulationResult = {
 		psi_price_at_the_end: 0,
 		buyback_prices: [],
 	};
 	while (i < lp_simulation_cfg.purchase_count) {
-		let swap_response = await buy_psi_token(lcd_client, sender, lp_simulation_cfg.swap_pair_contract_addr, buyback_size);
+		const swap_response = await buy_psi_token(lcd_client, sender, lp_simulation_cfg.swap_pair_contract_addr, buyback_size);
 		// console.log(`buyback #${i}:`);
 		// // console.log(`\toffer_asset: ${swap_response.offer_asset}`);
 		// // console.log(`\task_asset: ${swap_response.ask_asset}`);
@@ -124,8 +124,8 @@ async function run_simulation(lcd_client: LCDClient, sender: Wallet, lp_simulati
 		i++;
 	}
 
-	let last_swap_offer_uusd_amount = lp_simulation_cfg.final_buy_ust_amount * 1000000;
-	let swap_sim_res = await query_simulate_swap(lcd_client, lp_simulation_cfg.swap_pair_contract_addr, last_swap_offer_uusd_amount.toString());
+	const last_swap_offer_uusd_amount = lp_simulation_cfg.final_buy_ust_amount * 1000000;
+	const swap_sim_res = await query_simulate_swap(lcd_client, lp_simulation_cfg.swap_pair_contract_addr, last_swap_offer_uusd_amount.toString());
 	const belief_price: number = last_swap_offer_uusd_amount / swap_sim_res.return_amount;
 	result.psi_price_at_the_end = belief_price;
 	console.log(`>>>`);
@@ -143,10 +143,10 @@ export interface ProvideLiquidityResponse {
 	share: number
 }
 async function provide_liquidity(lcd_client: LCDClient, sender: Wallet, contract_addr: string, psi_token_addr: string, psi_amount: number, ust_amount: number): Promise<ProvideLiquidityResponse> {
-	let uusd_amount = ( ust_amount * 1_000_000 ).toString().split('.')[0];
-	let upsi_amount = ( psi_amount * 1_000_000 ).toString().split('.')[0];
+	const uusd_amount = ( ust_amount * 1_000_000 ).toString().split('.')[0];
+	const upsi_amount = ( psi_amount * 1_000_000 ).toString().split('.')[0];
 
-	let allowance_msg = new MsgExecuteContract(
+	const allowance_msg = new MsgExecuteContract(
 		sender.key.accAddress,
 		psi_token_addr,
 		{
@@ -156,7 +156,7 @@ async function provide_liquidity(lcd_client: LCDClient, sender: Wallet, contract
 			}
 		}
 	);
-	let provide_liquidity_msg = new MsgExecuteContract(
+	const provide_liquidity_msg = new MsgExecuteContract(
 		sender.key.accAddress,
 		contract_addr,
 		{
@@ -189,9 +189,9 @@ async function provide_liquidity(lcd_client: LCDClient, sender: Wallet, contract
 	// and I want here to get events from second (provide_liquidity_msg)
 	// let messages = [allowance_msg, provide_liquidity_msg];
 	// ---------------------------------------------------
-	let is_done: boolean = false;
+	let is_done = false;
 	while (!is_done) {
-		let allowance_resp = await send_message(lcd_client, sender, [allowance_msg]);
+		const allowance_resp = await send_message(lcd_client, sender, [allowance_msg]);
 		if (allowance_resp === undefined || !isTxSuccess(allowance_resp)) {
 			console.error("fail to send allowance message (provide liquidity context)");
 			await sleep(2500);
@@ -215,18 +215,18 @@ async function provide_liquidity(lcd_client: LCDClient, sender: Wallet, contract
 	}
 	provide_liquidity_tx_result = provide_liquidity_tx_result as BlockTxBroadcastResult;
 
-	var result: ProvideLiquidityResponse = {
+	const result: ProvideLiquidityResponse = {
 		assets: '',
 		share: 0
 	};
-	let contract_events = getContractEvents(provide_liquidity_tx_result);
-	for (let contract_event of contract_events) {
-		let assets_str = contract_event["assets"];
+	const contract_events = getContractEvents(provide_liquidity_tx_result);
+	for (const contract_event of contract_events) {
+		const assets_str = contract_event["assets"];
 		if (assets_str !== undefined) {
 			result.assets = assets_str;
 		}
 
-		let share_str = contract_event["share"];
+		const share_str = contract_event["share"];
 		if (share_str !== undefined) {
 			result.share = parseInt( share_str );
 		}
@@ -245,8 +245,8 @@ export interface SwapResponse {
 	commission_amount: number,
 }
 async function buy_psi_token(lcd_client: LCDClient, sender: Wallet, contract_addr: string, ust_amount: number): Promise<SwapResponse> {
-	let uusd_amount = ( ust_amount * 1_000_000 ).toString().split('.')[0];
-	let buy_psi_token_msg = new MsgExecuteContract(
+	const uusd_amount = ( ust_amount * 1_000_000 ).toString().split('.')[0];
+	const buy_psi_token_msg = new MsgExecuteContract(
 		sender.key.accAddress,
 		contract_addr,
 		{
@@ -264,7 +264,7 @@ async function buy_psi_token(lcd_client: LCDClient, sender: Wallet, contract_add
 		new Coins([new Coin("uusd", uusd_amount)])
 	);
 	let tx_result: BlockTxBroadcastResult | undefined;
-	let is_done: boolean = false;
+	let is_done = false;
 	while (!is_done) {
 		tx_result = await send_message(lcd_client, sender, [buy_psi_token_msg]);
 		if (tx_result === undefined || !isTxSuccess(tx_result)) {
@@ -276,7 +276,7 @@ async function buy_psi_token(lcd_client: LCDClient, sender: Wallet, contract_add
 	}
 	tx_result = tx_result as BlockTxBroadcastResult;
 
-	var result: SwapResponse = {
+	const result: SwapResponse = {
 		offer_asset: '',
 		ask_asset: '',
 		offer_amount: 0,
@@ -286,39 +286,39 @@ async function buy_psi_token(lcd_client: LCDClient, sender: Wallet, contract_add
 		commission_amount: 0,
 	};
 
-	let contract_events = getContractEvents(tx_result);
-	for (let contract_event of contract_events) {
-		let offer_asset_str = contract_event["offer_asset"];
+	const contract_events = getContractEvents(tx_result);
+	for (const contract_event of contract_events) {
+		const offer_asset_str = contract_event["offer_asset"];
 		if (offer_asset_str !== undefined) {
 			result.offer_asset = offer_asset_str;
 		}
 
-		let ask_asset_str = contract_event["ask_asset"];
+		const ask_asset_str = contract_event["ask_asset"];
 		if (ask_asset_str !== undefined) {
 			result.ask_asset = ask_asset_str;
 		}
 
-		let offer_amount_str = contract_event["offer_amount"];
+		const offer_amount_str = contract_event["offer_amount"];
 		if (offer_amount_str !== undefined) {
 			result.offer_amount = parseInt( offer_amount_str );
 		}
 
-		let return_amount_str = contract_event["return_amount"];
+		const return_amount_str = contract_event["return_amount"];
 		if (return_amount_str !== undefined) {
 			result.return_amount = parseInt( return_amount_str );
 		}
 
-		let tax_amount_str = contract_event["tax_amount"];
+		const tax_amount_str = contract_event["tax_amount"];
 		if (tax_amount_str !== undefined) {
 			result.tax_amount = parseInt( tax_amount_str );
 		}
 
-		let spread_amount_str = contract_event["spread_amount"];
+		const spread_amount_str = contract_event["spread_amount"];
 		if (spread_amount_str !== undefined) {
 			result.spread_amount = parseInt( spread_amount_str );
 		}
 
-		let commission_amount_str = contract_event["commission_amount"];
+		const commission_amount_str = contract_event["commission_amount"];
 		if (commission_amount_str !== undefined) {
 			result.commission_amount = parseInt( commission_amount_str );
 		}
@@ -333,7 +333,7 @@ interface SwapSimulation {
 	spread_amount: number,
 }
 async function query_simulate_swap(lcd_client: LCDClient, pair_addr: string, offer_uusd_amount: string): Promise<SwapSimulation> {
-	let swap_sim_resp = await lcd_client.wasm.contractQuery(pair_addr, {
+	const swap_sim_resp = await lcd_client.wasm.contractQuery(pair_addr, {
 			simulation: {
 				offer_asset: {
 					amount: offer_uusd_amount,
@@ -354,8 +354,8 @@ function get_file_name(expected_filename: string): string {
 		return expected_filename;
 	}
 
-	let splitted = expected_filename.split('.');
-	let base_filename = splitted[0];
+	const splitted = expected_filename.split('.');
+	const base_filename = splitted[0];
 	let i = 1;
 	let result_filename = `${base_filename}_${i}.${splitted[1]}`;
 	while (existsSync(result_filename)) {

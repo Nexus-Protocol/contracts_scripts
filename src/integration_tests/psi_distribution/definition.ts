@@ -31,7 +31,7 @@ async function init_psi_token(
     code_id: number,
     init_msg: TokenConfig
 ): Promise<string> {
-    let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+    const contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
     console.log(`psi_token instantiated\n\taddress: ${contract_addr}`);
     return contract_addr;
 }
@@ -42,10 +42,10 @@ export async function psi_distributor_init (
 ): Promise<PsiDistributorDeploymentResult> {
 
     //deploy psi_token (cw20)
-    let cw20_code_id = await Cw20CodeId(lcd_client, sender);
+    const cw20_code_id = await Cw20CodeId(lcd_client, sender);
     console.log(`=======================`);
 
-    let psi_token_config = {
+    const psi_token_config = {
         name: "Nexus Governance Token",
         symbol: "Psi",
         decimals: 6,
@@ -55,12 +55,12 @@ export async function psi_distributor_init (
             minter: sender.key.accAddress,
         }
     }
-    let psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, psi_token_config);
+    const psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, psi_token_config);
     console.log(`=======================`);
 
     // deploy basset_vault_strategy_mock
-    let basset_vault_strategy_mock_config = BassetVaultStrategyMockConfig("0"); //this value is set up for every test case manually
-    let basset_vault_strategy_mock_addr = await create_contract(
+    const basset_vault_strategy_mock_config = BassetVaultStrategyMockConfig("0"); //this value is set up for every test case manually
+    const basset_vault_strategy_mock_addr = await create_contract(
         lcd_client,
         sender,
         "mock_aim_ltv",
@@ -69,9 +69,9 @@ export async function psi_distributor_init (
     );
     console.log(`=======================`);
 
-    let community_pool_random_addr_mock = await get_random_addr();
+    const community_pool_random_addr_mock = await get_random_addr();
 
-    let nasset_token_rewards_mock_addr = await create_contract(
+    const nasset_token_rewards_mock_addr = await create_contract(
         lcd_client,
         sender,
         "nasset_tokens_reward_mock",
@@ -80,9 +80,9 @@ export async function psi_distributor_init (
     );
 
     // deploy psi_distributor
-    let psi_distributor_code_id = await store_contract(lcd_client, sender, psi_distributor_wasm);
+    const psi_distributor_code_id = await store_contract(lcd_client, sender, psi_distributor_wasm);
     console.log(`psi_distributor uploaded\n\tcode_id: ${psi_distributor_code_id}`);
-    let psi_distributor_config = PsiDistributorConfig(
+    const psi_distributor_config = PsiDistributorConfig(
         psi_token_addr,
         sender.key.accAddress,
         nasset_token_rewards_mock_addr,
@@ -92,7 +92,7 @@ export async function psi_distributor_init (
         "0.5",
         "0.25",
     );
-    let psi_distributor_addr = await instantiate_contract(
+    const psi_distributor_addr = await instantiate_contract(
         lcd_client,
         sender,
         sender.key.accAddress,
@@ -145,7 +145,7 @@ async function mint (lcd_client: LCDClient, sender: Wallet, token_contract: stri
 }
 
 async function distribute (lcd_client: LCDClient, sender: Wallet, contract_addr: string) {
-    let response = await execute_contract(lcd_client, sender, contract_addr, {
+    const response = await execute_contract(lcd_client, sender, contract_addr, {
             anyone: {
                 anyone_msg: {
                     distribute_rewards: {},
@@ -164,26 +164,26 @@ async function parse_distribution_response(result: BlockTxBroadcastResult): Prom
         );
     }
 
-    let contract_events = getContractEvents(result);
+    const contract_events = getContractEvents(result);
 
-    let psi_distribution_info: PsiDistributionInfo = {
+    const psi_distribution_info: PsiDistributionInfo = {
         nasset_holder_rewards: '',
         governance_rewards: '',
         community_pool_rewards: '',
     };
 
-    for (let contract_event of contract_events){
-        let nasset_holder_rewards = contract_event["nasset_holder_rewards"];
+    for (const contract_event of contract_events){
+        const nasset_holder_rewards = contract_event["nasset_holder_rewards"];
         if(nasset_holder_rewards !== undefined){
             psi_distribution_info.nasset_holder_rewards = nasset_holder_rewards;
         }
 
-        let governance_rewards = contract_event["governance_rewards"];
+        const governance_rewards = contract_event["governance_rewards"];
         if(governance_rewards !== undefined){
             psi_distribution_info.governance_rewards = governance_rewards;
         }
 
-        let community_pool_rewards = contract_event["community_pool_rewards"];
+        const community_pool_rewards = contract_event["community_pool_rewards"];
         if(community_pool_rewards !== undefined){
             psi_distribution_info.community_pool_rewards = community_pool_rewards;
         }

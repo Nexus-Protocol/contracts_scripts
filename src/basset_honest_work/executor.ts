@@ -15,7 +15,7 @@ interface Config {
 	}
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/basset_honest_work/config.json';
+const DEFAULT_CONFIG_PATH = 'src/basset_honest_work/config.json';
 
 async function run_program() {
 	const program = new Command();
@@ -58,7 +58,7 @@ export async function start_honest_work_loop(lcd_client: LCDClient, sender: Wall
 	};
 
 	while (true) {
-		let result = await execute_contract(lcd_client, sender, basset_vault_addr, honest_work_msg);
+		const result = await execute_contract(lcd_client, sender, basset_vault_addr, honest_work_msg);
 		if (result !== undefined && isTxSuccess(result)) {
 			console.log(`${get_date_str()} :: Honest work successfully executed`);
 			console.log(`=======================`);

@@ -8,7 +8,7 @@ interface Config {
 	psi_token_initial_owner: string
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/basset_vault/config.json';
+const DEFAULT_CONFIG_PATH = 'src/basset_vault/config.json';
 
 async function run_program() {
 	const program = new Command();

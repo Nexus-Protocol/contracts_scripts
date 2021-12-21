@@ -4,6 +4,7 @@
 	"description": "",
 	"scripts": {
 		"lint": "eslint -c .eslintrc --ext .ts src",
+		"lintfix": "eslint --fix -c .eslintrc --ext .ts src",
 		"upload-basset-vault": "ts-node src/basset_vault/executor.ts",
 		"vesting": "ts-node src/vesting/executor.ts",
 		"airdrop": "ts-node src/airdrop/executor.ts",

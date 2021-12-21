@@ -6,9 +6,9 @@ import * as prompt from 'prompt';
 import {isTxSuccess} from './transaction';
 
 export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object): Promise<string> {
-	let code_id = await store_contract(lcd_client, sender, wasm_path);
+	const code_id = await store_contract(lcd_client, sender, wasm_path);
 	console.log(`${contract_name} uploaded\n\tcode_id: ${code_id}`);
-	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+	const contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
 	console.log(`${contract_name} instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
 }
@@ -18,11 +18,11 @@ export async function create_contract(lcd_client: LCDClient, sender: Wallet, con
 // ============================================================
 
 export async function store_contract(lcd_client: LCDClient, sender: Wallet, wasm_path: string): Promise<number> {
-	let contract_wasm = readFileSync(wasm_path, {encoding: 'base64'});
+	const contract_wasm = readFileSync(wasm_path, {encoding: 'base64'});
 	const messages: Msg[] = [new MsgStoreCode(sender.key.accAddress, contract_wasm)];
 
 	while (true) {
-		let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
+		const result = await calc_fee_and_send_tx(lcd_client, sender, messages);
 		if (result !== undefined && isTxSuccess(result)) {
 			return parseInt(getCodeId(result));
 		} else {
@@ -41,7 +41,7 @@ async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, a
 	)];
 
 	while (true) {
-		let result = await calc_fee_and_send_tx(lcd_client, sender, messages);
+		const result = await calc_fee_and_send_tx(lcd_client, sender, messages);
 		if (result !== undefined && isTxSuccess(result)) {
 			return result;
 		} else {
@@ -51,7 +51,7 @@ async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wallet, a
 }
 
 export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds?: Coin[]): Promise<string> {
-	let result = await instantiate_contract_raw(lcd_client, sender, admin, code_id, init_msg, init_funds);
+	const result = await instantiate_contract_raw(lcd_client, sender, admin, code_id, init_msg, init_funds);
 	return getContractAddress(result)
 }
 
@@ -61,12 +61,12 @@ export async function execute_contract(lcd_client: LCDClient, sender: Wallet, co
 		contract_addr,
 		execute_msg
 	)];
-	let result = await send_message(lcd_client, sender, messages);
+	const result = await send_message(lcd_client, sender, messages);
 	return result
 }
 
 export async function send_message(lcd_client: LCDClient, sender: Wallet, messages: Msg[], tax?: Coin[]) {
-	let result = await calc_fee_and_send_tx(lcd_client, sender, messages, tax);
+	const result = await calc_fee_and_send_tx(lcd_client, sender, messages, tax);
 	return result
 }
 
@@ -90,7 +90,7 @@ export async function create_usd_to_token_terraswap_pair(lcd_client: LCDClient, 
 	};
 
 	while (true) {
-		let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr, create_pair_msg);
+		const pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr, create_pair_msg);
 		if (pair_creation_result !== undefined && isTxSuccess(pair_creation_result)) {
 			return parse_pair_creation(pair_creation_result);
 		} else {
@@ -110,7 +110,7 @@ export async function create_token_to_token_terraswap_pair(lcd_client: LCDClient
 	};
 
 	while (true) {
-		let pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr, create_pair_msg);
+		const pair_creation_result = await execute_contract(lcd_client, sender, terraswap_factory_contract_addr, create_pair_msg);
 		if (pair_creation_result !== undefined && isTxSuccess(pair_creation_result)) {
 			return parse_pair_creation(pair_creation_result);
 		} else {
@@ -120,18 +120,18 @@ export async function create_token_to_token_terraswap_pair(lcd_client: LCDClient
 }
 
 function parse_pair_creation(pair_creation_result: BlockTxBroadcastResult): TerraswapPairInfo {
-	var pair_info: TerraswapPairInfo = {
+	const pair_info: TerraswapPairInfo = {
 		pair_contract_addr: '',
 		liquidity_token_addr: ''
 	};
-	let contract_events = getContractEvents(pair_creation_result);
-	for (let contract_event of contract_events) {
-		let pair_contract_addr = contract_event["pair_contract_addr"];
+	const contract_events = getContractEvents(pair_creation_result);
+	for (const contract_event of contract_events) {
+		const pair_contract_addr = contract_event["pair_contract_addr"];
 		if ( pair_contract_addr !== undefined ) {
 			pair_info.pair_contract_addr = pair_contract_addr;
 		}
 
-		let liquidity_token_addr = contract_event["liquidity_token_addr"];
+		const liquidity_token_addr = contract_event["liquidity_token_addr"];
 		if ( liquidity_token_addr !== undefined ) {
 			pair_info.liquidity_token_addr = liquidity_token_addr;
 		}
@@ -153,34 +153,34 @@ export interface BassetVaultInfo {
 }
 
 export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: BassetVaultConfig): Promise<BassetVaultInfo> {
-	let init_contract_res = await instantiate_contract_raw(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
-	let contract_addr = getContractAddress(init_contract_res);
+	const init_contract_res = await instantiate_contract_raw(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+	const contract_addr = getContractAddress(init_contract_res);
 
-	var basset_vault_info: BassetVaultInfo = {
+	const basset_vault_info: BassetVaultInfo = {
 		addr: contract_addr,
 		nasset_token_addr: '',
 		nasset_token_config_holder_addr: '',
 		nasset_token_rewards_addr: '',
 		psi_distributor_addr: ''
 	};
-	let contract_events = getContractEvents(init_contract_res);
-	for (let contract_event of contract_events) {
-		let nasset_token_config_holder_addr = contract_event["nasset_token_config_holder_addr"];
+	const contract_events = getContractEvents(init_contract_res);
+	for (const contract_event of contract_events) {
+		const nasset_token_config_holder_addr = contract_event["nasset_token_config_holder_addr"];
 		if (nasset_token_config_holder_addr !== undefined) {
 			basset_vault_info.nasset_token_config_holder_addr = nasset_token_config_holder_addr;
 		}
 
-		let nasset_token_addr = contract_event["nasset_token_addr"];
+		const nasset_token_addr = contract_event["nasset_token_addr"];
 		if (nasset_token_addr !== undefined) {
 			basset_vault_info.nasset_token_addr = nasset_token_addr;
 		}
 
-		let nasset_token_rewards_addr = contract_event["nasset_token_rewards_addr"];
+		const nasset_token_rewards_addr = contract_event["nasset_token_rewards_addr"];
 		if (nasset_token_rewards_addr !== undefined) {
 			basset_vault_info.nasset_token_rewards_addr = nasset_token_rewards_addr;
 		}
 
-		let psi_distributor_addr = contract_event["psi_distributor_addr"];
+		const psi_distributor_addr = contract_event["psi_distributor_addr"];
 		if (psi_distributor_addr !== undefined) {
 			basset_vault_info.psi_distributor_addr = psi_distributor_addr;
 		}
@@ -223,7 +223,7 @@ async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[], ta
 		});
 
 		if (tax !== undefined) {
-			let fee_coins: Coins = estimated_fee_res.amount;
+			const fee_coins: Coins = estimated_fee_res.amount;
 			for (const tax_coin of tax) {
 				fee_coins.add(tax_coin);
 			}
@@ -277,7 +277,7 @@ export function prompt_for_seed(): Promise<string> {
 }
 
 export async function get_seed_from_aws_secrets(region: string, secret_name: string): Promise<string | undefined> {
-	var client = new SecretsManager({
+	const client = new SecretsManager({
 	    region: region
 	});
 

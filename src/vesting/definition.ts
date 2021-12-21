@@ -48,14 +48,14 @@ export function create_vesting_account(vesting_account_raw: VestingAccountRaw): 
 }
 
 export async function init_vesting_contract(lcd_client: LCDClient, sender: Wallet, config: Config) {
-	let genesis_time = to_utc_seconds(config.genesis_date_str);
+	const genesis_time = to_utc_seconds(config.genesis_date_str);
 	// instantiate vesting contract
-	let vesting_config = VestingConfig(config.psi_token_addr, genesis_time, config.multisig_address);
-	let vesting_contract_addr = await create_contract(lcd_client, sender, "vesting_contract", vesting_contract_wasm, vesting_config);
+	const vesting_config = VestingConfig(config.psi_token_addr, genesis_time, config.multisig_address);
+	const vesting_contract_addr = await create_contract(lcd_client, sender, "vesting_contract", vesting_contract_wasm, vesting_config);
 	console.log(`=======================`);
 
 	// register vesting accounts
-	let vesting_accounts: VestingAccount[] = config.vesting_accounts.map(create_vesting_account);
+	const vesting_accounts: VestingAccount[] = config.vesting_accounts.map(create_vesting_account);
 	await add_vesting_account(lcd_client, sender, vesting_contract_addr, vesting_accounts);
 }
 
@@ -90,9 +90,9 @@ async function is_vesting_already_exists_for(lcd_client: LCDClient, vesting_cont
 }
 
 export async function query_state(lcd_client: LCDClient, vesting_contract_addr: string) {
-	let config_response = await lcd_client.wasm.contractQuery(vesting_contract_addr, {config: {}});
+	const config_response = await lcd_client.wasm.contractQuery(vesting_contract_addr, {config: {}});
 	console.log(`config:\n${JSON.stringify( config_response )}`)
 
-	let vesting_accounts_response = await lcd_client.wasm.contractQuery(vesting_contract_addr, {vesting_accounts: {}});
+	const vesting_accounts_response = await lcd_client.wasm.contractQuery(vesting_contract_addr, {vesting_accounts: {}});
 	console.log(`vesting_accounts:\n${JSON.stringify( vesting_accounts_response )}`)
 }

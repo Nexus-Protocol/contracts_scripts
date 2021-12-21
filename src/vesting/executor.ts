@@ -20,7 +20,7 @@ export interface VestingAccountRaw {
 	tokens_amount: string,
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/vesting/config.json';
+const DEFAULT_CONFIG_PATH = 'src/vesting/config.json';
 
 async function run_program() {
 	const program = new Command();

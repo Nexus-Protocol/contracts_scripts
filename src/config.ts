@@ -16,7 +16,7 @@ export function PSiTokensOwner(lcd_client: LCDClient, sender: Wallet, multisig_a
 
 export async function Cw20CodeId(lcd_client: LCDClient, sender: Wallet): Promise<number> {
 	console.log(`storing our own cw20`);
-	let cw20_code_id = await store_contract(lcd_client, sender, cw20_contract_wasm);
+	const cw20_code_id = await store_contract(lcd_client, sender, cw20_contract_wasm);
 	console.log(`cw20_base uploaded; code_id: ${cw20_code_id}`);
 	return cw20_code_id;
 }
@@ -30,15 +30,15 @@ export function is_prod(lcd_client: LCDClient): boolean {
 export async function init_terraswap_factory(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number): Promise<string> {
 	if (lcd_client.config.chainID === "localterra") {
 		console.log(`in localterra, so storing our own terraswap contracts`);
-		let terraswap_factory_code_id = await store_contract(lcd_client, sender, terraswap_factory_wasm);
+		const terraswap_factory_code_id = await store_contract(lcd_client, sender, terraswap_factory_wasm);
 		console.log(`terraswap_factory uploaded\n\tcode_id: ${terraswap_factory_code_id}`);
-		let terraswap_pair_code_id = await store_contract(lcd_client, sender, terraswap_pair_wasm);
+		const terraswap_pair_code_id = await store_contract(lcd_client, sender, terraswap_pair_wasm);
 		console.log(`terraswap_pair uploaded\n\tcode_id: ${terraswap_pair_code_id}`);
-		let terraswap_factory_init_msg = {
+		const terraswap_factory_init_msg = {
 			 pair_code_id: terraswap_pair_code_id,
 			 token_code_id: cw20_code_id,
 		};
-		let terraswap_factory_contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, terraswap_factory_code_id, terraswap_factory_init_msg);
+		const terraswap_factory_contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, terraswap_factory_code_id, terraswap_factory_init_msg);
 		console.log(`terraswap_factory instantiated\n\taddress: ${terraswap_factory_contract_addr}`);
 		return terraswap_factory_contract_addr;
 	} else {

@@ -19,12 +19,12 @@ export async function register_merkle_tree(lcd_client: LCDClient, sender: Wallet
 		}
 	};
 
-	let register_merkle_tree_result = await execute_contract(lcd_client, sender, airdrop_contract_addr, register_merkle_root_msg);
+	const register_merkle_tree_result = await execute_contract(lcd_client, sender, airdrop_contract_addr, register_merkle_root_msg);
 	if (register_merkle_tree_result !== undefined) {
 		let stage;
-		let tx_events = getContractEvents(register_merkle_tree_result);
-		for (let event of tx_events) {
-			let stage_from_event = event["stage"];
+		const tx_events = getContractEvents(register_merkle_tree_result);
+		for (const event of tx_events) {
+			const stage_from_event = event["stage"];
 			if (stage_from_event !== undefined) {
 				stage = parseInt( stage_from_event );
 			}

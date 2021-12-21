@@ -27,7 +27,7 @@ class PsiToAncRatiosConfig {
 	public default_ratio: Decimal;
 
 	constructor(psi_to_anc_ratios_config_raw: PsiToAncRatiosConfigRaw) {
-		let psi_to_anc_ratios: PsiToAncRatio[] = [];
+		const psi_to_anc_ratios: PsiToAncRatio[] = [];
 		for (const {first_anc_tokens, psi_to_anc_ratio} of psi_to_anc_ratios_config_raw.ratios) {
 			psi_to_anc_ratios.push(new PsiToAncRatio(first_anc_tokens, psi_to_anc_ratio));
 		}
@@ -64,7 +64,7 @@ function get_airdropped_accounts_from_stakers(stakers: Map<string, Decimal>, tot
 	const psi_to_anc_ratios_config_raw: PsiToAncRatiosConfigRaw = JSON.parse(readFileSync(psi_to_anc_ratio_cfg_path, 'utf-8'));
 	const psi_to_anc_ratios_config: PsiToAncRatiosConfig = new PsiToAncRatiosConfig(psi_to_anc_ratios_config_raw);
 
-	let address_to_anc_tokens_sorted = new Array<{address: string; anc_tokens: Decimal}>();
+	const address_to_anc_tokens_sorted = new Array<{address: string; anc_tokens: Decimal}>();
 	let total_anc_staked = new Decimal(0);
 	for (const [addr, tokens] of stakers) {
 		total_anc_staked = total_anc_staked.add(tokens);
@@ -99,7 +99,7 @@ function get_airdropped_accounts_from_stakers(stakers: Map<string, Decimal>, tot
 	console.log(`===================================================================`);
 	console.log(`===================================================================`);
 	console.log(`===================================================================`);
-	let result = new Array<AirdropAccount>();
+	const result = new Array<AirdropAccount>();
 
 	counter = 0;
 	processed_anc_staked = new Decimal(0);

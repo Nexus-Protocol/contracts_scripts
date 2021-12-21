@@ -9,7 +9,7 @@ interface Config {
 	lcd_client: LCDConfig
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/rebalance/config.json';
+const DEFAULT_CONFIG_PATH = 'src/rebalance/config.json';
 
 async function run_program() {
 	const program = new Command();

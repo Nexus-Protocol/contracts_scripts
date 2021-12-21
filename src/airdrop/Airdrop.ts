@@ -9,7 +9,7 @@ class Airdrop {
 	constructor(accounts: Array<AirdropAccount>) {
 		this.accounts = accounts;
 		const leaves: any[] = [];
-		for (let account of accounts) {
+		for (const account of accounts) {
 			const leaf_str = account.address + tokens_to_drop_as_str(account);
 			const leaf = keccak256(leaf_str);
 			leaves.push(leaf);

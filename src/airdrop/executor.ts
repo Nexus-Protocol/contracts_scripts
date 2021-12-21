@@ -10,7 +10,7 @@ interface Config {
 	airdrop_contract_owner: string
 }
 
-const DEFAULT_CONFIG_PATH: string = 'src/airdrop/config.json';
+const DEFAULT_CONFIG_PATH = 'src/airdrop/config.json';
 
 async function run_program() {
 	const program = new Command();
@@ -84,7 +84,7 @@ export async function claim_airdrop(lcd_client: LCDClient, sender: Wallet) {
 }
 
 export async function query_merkle_tree(lcd_client: LCDClient, airdrop_contract_addr: string, stage: number) {
-	let merkle_root_response = await lcd_client.wasm.contractQuery(airdrop_contract_addr, {merkle_root: {stage: stage}});
+	const merkle_root_response = await lcd_client.wasm.contractQuery(airdrop_contract_addr, {merkle_root: {stage: stage}});
 	console.log(`merkle root for stage ${stage}:\n${JSON.stringify( merkle_root_response )}`)
 }
 

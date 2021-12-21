@@ -27,18 +27,18 @@ const psi_distributor_wasm = `${path_to_basset_vault_artifacts}/basset_vault_psi
 // ===================================================
 
 async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
-	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
+	const contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
 	console.log(`psi_token instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
 }
 
 async function init_governance_contract(lcd_client: LCDClient, sender: Wallet, init_msg: GovernanceConfig): Promise<string> {
-	let contract_addr = await create_contract(lcd_client, sender, "governance_contract", governance_contract_wasm, init_msg);
+	const contract_addr = await create_contract(lcd_client, sender, "governance_contract", governance_contract_wasm, init_msg);
 	return contract_addr;
 }
 
 async function init_community_pool(lcd_client: LCDClient, sender: Wallet, init_msg: CommunityPoolConfig): Promise<string> {
-	let contract_addr = await create_contract(lcd_client, sender, "community_pool", community_pool_contract_wasm, init_msg);
+	const contract_addr = await create_contract(lcd_client, sender, "community_pool", community_pool_contract_wasm, init_msg);
 	return contract_addr;
 }
 
@@ -53,17 +53,17 @@ async function init_community_pool(lcd_client: LCDClient, sender: Wallet, init_m
 // 8. instantiate Psi-nAsset pair contract
 export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token_initial_owner: string) {
 	//get cw20_code_id
-	let cw20_code_id = await Cw20CodeId(lcd_client, sender);
+	const cw20_code_id = await Cw20CodeId(lcd_client, sender);
 	console.log(`=======================`);
 
 	// instantiate governance contract_addr
-	let governance_config = GovernanceConfig(lcd_client);
-	let governance_contract_addr = await init_governance_contract(lcd_client, sender, governance_config);
+	const governance_config = GovernanceConfig(lcd_client);
+	const governance_contract_addr = await init_governance_contract(lcd_client, sender, governance_config);
 	console.log(`=======================`);
 
 	// instantiate psi_token
-	let token_config = TokenConfig(lcd_client, governance_contract_addr, PSiTokensOwner(lcd_client, sender, psi_token_initial_owner));
-	let psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, token_config);
+	const token_config = TokenConfig(lcd_client, governance_contract_addr, PSiTokensOwner(lcd_client, sender, psi_token_initial_owner));
+	const psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, token_config);
 	console.log(`=======================`);
 
 	// set psi token addr to governance contract
@@ -82,70 +82,70 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 	console.log(`=======================`);
 	
 	// instantiate Psi-UST pair contract
-	let terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, sender, cw20_code_id);
-	let psi_ust_pair_contract = await create_usd_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, psi_token_addr);
+	const terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, sender, cw20_code_id);
+	const psi_ust_pair_contract = await create_usd_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, psi_token_addr);
 	console.log(`Psi-UST pair contract instantiated\n\taddress: ${psi_ust_pair_contract.pair_contract_addr}\n\tlp token address: ${psi_ust_pair_contract.liquidity_token_addr}`);
 	console.log(`=======================`);
 	
 	// instantiate community_pool
-	let community_pool_config = CommunityPoolConfig(lcd_client, governance_contract_addr, psi_token_addr);
-	let community_pool_contract_addr = await init_community_pool(lcd_client, sender, community_pool_config);
+	const community_pool_config = CommunityPoolConfig(lcd_client, governance_contract_addr, psi_token_addr);
+	const community_pool_contract_addr = await init_community_pool(lcd_client, sender, community_pool_config);
 	console.log(`=======================`);
 	
 	// upload contracts for basset_vault
-	let nasset_token_code_id = await store_contract(lcd_client, sender, nasset_token_wasm);
+	const nasset_token_code_id = await store_contract(lcd_client, sender, nasset_token_wasm);
 	console.log(`nasset_token uploaded\n\tcode_id: ${nasset_token_code_id}`);
 	console.log(`=======================`);
-	let nasset_token_config_holder_code_id = await store_contract(lcd_client, sender, nasset_token_config_holder_wasm);
+	const nasset_token_config_holder_code_id = await store_contract(lcd_client, sender, nasset_token_config_holder_wasm);
 	console.log(`nasset_token_config_holder uploaded\n\tcode_id: ${nasset_token_config_holder_code_id}`);
 	console.log(`=======================`);
-	let nasset_token_rewards_code_id = await store_contract(lcd_client, sender, nasset_token_rewards_wasm);
+	const nasset_token_rewards_code_id = await store_contract(lcd_client, sender, nasset_token_rewards_wasm);
 	console.log(`nasset_token_rewards uploaded\n\tcode_id: ${nasset_token_rewards_code_id}`);
 	console.log(`=======================`);
-	let psi_distributor_code_id = await store_contract(lcd_client, sender, psi_distributor_wasm);
+	const psi_distributor_code_id = await store_contract(lcd_client, sender, psi_distributor_wasm);
 	console.log(`psi_distributor uploaded\n\tcode_id: ${psi_distributor_code_id}`);
 	console.log(`=======================`);
 
-	let basset_vault_strategy_code_id = await store_contract(lcd_client, sender, basset_vault_strategy_contract_wasm);
+	const basset_vault_strategy_code_id = await store_contract(lcd_client, sender, basset_vault_strategy_contract_wasm);
 	console.log(`basset_vault_strategy uploaded\n\tcode_id: ${basset_vault_strategy_code_id}`);
-	let basset_vault_code_id = await store_contract(lcd_client, sender, basset_vault_wasm);
+	const basset_vault_code_id = await store_contract(lcd_client, sender, basset_vault_wasm);
 	console.log(`basset_vault uploaded\n\tcode_id: ${basset_vault_code_id}`);
 	console.log(`=======================`);
 	// bLUNA
 	{
 		// instantiate basset_vault_strategy for bLuna
-		let basset_vault_strategy_config_for_bluna = BassetVaultStrategyConfigForbLuna(lcd_client, governance_contract_addr);
-		let basset_vault_strategy_contract_addr_for_bluna = await instantiate_contract(lcd_client, sender, sender.key.accAddress, basset_vault_strategy_code_id, basset_vault_strategy_config_for_bluna);
+		const basset_vault_strategy_config_for_bluna = BassetVaultStrategyConfigForbLuna(lcd_client, governance_contract_addr);
+		const basset_vault_strategy_contract_addr_for_bluna = await instantiate_contract(lcd_client, sender, sender.key.accAddress, basset_vault_strategy_code_id, basset_vault_strategy_config_for_bluna);
 		console.log(`basset_vault_strategy_for_bluna instantiated\n\taddress: ${basset_vault_strategy_contract_addr_for_bluna}`);
 		console.log(`=======================`);
 
 		// instantiate basset_vault for bLuna
-		let basset_vault_config_for_bluna = BassetVaultConfigForbLuna(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_bluna);
-		let basset_vault_info_for_bluna = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_bluna);
+		const basset_vault_config_for_bluna = BassetVaultConfigForbLuna(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_bluna);
+		const basset_vault_info_for_bluna = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_bluna);
 		console.log(`basset_vault_for_bluna instantiated\n\taddress: ${basset_vault_info_for_bluna.addr}\n\tnasset_token address: ${basset_vault_info_for_bluna.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_bluna.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_bluna.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_bluna.psi_distributor_addr}`);
 		console.log(`=======================`);
 
 		// instantiate nasset_psi_swap_contract for bLuna
-		let nluna_psi_pair_contract = await create_token_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, basset_vault_info_for_bluna.nasset_token_addr, psi_token_addr);
+		const nluna_psi_pair_contract = await create_token_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, basset_vault_info_for_bluna.nasset_token_addr, psi_token_addr);
 		console.log(`Psi-nLuna pair contract instantiated\n\taddress: ${nluna_psi_pair_contract.pair_contract_addr}\n\tlp token address: ${nluna_psi_pair_contract.liquidity_token_addr}`);
 		console.log(`=======================`);
 	}
 	// bETH
 	{
 		// instantiate basset_vault_strategy for bETH
-		let basset_vault_strategy_config_for_beth = BassetVaultStrategyConfigForbEth(lcd_client, governance_contract_addr);
-		let basset_vault_strategy_contract_addr_for_beth = await instantiate_contract(lcd_client, sender, sender.key.accAddress, basset_vault_strategy_code_id, basset_vault_strategy_config_for_beth);
+		const basset_vault_strategy_config_for_beth = BassetVaultStrategyConfigForbEth(lcd_client, governance_contract_addr);
+		const basset_vault_strategy_contract_addr_for_beth = await instantiate_contract(lcd_client, sender, sender.key.accAddress, basset_vault_strategy_code_id, basset_vault_strategy_config_for_beth);
 		console.log(`basset_vault_strategy_for_beth instantiated\n\taddress: ${basset_vault_strategy_contract_addr_for_beth}`);
 		console.log(`=======================`);
 
 		// instantiate basset_vault for bETH
-		let basset_vault_config_for_beth = BassetVaultConfigForbEth(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_beth);
-		let basset_vault_info_for_beth = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_beth);
+		const basset_vault_config_for_beth = BassetVaultConfigForbEth(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_beth);
+		const basset_vault_info_for_beth = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_beth);
 		console.log(`basset_vault_for_beth instantiated\n\taddress: ${basset_vault_info_for_beth.addr}\n\tnasset_token address: ${basset_vault_info_for_beth.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_beth.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_beth.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_beth.psi_distributor_addr}`);
 		console.log(`=======================`);
 
 		// instantiate nasset_psi_swap_contract for bETH
-		let neth_psi_pair_contract = await create_token_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, basset_vault_info_for_beth.nasset_token_addr, psi_token_addr);
+		const neth_psi_pair_contract = await create_token_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, basset_vault_info_for_beth.nasset_token_addr, psi_token_addr);
 		console.log(`Psi-nETH pair contract instantiated\n\taddress: ${neth_psi_pair_contract.pair_contract_addr}\n\tlp token address: ${neth_psi_pair_contract.liquidity_token_addr}`);
 		console.log(`=======================`);
 	}
