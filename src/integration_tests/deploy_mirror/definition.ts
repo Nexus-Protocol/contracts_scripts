@@ -1,24 +1,23 @@
-import {LCDClient, Wallet, Coin} from '@terra-money/terra.js';
-import {
-    store_contract,
-    execute_contract,
-    create_contract,
-    instantiate_contract
-} from '../../utils';
+import {LCDClient, Wallet} from '@terra-money/terra.js';
+import {create_contract, execute_contract, instantiate_contract, store_contract} from '../../utils';
 import {TokenConfig} from "../../config";
 import {
     MirrorCollateralOracleConfig,
     MirrorCollectorConfig,
-    MirrorCommunityConfig, MirrorFactoryConfig,
-    MirrorGovConfig, MirrorLockConfig, MirrorMintConfig,
-    MirrorOracleConfig, MirrorStakingConfig,
+    MirrorCommunityConfig,
+    MirrorFactoryConfig,
+    MirrorGovConfig,
+    MirrorLockConfig,
+    MirrorMintConfig,
+    MirrorOracleConfig,
+    MirrorStakingConfig,
     MirrorTokenConfig
 } from "./config";
 import {anchor_init} from "../deploy_anchor/definition"
 
 //=============================================================================
 const artifacts_path = "wasm_artifacts";
-const path_to_mirror_artifacts = `${artifacts_path}/anchor`;
+const path_to_mirror_artifacts = `${artifacts_path}/mirror`;
 const path_to_terraswap_artifacts = `${artifacts_path}/terraswap`;
 const path_to_cosmwasm_artifacts = `${artifacts_path}/cosmwasm_plus`
 //=============================================================================
@@ -55,18 +54,17 @@ const terraswap_pair_wasm = `${path_to_terraswap_artifacts}/terraswap_pair.wasm`
 //9. Deploy mirror_oracle
 //10. Deploy mirror_mint
 //11. Deploy mirror_lock
-//12. Deploy mirror_staking
-//TODO: figure out how is short_reward_addr
-//13. Deploy mirror_factory
-//14. Setup mirror_factory (post_initialize)
-//15. Deploy mirror_collateral_oracle
-//TODO: figure out how is band_oracle
-//16. Assign mirror_factory to be the owner for mirror_oracle, mirror_staking and mirror_collector.
-//17. setup mirror_mint:
-//  17.1 assign mirror_factory to be the owner;
-//  17.2 set mirror_collateral_oracle;
-//  17.3 set mirror_staking
-//  17.4 set mirror_lock
+//12. Deploy mirror_short_reward
+//13. Deploy mirror_staking
+//14. Deploy mirror_factory
+//15. Setup mirror_factory (post_initialize)
+//16. Deploy mirror_collateral_oracle
+//17. Assign mirror_factory to be the owner for mirror_oracle, mirror_staking and mirror_collector.
+//18. setup mirror_mint:
+//  18.1 assign mirror_factory to be the owner;
+//  18.2 set mirror_collateral_oracle;
+//  18.3 set mirror_staking
+//  18.4 set mirror_lock
 
 export async function mirror_init(lcd_client: LCDClient, sender: Wallet) {
 
@@ -83,7 +81,6 @@ export async function mirror_init(lcd_client: LCDClient, sender: Wallet) {
     const anchor_market_addr = anchor_market_info.contract_addr;
     const aust_addr = anchor_market_info.aterra_token_addr;
     const bluna_addr = anchor_market_info.bluna_token_addr;
-    const anchor_oracle_addr = anchor_market_info.oracle_addr;
 
     const mirror_gov_config = MirrorGovConfig(mirror_token_addr);
     const mirror_gov_addr = await create_contract(
@@ -159,13 +156,21 @@ export async function mirror_init(lcd_client: LCDClient, sender: Wallet) {
         mirror_lock_config
     );
 
+    const mirror_short_reward_addr = await create_contract(
+        lcd_client,
+        sender,
+        "mirror_short_reward",
+        mirror_short_reward_wasm,
+        {}
+    )
+
     const mirror_staking_config = MirrorStakingConfig(
         sender.key.accAddress,   //owner will be changed to mirror_factory after its instantiation
         mirror_token_addr,
         mirror_mint_addr,
         mirror_oracle_addr,
         terraswap_factory_addr,
-        sender.key.accAddress // figure out how is short_reward_contract?
+        mirror_short_reward_addr
     );
     const mirror_staking_addr = await create_contract(
         lcd_client,
@@ -201,11 +206,11 @@ export async function mirror_init(lcd_client: LCDClient, sender: Wallet) {
     const mirror_collateral_oracle_config = MirrorCollateralOracleConfig(
         mirror_factory_addr,     //owner will be changed to mirror_factory after its instantiation
         mirror_mint_addr,
-        mirror_oracle_addr,
-        anchor_oracle_addr,
+        sender.key.accAddress,
+        sender.key.accAddress,
         sender.key.accAddress
     );
-    const mirror_collateral_oracle_addr = create_contract(
+    const mirror_collateral_oracle_addr = await create_contract(
         lcd_client,
         sender,
         "mirror_collateral_oracle",

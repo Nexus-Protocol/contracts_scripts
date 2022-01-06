@@ -13,6 +13,7 @@
 		"honest-work": "ts-node src/basset_honest_work/executor.ts",
 		"claim-lp-rewards": "ts-node src/claim_lp_rewards/executor.ts",
 		"deploy-anchor": "ts-node src/integration_tests/deploy_anchor/executor.ts",
+		"deploy-mirror": "ts-node src/integration_tests/deploy_mirror/executor.ts",
 		"integration-tests": "ts-node src/integration_tests/psi_distribution/executor.ts"
 	},
 	"devDependencies": {

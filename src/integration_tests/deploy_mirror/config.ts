@@ -38,13 +38,13 @@ export function MirrorGovConfig(
 ): MirrorGovConfig {
     return {
         mirror_token: mirror_token,
-        quorum: "0.1",
-        threshold: "0.5",
-        voting_period: 201600,
-        effective_delay: 100800,
+        quorum: "0.18",
+        threshold: "0.49989",
+        voting_period: 604800,
+        effective_delay: 86400,
         proposal_deposit: "100000000",
-        voter_weight: "1",
-        snapshot_period: 14400,
+        voter_weight: "0.5",
+        snapshot_period: 86400,
     }
 }
 
@@ -226,9 +226,9 @@ export interface MirrorCollateralOracleConfig{
 export function MirrorCollateralOracleConfig(
     owner: Addr,
     mint_contract: Addr,
-    mirror_oracle: Addr,
-    anchor_oracle: Addr,
-    band_oracle: Addr,
+    mirror_oracle: Addr,    //Address of MIR token oracle feeder
+    anchor_oracle: Addr,    //Address of ANC token oracle feeder
+    band_oracle: Addr,      //Address of Band Protocol oracle feeder
 ): MirrorCollateralOracleConfig {
     return {
         owner: owner,
