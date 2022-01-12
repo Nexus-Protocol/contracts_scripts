@@ -70,7 +70,7 @@ Psi-nETH pair contract instantiated
 staking_contract uploaded
         code_id: 9335
 =======================
-staking_contract instantiated
+staking_contract instantiated (Terraswap)
         Psi-UST staking address: terra1qsc7y8448payj9fyjxn6ffxxmdcj5g5dtptfq2
         Psi-nLuna staking address: terra14r89lj2e87qz2vwmdjxs70khh89n3w2xy2zkgn
         Psi-nETH staking address: terra1u8gvskrt5n6vdeeuc4428pxhjh75h0jcntm7ca
@@ -81,4 +81,8 @@ airdrop_contract uploaded
 airdrop_contract instantiated
         address: terra1s3qv2na283q7835d6qxcp5llp6ax7ydl7py4kd
 =======================
+staking_contract instantiated (Astroport)
+        Psi-UST staking address: terra1xeq2ej8s0t9z2ch08x5tc7009za43w8983elv0
+        Psi-nLuna staking address: terra18vqwp39c4jcgaax2d6275ghdtywz3xazzhl4xx
+        Psi-nETH staking address: terra1sxhfaud8svmazlvg2qffsgke96e7qguf057pc9
 ```
