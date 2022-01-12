@@ -93,6 +93,6 @@ Psi-nETH pair contract instantiated
 =======================
 staking_contract instantiated (Astroport)
         Psi-UST staking address: terra1fmu29xhg5nk8jr0p603y5qugpk2r0ywcyxyv7k
-        Psi-nLuna staking address: 
-        Psi-nETH staking address: 
+        Psi-nLuna staking address: terra1sxzggeujnxrd7hsx7uf2l6axh2uuv4zz5jadyg
+        Psi-nETH staking address: terra13n2sqaj25ugkt79k3evhvua30ut9qt8q0268zc
 ```
