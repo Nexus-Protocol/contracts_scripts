@@ -8,7 +8,7 @@
 
 #### Download dependency repos:
 
-1. https://github.com/Nexus-Protocol/basset-vault-contracts (`v1.5.0` tag)
+1. https://github.com/Nexus-Protocol/basset-vault-contracts (`v1.5.1` tag)
 2. https://github.com/terraswap/terraswap (`3ae1c1252ffcfff0a5b6f67d8a87a1604edae3a3` commit)
 3. https://github.com/Nexus-Protocol/services-contracts (`v1.4.3` tag)
 4. https://github.com/CosmWasm/cosmwasm-plus (`v0.9.0` tag)
