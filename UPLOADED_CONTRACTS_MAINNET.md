@@ -61,7 +61,7 @@ psi_distributor uploaded
 basset_vault_strategy uploaded
         code_id: 1744
 basset_vault uploaded
-        code_id: 1756
+        code_id: 2305
 =======================
 basset_vault_strategy_for_bluna instantiated
         address: terra1fxc9epfhest8sndrayfkxc9y6arva4sqtp7drg
