@@ -67,8 +67,8 @@ export async function init_astroport_factory(lcd_client: LCDClient, sender: Wall
 					pair_type: {
 						xyk: {}
 					},
-					total_fee_bps: 10,
-					maker_fee_bps: 1000
+					total_fee_bps: 0,
+					maker_fee_bps: 0
 				},
 			],
 			token_code_id: cw20_code_id
