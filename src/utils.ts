@@ -91,17 +91,17 @@ export async function send_message(lcd_client: LCDClient, sender: Wallet, messag
 // ============================================================
 // ============================================================
 
-export interface TerraswapPairInfo {
+export interface SwapPairInfo {
 	pair_contract_addr: string,
 	liquidity_token_addr: string
 }
 
-export async function create_usd_to_token_terraswap_pair(lcd_client: LCDClient, sender: Wallet, terraswap_factory_contract_addr: string, token_addr: string): Promise<TerraswapPairInfo> {
+export async function create_usd_to_token_terraswap_pair(lcd_client: LCDClient, sender: Wallet, terraswap_factory_contract_addr: string, token_addr: string): Promise<SwapPairInfo> {
 	const create_pair_msg = {
 		create_pair: {
 			asset_infos: [
-				{ token: { contract_addr: token_addr } },
-				{ native_token: { denom: "uusd" } },
+				{token: {contract_addr: token_addr}},
+				{native_token: {denom: "uusd"}},
 			]
 		}
 	};
@@ -116,7 +116,7 @@ export async function create_usd_to_token_terraswap_pair(lcd_client: LCDClient, 
 	}
 }
 
-export async function create_token_to_token_terraswap_pair(lcd_client: LCDClient, sender: Wallet, terraswap_factory_contract_addr: string, token_1_addr: string, token_2_addr: string): Promise<TerraswapPairInfo> {
+export async function create_token_to_token_terraswap_pair(lcd_client: LCDClient, sender: Wallet, terraswap_factory_contract_addr: string, token_1_addr: string, token_2_addr: string): Promise<SwapPairInfo> {
 	const create_pair_msg = {
 		create_pair: {
 			asset_infos: [
@@ -136,15 +136,77 @@ export async function create_token_to_token_terraswap_pair(lcd_client: LCDClient
 	}
 }
 
-function parse_pair_creation(pair_creation_result: BlockTxBroadcastResult): TerraswapPairInfo {
-	var pair_info: TerraswapPairInfo = {
+export async function create_usd_to_token_astroport_pair(lcd_client: LCDClient, sender: Wallet, astroport_factory_contract_addr: string, token_addr: string): Promise<SwapPairInfo> {
+	const create_pair_msg = {
+		create_pair: {
+			pair_type: {
+				xyk: {}
+			},
+			asset_infos: [
+				{
+					token: {
+						contract_addr: token_addr
+					}
+				},
+				{
+					native_token: {
+						denom: "uusd"
+					}
+				}
+			],
+		}
+	}
+
+	while (true) {
+		let pair_creation_result = await execute_contract(lcd_client, sender, astroport_factory_contract_addr, create_pair_msg);
+		if (pair_creation_result !== undefined && isTxSuccess(pair_creation_result)) {
+			return parse_pair_creation(pair_creation_result);
+		} else {
+			await sleep(1000);
+		}
+	}
+}
+
+export async function create_token_to_token_astroport_pair(lcd_client: LCDClient, sender: Wallet, astroport_factory_contract_addr: string, token_1_addr: string, token_2_addr: string): Promise<SwapPairInfo> {
+	const create_pair_msg = {
+		create_pair: {
+			pair_type: {
+				xyk: {}
+			},
+			asset_infos: [
+				{
+					token: {
+						contract_addr: token_1_addr
+					}
+				},
+				{
+					token: {
+						contract_addr: token_2_addr
+					}
+				},
+			],
+		}
+	}
+
+	while (true) {
+		let pair_creation_result = await execute_contract(lcd_client, sender, astroport_factory_contract_addr, create_pair_msg);
+		if (pair_creation_result !== undefined && isTxSuccess(pair_creation_result)) {
+			return parse_pair_creation(pair_creation_result);
+		} else {
+			await sleep(1000);
+		}
+	}
+}
+
+function parse_pair_creation(pair_creation_result: BlockTxBroadcastResult): SwapPairInfo {
+	var pair_info: SwapPairInfo = {
 		pair_contract_addr: '',
 		liquidity_token_addr: ''
 	};
 	let contract_events = getContractEvents(pair_creation_result);
 	for (let contract_event of contract_events) {
 		let pair_contract_addr = contract_event["pair_contract_addr"];
-		if ( pair_contract_addr !== undefined ) {
+		if (pair_contract_addr !== undefined) {
 			pair_info.pair_contract_addr = pair_contract_addr;
 		}
 

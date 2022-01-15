@@ -1,5 +1,11 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
-import {cw20_contract_wasm, terraswap_factory_wasm, terraswap_pair_wasm} from "./basset_vault/definition"
+import {
+	astroport_factory_wasm,
+	astroport_pair_wasm,
+	cw20_contract_wasm,
+	terraswap_factory_wasm,
+	terraswap_pair_wasm
+} from "./basset_vault/definition"
 import {instantiate_contract, store_contract} from './utils';
 
 // ================================================
@@ -35,14 +41,43 @@ export async function init_terraswap_factory(lcd_client: LCDClient, sender: Wall
 		let terraswap_pair_code_id = await store_contract(lcd_client, sender, terraswap_pair_wasm);
 		console.log(`terraswap_pair uploaded\n\tcode_id: ${terraswap_pair_code_id}`);
 		let terraswap_factory_init_msg = {
-			 pair_code_id: terraswap_pair_code_id,
-			 token_code_id: cw20_code_id,
+			pair_code_id: terraswap_pair_code_id,
+			token_code_id: cw20_code_id,
 		};
 		let terraswap_factory_contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, terraswap_factory_code_id, terraswap_factory_init_msg);
 		console.log(`terraswap_factory instantiated\n\taddress: ${terraswap_factory_contract_addr}`);
 		return terraswap_factory_contract_addr;
 	} else {
 		return terraswap_factory_contract_addr(lcd_client);
+	}
+}
+
+export async function init_astroport_factory(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number): Promise<string> {
+	if (lcd_client.config.chainID === "localterra") {
+		console.log(`in localterra, so storing our own astroport contracts`);
+		let astroport_factory_code_id = await store_contract(lcd_client, sender, astroport_factory_wasm);
+		console.log(`astroport_factory uploaded\n\tcode_id: ${astroport_factory_code_id}`);
+		let astroport_pair_code_id = await store_contract(lcd_client, sender, astroport_pair_wasm);
+		console.log(`astroport_pair uploaded\n\tcode_id: ${astroport_pair_code_id}`);
+		let astroport_factory_init_msg = {
+			owner: sender.key.accAddress,
+			pair_configs: [
+				{
+					code_id: astroport_pair_code_id,
+					pair_type: {
+						xyk: {}
+					},
+					total_fee_bps: 0,
+					maker_fee_bps: 0
+				},
+			],
+			token_code_id: cw20_code_id
+		}
+		let astroport_factory_contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, astroport_factory_code_id, astroport_factory_init_msg);
+		console.log(`astroport_factory instantiated\n\taddress: ${astroport_factory_contract_addr}`);
+		return astroport_factory_contract_addr;
+	} else {
+		return astroport_factory_contract_addr(lcd_client);
 	}
 }
 
@@ -150,6 +185,17 @@ export function terraswap_factory_contract_addr(lcd_client: LCDClient): string {
 		return terraswap_factory_contract_addr_prod;
 	} else {
 		return terraswap_factory_contract_addr_testnet;
+	}
+}
+
+const astroport_factory_contract_addr_prod = "terra1fnywlw4edny3vw44x04xd67uzkdqluymgreu7g";
+const astroport_factory_contract_addr_testnet = "terra15jsahkaf9p0qu8ye873p0u5z6g07wdad0tdq43";
+
+export function astroport_factory_contract_addr(lcd_client: LCDClient): string {
+	if (is_prod(lcd_client)) {
+		return astroport_factory_contract_addr_prod;
+	} else {
+		return astroport_factory_contract_addr_testnet;
 	}
 }
 

@@ -7,13 +7,13 @@ import {
 	CommunityPoolConfig,
 	Cw20CodeId,
 	GovernanceConfig,
-	init_terraswap_factory,
+	init_astroport_factory,
 	PSiTokensOwner,
 	TokenConfig
 } from './../config';
 import {
 	create_contract,
-	create_usd_to_token_terraswap_pair,
+	create_usd_to_token_astroport_pair,
 	execute_contract,
 	init_basset_vault,
 	instantiate_contract,
@@ -23,14 +23,17 @@ import {AnchorMarketInfo} from "../integration_tests/deploy_anchor/config";
 
 // ===================================================
 const artifacts_path = "wasm_artifacts";
-const path_to_cosmwasm_artifacts = `${artifacts_path}/cosmwasm_plus`
-const path_to_basset_vault_artifacts = `${artifacts_path}/nexus/basset_vaults`
-const path_to_services_contracts_artifacts = `${artifacts_path}/nexus/services`
-const path_to_terraswap_contracts_artifacts = `${artifacts_path}/terraswap`
+const path_to_cosmwasm_artifacts = `${artifacts_path}/cosmwasm_plus`;
+const path_to_basset_vault_artifacts = `${artifacts_path}/nexus/basset_vaults`;
+const path_to_services_contracts_artifacts = `${artifacts_path}/nexus/services`;
+const path_to_terraswap_contracts_artifacts = `${artifacts_path}/terraswap`;
+const path_to_astroport_contracts_artifacts = `${artifacts_path}/astroport`;
 // ===================================================
 export const cw20_contract_wasm = `${path_to_cosmwasm_artifacts}/cw20_base.wasm`;
 export const terraswap_factory_wasm = `${path_to_terraswap_contracts_artifacts}/terraswap_factory.wasm`;
 export const terraswap_pair_wasm = `${path_to_terraswap_contracts_artifacts}/terraswap_pair.wasm`;
+export const astroport_factory_wasm = `${path_to_astroport_contracts_artifacts}/astroport_factory.wasm`;
+export const astroport_pair_wasm = `${path_to_astroport_contracts_artifacts}/astroport_pair.wasm`;
 // ===================================================
 const governance_contract_wasm = `${path_to_services_contracts_artifacts}/nexus_governance.wasm`;
 const basset_vault_strategy_contract_wasm = `${path_to_basset_vault_artifacts}/basset_vault_basset_vault_strategy.wasm`;
@@ -99,18 +102,18 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 	);
 	console.log(`psi_token address set in governance contract`);
 	console.log(`=======================`);
-	
+
 	// instantiate Psi-UST pair contract
-	let terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, sender, cw20_code_id);
-	let psi_ust_pair_contract = await create_usd_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, psi_token_addr);
+	let astroport_factory_contract_addr = await init_astroport_factory(lcd_client, sender, cw20_code_id);
+	let psi_ust_pair_contract = await create_usd_to_token_astroport_pair(lcd_client, sender, astroport_factory_contract_addr, psi_token_addr);
 	console.log(`Psi-UST pair contract instantiated\n\taddress: ${psi_ust_pair_contract.pair_contract_addr}\n\tlp token address: ${psi_ust_pair_contract.liquidity_token_addr}`);
 	console.log(`=======================`);
-	
+
 	// instantiate community_pool
 	let community_pool_config = CommunityPoolConfig(lcd_client, governance_contract_addr, psi_token_addr);
 	let community_pool_contract_addr = await init_community_pool(lcd_client, sender, community_pool_config);
 	console.log(`=======================`);
-	
+
 	// upload contracts for basset_vault
 	let nasset_token_code_id = await store_contract(lcd_client, sender, nasset_token_wasm);
 	console.log(`nasset_token uploaded\n\tcode_id: ${nasset_token_code_id}`);
@@ -146,7 +149,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		console.log(`=======================`);
 
 		// instantiate basset_vault for bLuna
-		let basset_vault_config_for_bluna = BassetVaultConfigForbLuna(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_bluna, terraswap_factory_contract_addr);
+		let basset_vault_config_for_bluna = BassetVaultConfigForbLuna(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_bluna, astroport_factory_contract_addr);
 
 		if (anchor_market_info !== null && anchor_market_info !== undefined) {
 			basset_vault_config_for_bluna.anchor_addr = anchor_market_info.anchor_token_addr;
@@ -176,7 +179,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		console.log(`=======================`);
 
 		// instantiate basset_vault for bETH
-		let basset_vault_config_for_beth = BassetVaultConfigForbEth(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_beth, terraswap_factory_contract_addr);
+		let basset_vault_config_for_beth = BassetVaultConfigForbEth(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_beth, astroport_factory_contract_addr);
 
 		if (anchor_market_info !== null && anchor_market_info !== undefined) {
 			basset_vault_config_for_beth.anchor_addr = anchor_market_info.anchor_token_addr;
