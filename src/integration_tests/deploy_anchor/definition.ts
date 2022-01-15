@@ -1,7 +1,7 @@
 import {Coin, getContractEvents, LCDClient, Wallet} from '@terra-money/terra.js';
 import {
 	create_contract,
-	create_usd_to_token_terraswap_pair,
+	create_usd_to_token_astroport_pair,
 	execute_contract,
 	instantiate_contract,
 	instantiate_contract_raw,
@@ -22,7 +22,7 @@ import {
 	BethRewardConfig,
 	BethTokenConfig
 } from './config';
-import {Cw20CodeId, init_terraswap_factory, TokenConfig} from '../../config';
+import {Cw20CodeId, init_astroport_factory, TokenConfig} from '../../config';
 
 //=============================================================================
 const artifacts_path = "wasm_artifacts";
@@ -208,8 +208,8 @@ async function anchor_init_verbose(
 	console.log(`=======================`);
 
 	// instantiate ANC-UST pair contract
-	let terraswap_factory_contract_addr = await init_terraswap_factory(lcd_client, sender, cw20_code_id);
-	let anc_ust_pair_contract = await create_usd_to_token_terraswap_pair(lcd_client, sender, terraswap_factory_contract_addr, anchor_token_addr);
+	let astroport_factory_contract_addr = await init_astroport_factory(lcd_client, sender, cw20_code_id);
+	let anc_ust_pair_contract = await create_usd_to_token_astroport_pair(lcd_client, sender, astroport_factory_contract_addr, anchor_token_addr);
 	console.log(`ANC-UST pair contract instantiated\n\taddress: ${anc_ust_pair_contract.pair_contract_addr}\n\tlp token address: ${anc_ust_pair_contract.liquidity_token_addr}`);
 	console.log(`=======================`);
 
