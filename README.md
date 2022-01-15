@@ -10,8 +10,9 @@
 
 1. https://github.com/Nexus-Protocol/basset-vault-contracts (`v1.3.4` tag)
 2. https://github.com/terraswap/terraswap (`3ae1c1252ffcfff0a5b6f67d8a87a1604edae3a3` commit)
-3. https://github.com/Nexus-Protocol/services-contracts (`v1.4.2` tag)
-4. https://github.com/CosmWasm/cosmwasm-plus (`v0.9.0` tag)
+3. https://github.com/astroport-fi/astroport-core (`v1.0.1` tag)
+4. https://github.com/Nexus-Protocol/services-contracts (`v1.4.2` tag)
+5. https://github.com/CosmWasm/cosmwasm-plus (`v0.9.0` tag)
 
 ##### build cosmwasm-plus
 
