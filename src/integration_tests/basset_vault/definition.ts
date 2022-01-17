@@ -218,24 +218,7 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
     console.log(`basset_vault_for_bluna test: "decrease_bluna_price" passed!`);
 }
 
-// 1. During anchor+nexus deployment sender deposit 1 000 UST directly to anchor market.
-// 2. farmer(same sender for test) bond some luna and deposit it to basset_vault
-//  2.1. borrow x UST with basset collateral
-//  2.2. hold x * 0,18 UST as buffer
-//  2.3 deposit x * 0,82 back to anchor market
-// State: anchor hold x * 0,82 UST
-//        nexus hold x * 0,18 UST
-// 3. sender withdraw his UST directly from anchor market
-// 4. farmer withdraw his bAsset
-//  4.1. basset_vault rebalance as it doesn't have bAsset to withdraw
-//      4.1.1. sell aUST for UST
-//      4.1.2. repay loan to unlock collateral
-//  but here anchor doesn't have UST to buy aUST back
-//  4.2. basset_vault repay loan with buffer and anchor obtain some UST
-//  4.3 Now anchor market has some UST and basset_vault is able to sell some aUST an receive come UST.
-//  4.4.Again in Next iteration there are some UST in anchor market and basset_vault is able to sell more aUST.
-
-
+// 100 UST deposited directly to anchor marker during deployment for tests
 export async function recursive_repay(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
@@ -244,7 +227,6 @@ export async function recursive_repay(lcd_client: LCDClient, sender: Wallet, add
     const bluna_token_addr = addresses.bluna_token_addr;
     const bluna_hub_addr = addresses.bluna_hub_addr;
     const oracle_addr = addresses.anchor_oracle_addr;
-    const overseer_addr = addresses.anchor_overseer_addr;
     const basset_vault_for_bluna_addr = addresses.basset_vault_for_bluna_addr;
     const nluna_token_addr = addresses.nluna_token_addr;
 
@@ -255,35 +237,16 @@ export async function recursive_repay(lcd_client: LCDClient, sender: Wallet, add
 
     await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr);
+    // vault obtain aUST here
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
+    //10 UST in anchor market after this tx
+    await redeem_stable(lcd_client, sender,aust_token_addr, anchor_market_addr, 90000000);
+    // value to repay (14,4 UST) > anchor market UST balance (10 UST) -> recursive repay
+    await withdraw_bluna(lcd_client,sender,nluna_token_addr,basset_vault_for_bluna_addr, 30000000);
 
-    let collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
-    console.log(`---> collateral_amount: ${collateral}`);
-
-    let actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
-        borrower_info: {
-            borrower: basset_vault_for_bluna_addr
-        }
-    });
-    let loan_amount = +actual_borrower_info.loan_amount;
-    console.log(`---> loan_amount: ${loan_amount}`);
-
-    let ust_provider_aust_amount = await get_token_balance(lcd_client, sender.key.accAddress, aust_token_addr);
-    console.log(`---> ust_provider_aust_amount: ${ust_provider_aust_amount}`);
-    let vault_aust_amount = await get_token_balance(lcd_client, basset_vault_for_bluna_addr, aust_token_addr);
-    console.log(`---> vault_aust_amount: ${vault_aust_amount}`);
-    let farmer_nluna_amount = await get_token_balance(lcd_client, sender.key.accAddress, nluna_token_addr);
-    console.log(`---> farmer_nluna_amount: ${farmer_nluna_amount}`);
-
-    const redeem_result = await redeem_stable(lcd_client, sender,aust_token_addr, anchor_market_addr, 90000000);
-    console.log(`${JSON.stringify(redeem_result)}`);
-    ust_provider_aust_amount = await get_token_balance(lcd_client, sender.key.accAddress, aust_token_addr);
-    console.log(`---> ust_provider_aust_amount: ${ust_provider_aust_amount}`);
-
-    const withdraw_result = await withdraw_bluna(lcd_client,sender,nluna_token_addr,basset_vault_for_bluna_addr, 30000000);
-    console.log(`${JSON.stringify(withdraw_result)}`);
-    farmer_nluna_amount = await get_token_balance(lcd_client, sender.key.accAddress, nluna_token_addr);
-    console.log(`---> farmer_nluna_amount: ${farmer_nluna_amount}`);
+    //more ust to anchor market for next tests
+    await deposit_stable(lcd_client,sender,anchor_market_addr, 200000000);
+    console.log(`basset_vault_for_bluna test: "recursive_repay" passed!`);
 }
 
 export async function expired_basset_price_rebalance(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {

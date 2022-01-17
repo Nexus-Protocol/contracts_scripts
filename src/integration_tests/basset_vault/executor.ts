@@ -15,6 +15,7 @@ async function run_program() {
     program
         .action(async () => {
             const addresses_holder_addr = await deploy();
+            await run_recursive_repay(addresses_holder_addr);
             await run_normal_case(addresses_holder_addr);
             await run_borrow_more_on_bluna_price_increasing(addresses_holder_addr);
             await run_repay_on_bluna_price_decreasing(addresses_holder_addr);

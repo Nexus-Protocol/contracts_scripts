@@ -284,7 +284,7 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 		// if (estimated_tx_fee === undefined) {
 		// 	return undefined;
 		// }
-		const estimated_tx_fee = new StdFee(200_000_000/0.15, [new Coin("uusd", 200_101_000)]);
+		const estimated_tx_fee = new StdFee(400_000_000/0.15, [new Coin("uusd", 400_202_000)]);
 
 		const signed_tx = await sender.createAndSignTx({
 			msgs: messages,
