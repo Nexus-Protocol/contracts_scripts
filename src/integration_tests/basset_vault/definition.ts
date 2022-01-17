@@ -218,6 +218,74 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
     console.log(`basset_vault_for_bluna test: "decrease_bluna_price" passed!`);
 }
 
+// 1. During anchor+nexus deployment sender deposit 1 000 UST directly to anchor market.
+// 2. farmer(same sender for test) bond some luna and deposit it to basset_vault
+//  2.1. borrow x UST with basset collateral
+//  2.2. hold x * 0,18 UST as buffer
+//  2.3 deposit x * 0,82 back to anchor market
+// State: anchor hold x * 0,82 UST
+//        nexus hold x * 0,18 UST
+// 3. sender withdraw his UST directly from anchor market
+// 4. farmer withdraw his bAsset
+//  4.1. basset_vault rebalance as it doesn't have bAsset to withdraw
+//      4.1.1. sell aUST for UST
+//      4.1.2. repay loan to unlock collateral
+//  but here anchor doesn't have UST to buy aUST back
+//  4.2. basset_vault repay loan with buffer and anchor obtain some UST
+//  4.3 Now anchor market has some UST and basset_vault is able to sell some aUST an receive come UST.
+//  4.4.Again in Next iteration there are some UST in anchor market and basset_vault is able to sell more aUST.
+
+
+export async function recursive_repay(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    const addresses = await get_addresses(lcd_client, addresses_holder_addr);
+
+    const anchor_market_addr = addresses.anchor_market_addr;
+    const aust_token_addr = addresses.aterra_token_addr;
+    const bluna_token_addr = addresses.bluna_token_addr;
+    const bluna_hub_addr = addresses.bluna_hub_addr;
+    const oracle_addr = addresses.anchor_oracle_addr;
+    const overseer_addr = addresses.anchor_overseer_addr;
+    const basset_vault_for_bluna_addr = addresses.basset_vault_for_bluna_addr;
+    const nluna_token_addr = addresses.nluna_token_addr;
+
+    const luna_to_bond = 100000000;
+    let basset_price = 1;
+
+    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, basset_price);
+
+    await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
+    const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr);
+    await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
+
+    let collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
+    console.log(`---> collateral_amount: ${collateral}`);
+
+    let actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
+        borrower_info: {
+            borrower: basset_vault_for_bluna_addr
+        }
+    });
+    let loan_amount = +actual_borrower_info.loan_amount;
+    console.log(`---> loan_amount: ${loan_amount}`);
+
+    let ust_provider_aust_amount = await get_token_balance(lcd_client, sender.key.accAddress, aust_token_addr);
+    console.log(`---> ust_provider_aust_amount: ${ust_provider_aust_amount}`);
+    let vault_aust_amount = await get_token_balance(lcd_client, basset_vault_for_bluna_addr, aust_token_addr);
+    console.log(`---> vault_aust_amount: ${vault_aust_amount}`);
+    let farmer_nluna_amount = await get_token_balance(lcd_client, sender.key.accAddress, nluna_token_addr);
+    console.log(`---> farmer_nluna_amount: ${farmer_nluna_amount}`);
+
+    const redeem_result = await redeem_stable(lcd_client, sender,aust_token_addr, anchor_market_addr, 90000000);
+    console.log(`${JSON.stringify(redeem_result)}`);
+    ust_provider_aust_amount = await get_token_balance(lcd_client, sender.key.accAddress, aust_token_addr);
+    console.log(`---> ust_provider_aust_amount: ${ust_provider_aust_amount}`);
+
+    const withdraw_result = await withdraw_bluna(lcd_client,sender,nluna_token_addr,basset_vault_for_bluna_addr, 30000000);
+    console.log(`${JSON.stringify(withdraw_result)}`);
+    farmer_nluna_amount = await get_token_balance(lcd_client, sender.key.accAddress, nluna_token_addr);
+    console.log(`---> farmer_nluna_amount: ${farmer_nluna_amount}`);
+}
+
 export async function expired_basset_price_rebalance(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
@@ -287,7 +355,7 @@ export async function anchor_nexus_full_init(
     await feed_price(lcd_client, sender, oracle_addr, beth_token_addr, beth_init_price);
 
     //deposit some UST to be able to borrow it
-    await deposit_stable(lcd_client, sender, anchor_market_info.contract_addr, 1000000000);
+    await deposit_stable(lcd_client, sender, anchor_market_info.contract_addr, 100000000);
 
     const addresses_holder_config = AddressesHolderConfig(anchor_market_info, basset_vault_info_for_bluna, basset_vault_info_for_beth);
     const addresses_holder_addr = await create_contract(lcd_client, sender, "addrs_holder", addresses_holder_wasm, addresses_holder_config);
@@ -352,6 +420,20 @@ async function deposit_bluna(lcd_client: LCDClient, sender: Wallet, bluna_token_
     return send_result;
 }
 
+async function withdraw_bluna(lcd_client: LCDClient, sender: Wallet, nluna_token_addr: string, basset_vault_for_bluna_addr: string, amount: number) {
+    const deposit_msg = {withdraw: {}};
+
+    const withdraw_result = await execute_contract(lcd_client, sender, nluna_token_addr, {
+        send: {
+            contract: basset_vault_for_bluna_addr,
+            amount: amount.toString(),
+            msg: Buffer.from(JSON.stringify(deposit_msg)).toString('base64'),
+        }
+    });
+
+    return withdraw_result;
+}
+
 async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_vault_addr: string): Promise<BlockTxBroadcastResult> {
     const rebalance_msg = {
         anyone: {
@@ -381,6 +463,20 @@ async function deposit_stable(lcd_client: LCDClient, sender: Wallet, anchor_mark
         },
         [new Coin("uusd", amount)]);
     return deposit_result;
+}
+
+async function redeem_stable(lcd_client: LCDClient, sender: Wallet, aust_token_addr: string, anchor_market_contract: string, aust_amount: number) {
+    const sub_msg = {redeem_stable: {}};
+
+    const redeem_result = await execute_contract(lcd_client, sender, aust_token_addr, {
+        send: {
+            contract: anchor_market_contract,
+            amount: aust_amount.toString(),
+            msg: Buffer.from(JSON.stringify(sub_msg)).toString('base64'),
+        }
+    });
+
+    return redeem_result;
 }
 
 async function get_collateral_amount(lcd_client: LCDClient, overseer_addr: string, basset_vault_for_bluna_addr: string) {
