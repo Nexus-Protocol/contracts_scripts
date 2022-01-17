@@ -57,6 +57,10 @@ export async function normal_case(lcd_client: LCDClient, sender: Wallet, address
     const basset_vault_for_bluna_addr = addresses.basset_vault_for_bluna_addr;
     const nluna_token_addr = addresses.nluna_token_addr;
 
+    //deposit some UST directly to anchor marker in order to vault could borrow it
+    const initial_ust_for_anchor = 100000000;
+    await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
+
     const luna_to_bond = 10000000;
 
     await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, 1);
@@ -128,6 +132,10 @@ export async function borrow_more_on_bluna_price_increasing(lcd_client: LCDClien
     const overseer_addr = addresses.anchor_overseer_addr;
     const basset_vault_for_bluna_addr = addresses.basset_vault_for_bluna_addr;
 
+    //deposit some UST directly to anchor marker in order to vault could borrow it
+    const initial_ust_for_anchor = 100000000;
+    await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
+
     const luna_to_bond = 100000000;
     let basset_price = 1;
 
@@ -178,6 +186,10 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
     const overseer_addr = addresses.anchor_overseer_addr;
     const basset_vault_for_bluna_addr = addresses.basset_vault_for_bluna_addr;
 
+    //deposit some UST directly to anchor marker in order to vault could borrow it
+    const initial_ust_for_anchor = 100000000;
+    await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
+
     const luna_to_bond = 100000000;
     let basset_price = 1;
 
@@ -218,7 +230,6 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
     console.log(`basset_vault_for_bluna test: "decrease_bluna_price" passed!`);
 }
 
-// 100 UST deposited directly to anchor marker during deployment for tests
 export async function recursive_repay(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
@@ -230,6 +241,10 @@ export async function recursive_repay(lcd_client: LCDClient, sender: Wallet, add
     const basset_vault_for_bluna_addr = addresses.basset_vault_for_bluna_addr;
     const nluna_token_addr = addresses.nluna_token_addr;
 
+    //deposit some UST directly to anchor marker in order to vault could borrow it
+    const initial_ust_for_anchor = 100000000;
+    await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
+
     const luna_to_bond = 100000000;
     let basset_price = 1;
 
@@ -237,15 +252,17 @@ export async function recursive_repay(lcd_client: LCDClient, sender: Wallet, add
 
     await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr);
-    // vault obtain aUST here
+    // vault receives aUST to sell it back to UST to repay loan after this tx
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
-    //10 UST in anchor market after this tx
-    await redeem_stable(lcd_client, sender,aust_token_addr, anchor_market_addr, 90000000);
-    // value to repay (14,4 UST) > anchor market UST balance (10 UST) -> recursive repay
-    await withdraw_bluna(lcd_client,sender,nluna_token_addr,basset_vault_for_bluna_addr, 30000000);
-
-    //more ust to anchor market for next tests
-    await deposit_stable(lcd_client,sender,anchor_market_addr, 200000000);
+    // redeem 90% directly deposited UST
+    await redeem_stable(lcd_client, sender, aust_token_addr, anchor_market_addr, initial_ust_for_anchor * 0.9);
+    // 1. on basset withdraw vault execute rebalance considering it doesn't have basset_to_withdraw before actual withdraw
+    // 2. after redeem_stable (line 246) anchor market holds 10UST and isn't able to buy aUST back with grater value
+    // 3. to repay loan vault has to sell aUST to UST first and use it to repay loan
+    // 4. loan_amount 48 UST, here i withdraw 30% of deposited bLuna = 14,4 UST > 10 UST on anchor marker balance
+    // in this case basset_vault repays part of loan with buffer in order to provide some UST to anchor market
+    // in order to anchor could buy aUST back
+    await withdraw_bluna(lcd_client, sender, nluna_token_addr, basset_vault_for_bluna_addr, 30000000);
     console.log(`basset_vault_for_bluna test: "recursive_repay" passed!`);
 }
 
@@ -258,6 +275,10 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
     const oracle_addr = addresses.anchor_oracle_addr;
     const overseer_addr = addresses.anchor_overseer_addr;
     const basset_vault_for_bluna_addr = addresses.basset_vault_for_bluna_addr;
+
+    //deposit some UST directly to anchor marker in order to vault could borrow it
+    const initial_ust_for_anchor = 100000000;
+    await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
 
     const luna_to_bond = 100000000;
     let basset_price = 1;
@@ -316,9 +337,6 @@ export async function anchor_nexus_full_init(
 
     await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_init_price);
     await feed_price(lcd_client, sender, oracle_addr, beth_token_addr, beth_init_price);
-
-    //deposit some UST to be able to borrow it
-    await deposit_stable(lcd_client, sender, anchor_market_info.contract_addr, 100000000);
 
     const addresses_holder_config = AddressesHolderConfig(anchor_market_info, basset_vault_info_for_bluna, basset_vault_info_for_beth);
     const addresses_holder_addr = await create_contract(lcd_client, sender, "addrs_holder", addresses_holder_wasm, addresses_holder_config);
