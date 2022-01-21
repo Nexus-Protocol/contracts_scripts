@@ -72,3 +72,8 @@ export function AddressesHolderConfig(
     }
 }
 
+export interface AnchorEpochStateResponse {
+    exchange_rate: string,
+    aterra_supply: string,
+}
+
