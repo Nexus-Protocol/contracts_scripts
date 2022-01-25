@@ -15,7 +15,9 @@
 		"honest-work": "ts-node src/basset_honest_work/executor.ts",
 		"claim-lp-rewards": "ts-node src/claim_lp_rewards/executor.ts",
 		"deploy-anchor": "ts-node src/integration_tests/deploy_anchor/executor.ts",
-		"integration-tests": "ts-node src/integration_tests/psi_distribution/executor.ts"
+		"integration-tests": "ts-node src/integration_tests/psi_distribution/executor.ts",
+		"owned-liquidity": "ts-node src/owned_liquidity/executor.ts",
+		"test-owned-liquidity": "ts-node src/integration_tests/owned_liquidity/executor.ts"
 	},
 	"devDependencies": {
 		"@aws-sdk/types": "^3.29.0",
