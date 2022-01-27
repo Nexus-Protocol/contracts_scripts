@@ -96,7 +96,7 @@ export async function simple_deposit(lcd_client: LCDClient, sender: Wallet, addr
         for (let contract_event of contract_events) {
             let action = contract_event["action"];
             if (action !== undefined && action == "rebalance_not_needed") {
-                console.log(`basset_vault_for_bluna test: "normal_case_1" passed(rebalance_not_needed)!`);
+                console.log(`basset_vault_for_bluna test: "simple_deposit" passed(rebalance_not_needed)!`);
                 return;
             }
         }
@@ -117,7 +117,7 @@ export async function simple_deposit(lcd_client: LCDClient, sender: Wallet, addr
         }
     });
     const actual_loan = +actual_borrower_info.loan_amount;
-    await assert_numbers_with_inaccuracy(expected_loan, actual_loan, 10);
+    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 10);
     console.log(`basset_vault_for_bluna test: "simple_deposit" passed(rebalanced)!`);
 }
 
@@ -153,7 +153,7 @@ export async function borrow_more_on_bluna_price_increasing(lcd_client: LCDClien
         }
     });
     let actual_loan = +actual_borrower_info.loan_amount;
-    await assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
+    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
 
     basset_price = basset_price * 2;
     await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, basset_price);
@@ -168,7 +168,7 @@ export async function borrow_more_on_bluna_price_increasing(lcd_client: LCDClien
         }
     });
     actual_loan = +actual_borrower_info.loan_amount;
-    await assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
+    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
     console.log(`basset_vault_for_bluna test: "borrow_more_on_bluna_price_increasing" passed!`);
 }
 
@@ -205,7 +205,7 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
     });
     let actual_loan = +actual_borrower_info.loan_amount;
 
-    await assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
+    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
 
     basset_price = basset_price / 2;
     await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, basset_price);
@@ -220,7 +220,7 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
         }
     });
     actual_loan = +actual_borrower_info.loan_amount;
-    await assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
+    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
     console.log(`basset_vault_for_bluna test: "repay_on_bluna_price_decreasing" passed!`);
 }
 
@@ -257,7 +257,7 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     await redeem_stable(lcd_client, sender, aust_token_addr, anchor_market_addr, aust_to_burn);
     anchor_ust_balance = await query_stable_balance(lcd_client, anchor_market_addr);
     //check whether there is no UST in anchor_market
-    await assert_numbers_with_inaccuracy(anchor_initial_funds, anchor_ust_balance, 10);
+    assert_numbers_with_inaccuracy(anchor_initial_funds, anchor_ust_balance, 10);
 
     let actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
         borrower_info: {
@@ -292,17 +292,21 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
             borrower: basset_vault_for_bluna_addr
         }
     });
-    const loan_after_withdraw = +actual_borrower_info.loan_amount;
-    await assert_numbers_with_inaccuracy(loan_before_withdraw * (1 - part_to_withdraw), loan_after_withdraw, 20);
+    const actual_loan_after_withdraw = +actual_borrower_info.loan_amount;
+    const expected_loan_after_withdraw = loan_before_withdraw * (1 - part_to_withdraw);
+    assert_numbers_with_inaccuracy(expected_loan_after_withdraw, actual_loan_after_withdraw, 20);
 
-    const buffer_after_withdraw = await query_stable_balance(lcd_client, basset_vault_for_bluna_addr);
-    await assert_numbers_with_inaccuracy(buffer_before_withdraw * (1 - part_to_withdraw), buffer_after_withdraw, 10);
+    const actual_buffer_after_withdraw = await query_stable_balance(lcd_client, basset_vault_for_bluna_addr);
+    const expected_buffer_after_withdraw = buffer_before_withdraw * (1 - part_to_withdraw);
+    assert_numbers_with_inaccuracy(expected_buffer_after_withdraw, actual_buffer_after_withdraw, 10);
 
-    const collateral_after_withdraw = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
-    await assert_numbers_with_inaccuracy(collateral_before_withdraw * (1 - part_to_withdraw), collateral_after_withdraw, 10);
+    const actual_collateral_after_withdraw = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
+    const expected_collateral_after_withdraw = collateral_before_withdraw * (1 - part_to_withdraw);
+    assert_numbers_with_inaccuracy(expected_collateral_after_withdraw, actual_collateral_after_withdraw, 10);
 
-    const farmer_nluna_balance_after_withdraw = await get_token_balance(lcd_client, sender.key.accAddress, nluna_token_addr);
-    await assert_numbers_with_inaccuracy(farmer_nluna_balance_before_withdraw * (1 - part_to_withdraw), farmer_nluna_balance_after_withdraw, 10);
+    const actual_farmer_nluna_balance_after_withdraw = await get_token_balance(lcd_client, sender.key.accAddress, nluna_token_addr);
+    const expected_farmer_nluna_balance_after_withdraw = farmer_nluna_balance_before_withdraw * (1 - part_to_withdraw);
+    assert_numbers_with_inaccuracy(expected_farmer_nluna_balance_after_withdraw, actual_farmer_nluna_balance_after_withdraw, 10);
 
     console.log(`basset_vault_for_bluna test: "recursive_repay_ok" passed!`);
 }
@@ -345,7 +349,7 @@ export async function recursive_repay_fail(lcd_client: LCDClient, sender: Wallet
     await redeem_stable(lcd_client, sender, aust_token_addr, anchor_market_addr, aust_to_burn);
     anchor_ust_balance = await query_stable_balance(lcd_client, anchor_market_addr);
     //check whether there is no UST in anchor_market
-    await assert_numbers_with_inaccuracy(anchor_initial_funds, anchor_ust_balance, 10);
+    assert_numbers_with_inaccuracy(anchor_initial_funds, anchor_ust_balance, 10);
 
     let actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
         borrower_info: {
@@ -374,14 +378,17 @@ export async function recursive_repay_fail(lcd_client: LCDClient, sender: Wallet
             borrower: basset_vault_for_bluna_addr
         }
     });
-    const loan_after_withdraw = +actual_borrower_info.loan_amount;
-    await assert_numbers_with_inaccuracy(loan_before_withdraw * (1 - part_to_withdraw), loan_after_withdraw, 10);
+    const actual_loan_after_withdraw = +actual_borrower_info.loan_amount;
+    const expected_loan_after_withdraw = loan_before_withdraw * (1 - part_to_withdraw);
+    assert_numbers_with_inaccuracy(expected_loan_after_withdraw, actual_loan_after_withdraw, 10);
 
-    const collateral_after_withdraw = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
-    await assert_numbers_with_inaccuracy(collateral_before_withdraw * (1 - part_to_withdraw), collateral_after_withdraw, 10);
+    const actual_collateral_after_withdraw = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
+    const expected_collateral_after_withdraw = collateral_before_withdraw * (1 - part_to_withdraw);
+    assert_numbers_with_inaccuracy(expected_collateral_after_withdraw, actual_collateral_after_withdraw, 10);
 
-    const farmer_nluna_balance_after_withdraw = await get_token_balance(lcd_client, sender.key.accAddress, nluna_token_addr);
-    await assert_numbers_with_inaccuracy(farmer_nluna_balance_before_withdraw * (1 - part_to_withdraw), farmer_nluna_balance_after_withdraw, 10);
+    const actual_farmer_nluna_balance_after_withdraw = await get_token_balance(lcd_client, sender.key.accAddress, nluna_token_addr);
+    const expected_farmer_nluna_balance_after_withdraw = farmer_nluna_balance_before_withdraw * (1 - part_to_withdraw);
+    assert_numbers_with_inaccuracy(expected_farmer_nluna_balance_after_withdraw, actual_farmer_nluna_balance_after_withdraw, 10);
 
     console.log(`basset_vault_for_bluna test: "recursive_repay_fail"`);
 }
@@ -418,7 +425,7 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
         }
     });
     let actual_loan = +actual_borrower_info.loan_amount;
-    await assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
+    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
 
     await sleep(26000);
 
@@ -432,7 +439,7 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
         }
     });
     actual_loan = +actual_borrower_info.loan_amount;
-    await assert_numbers_with_inaccuracy(expected_loan, actual_loan, 200);
+    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 200); // inaccuracy is 0,02 % (the more sub messages the more inaccurate tax calculations in the third-party protocols the less precision )
     console.log(`basset_vault_for_bluna test: "expired_bluna_price" passed!`);
 }
 
@@ -650,7 +657,7 @@ async function calculate_repay_cycles_amount(result: BlockTxBroadcastResult) {
     return repay_cycles_amount;
 }
 
-async function assert_numbers_with_inaccuracy(expected: number, actual: number, inaccuracy: number) {
-    let comparison = Math.abs(expected - actual);
-    assert(comparison <= inaccuracy);
+function assert_numbers_with_inaccuracy(expected: number, actual: number, inaccuracy: number) {
+    let diff = Math.abs(expected - actual);
+    assert(diff <= inaccuracy);
 }
