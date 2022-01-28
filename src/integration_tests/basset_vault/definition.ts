@@ -271,20 +271,21 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
         }
     });
     const actual_loan_after_withdraw = +actual_borrower_info.loan_amount;
-    const expected_loan_after_withdraw = loan_before_withdraw * (1 - part_to_withdraw);
-    assert_numbers_with_inaccuracy(expected_loan_after_withdraw, actual_loan_after_withdraw, 20);
+    const expected_loan_after_withdraw = Math.floor(loan_before_withdraw * (1 - part_to_withdraw));
+    //See comment for assert_loan fn
+    assert_numbers_with_inaccuracy(expected_loan_after_withdraw, actual_loan_after_withdraw, 10);
 
     const actual_buffer_after_withdraw = await query_stable_balance(lcd_client, basset_vault_for_bluna_addr);
-    const expected_buffer_after_withdraw = buffer_before_withdraw * (1 - part_to_withdraw);
-    assert_numbers_with_inaccuracy(expected_buffer_after_withdraw, actual_buffer_after_withdraw, 10);
+    const expected_buffer_after_withdraw = Math.floor(buffer_before_withdraw * (1 - part_to_withdraw));
+    assert(actual_buffer_after_withdraw == expected_buffer_after_withdraw);
 
     const actual_collateral_after_withdraw = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
-    const expected_collateral_after_withdraw = collateral_before_withdraw * (1 - part_to_withdraw);
+    const expected_collateral_after_withdraw = Math.floor(collateral_before_withdraw * (1 - part_to_withdraw));
     assert_numbers_with_inaccuracy(expected_collateral_after_withdraw, actual_collateral_after_withdraw, 10);
 
     const actual_farmer_nluna_balance_after_withdraw = await get_token_balance(lcd_client, sender.key.accAddress, nluna_token_addr);
-    const expected_farmer_nluna_balance_after_withdraw = farmer_nluna_balance_before_withdraw * (1 - part_to_withdraw);
-    assert_numbers_with_inaccuracy(expected_farmer_nluna_balance_after_withdraw, actual_farmer_nluna_balance_after_withdraw, 10);
+    const expected_farmer_nluna_balance_after_withdraw = Math.floor(farmer_nluna_balance_before_withdraw * (1 - part_to_withdraw));
+    assert(actual_farmer_nluna_balance_after_withdraw == expected_farmer_nluna_balance_after_withdraw);
 
     console.log(`basset_vault_for_bluna test: "recursive_repay_ok" passed!`);
 }
