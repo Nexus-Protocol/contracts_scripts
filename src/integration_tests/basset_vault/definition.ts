@@ -6,6 +6,7 @@ import {LOCALTERRA_DEFAULT_VALIDATOR_ADDR} from "../deploy_anchor/config";
 import {
     AddressesHolderConfig,
     AnchorEpochStateResponse,
+    AnchorStateResponse,
     BalanceResponse,
     BorrowerInfoResponse,
     CollateralsResponse,
@@ -13,6 +14,7 @@ import {
 } from "./config"
 import {isTxSuccess} from "../../transaction";
 import * as assert from "assert";
+import Decimal from 'decimal.js';
 
 // ===================================================
 const addresses_holder_wasm = "wasm_artifacts/utils/addr_holder.wasm";
@@ -62,8 +64,9 @@ export async function simple_deposit(lcd_client: LCDClient, sender: Wallet, addr
     const initial_ust_for_anchor = 100_000_000;
     await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
     const luna_to_bond = 10_000_000;
+    const bluna_price = 1;
 
-    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, 1);
+    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_price);
 
     await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
 
@@ -110,14 +113,10 @@ export async function simple_deposit(lcd_client: LCDClient, sender: Wallet, addr
     const actual_collateral_amount = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
     assert(expected_collateral_amount == actual_collateral_amount);
 
-    const expected_loan = Math.round(total_bluna_amount * 0.6 * 0.8);
-    const actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
-        borrower_info: {
-            borrower: basset_vault_for_bluna_addr
-        }
-    });
-    const actual_loan = +actual_borrower_info.loan_amount;
-    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 10);
+    //locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
+    let user_liability = Math.round(total_bluna_amount * bluna_price * 0.6 * 0.8);
+    await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
+
     console.log(`basset_vault_for_bluna test: "simple_deposit" passed(rebalanced)!`);
 }
 
@@ -136,39 +135,29 @@ export async function borrow_more_on_bluna_price_increasing(lcd_client: LCDClien
     await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
 
     const luna_to_bond = 100_000_000;
-    let basset_price = 1;
+    let bluna_price = 1;
 
-    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, basset_price);
+    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_price);
 
     await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr); //deposit all bluna in contract
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
     let collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
 
-    //loan = locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
-    let expected_loan = Math.round(collateral * basset_price * 0.6 * 0.8);
-    let actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
-        borrower_info: {
-            borrower: basset_vault_for_bluna_addr
-        }
-    });
-    let actual_loan = +actual_borrower_info.loan_amount;
-    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
+    //locked_basset * bluna_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
+    let user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
+    await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
-    basset_price = basset_price * 2;
-    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, basset_price);
+    bluna_price = bluna_price * 2;
+    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_price);
 
     await rebalance(lcd_client, sender, basset_vault_for_bluna_addr);
 
     collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
-    expected_loan = Math.round(collateral * basset_price * 0.6 * 0.8);
-    actual_borrower_info = await lcd_client.wasm.contractQuery(anchor_market_addr, {
-        borrower_info: {
-            borrower: basset_vault_for_bluna_addr
-        }
-    });
-    actual_loan = +actual_borrower_info.loan_amount;
-    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
+
+    user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
+    await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
+
     console.log(`basset_vault_for_bluna test: "borrow_more_on_bluna_price_increasing" passed!`);
 }
 
@@ -187,40 +176,29 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
     await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
 
     const luna_to_bond = 100_000_000;
-    let basset_price = 1;
+    let bluna_price = 1;
 
-    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, basset_price);
+    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_price);
 
     await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr); //deposit all bluna in contract
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
     let collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
 
-    //loan = locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
-    let expected_loan = Math.round(collateral * basset_price * 0.6 * 0.8);
-    let actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
-        borrower_info: {
-            borrower: basset_vault_for_bluna_addr
-        }
-    });
-    let actual_loan = +actual_borrower_info.loan_amount;
+    //locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
+    let user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
+    await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
-    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
-
-    basset_price = basset_price / 2;
-    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, basset_price);
+    bluna_price = bluna_price / 2;
+    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_price);
 
     await rebalance(lcd_client, sender, basset_vault_for_bluna_addr);
 
     collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
-    expected_loan = Math.round(collateral * basset_price * 0.6 * 0.8);
-    actual_borrower_info = await lcd_client.wasm.contractQuery(anchor_market_addr, {
-        borrower_info: {
-            borrower: basset_vault_for_bluna_addr
-        }
-    });
-    actual_loan = +actual_borrower_info.loan_amount;
-    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
+
+    user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
+    await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
+
     console.log(`basset_vault_for_bluna test: "repay_on_bluna_price_decreasing" passed!`);
 }
 
@@ -408,38 +386,28 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
     await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
 
     const luna_to_bond = 100_000_000;
-    let basset_price = 1;
+    let bluna_price = 1;
 
-    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, basset_price);
+    await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_price);
 
     await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr); //deposit all bluna in contract
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
     let collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
 
-    //loan = locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
-    let expected_loan = Math.round(collateral * basset_price * 0.6 * 0.8);
-    let actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
-        borrower_info: {
-            borrower: basset_vault_for_bluna_addr
-        }
-    });
-    let actual_loan = +actual_borrower_info.loan_amount;
-    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 100);
+    //locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
+    let user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
+    await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
     await sleep(26000);
 
     await rebalance(lcd_client, sender, basset_vault_for_bluna_addr);
 
-    collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
-    expected_loan = Math.round(collateral * basset_price * 0.6 * 0.4);
-    actual_borrower_info = await lcd_client.wasm.contractQuery(anchor_market_addr, {
-        borrower_info: {
-            borrower: basset_vault_for_bluna_addr
-        }
-    });
-    actual_loan = +actual_borrower_info.loan_amount;
-    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 200); // inaccuracy is 0,02 % (the more sub messages the more inaccurate tax calculations in the third-party protocols the less precision )
+    //locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,4)
+    //borrow_ltv_aim drops on 50% in emergency mode
+    user_liability = Math.round(collateral * bluna_price * 0.6 * 0.4);
+    await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
+
     console.log(`basset_vault_for_bluna test: "expired_bluna_price" passed!`);
 }
 
@@ -608,6 +576,27 @@ async function get_token_balance(lcd_client: LCDClient, token_holder_addr: strin
         }
     });
     return +result.balance;
+}
+
+async function assert_loan(lcd_client: LCDClient, anchor_market_addr: string, borrower_addr: string, liability: number) {
+    const anchor_market_state: AnchorStateResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
+        state: {}
+    });
+
+    const borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
+        borrower_info: {
+            borrower: borrower_addr
+        }
+    });
+    const actual_loan = +borrower_info.loan_amount;
+    const global_interest_index = new Decimal(anchor_market_state.global_interest_index);
+    const interest_index = new Decimal(borrower_info.interest_index);
+    const inner_liability = new Decimal(liability);
+    const expected_loan = inner_liability.mul(global_interest_index).div(interest_index).round().toNumber();
+    //There is a bug in anchor market contracts (reported): the absence of explicit Uint256 to Decimal256 cast derives to inaccuracy
+    //This inaccuracy depends on localterra config as well: in case all timeouts equals to 200ms and longer inaccuracy low than 10,
+    // but the shorter timeouts the more blocks between requests the bigger inaccuracy.
+    assert_numbers_with_inaccuracy(expected_loan, actual_loan, 10);
 }
 
 async function get_nluna_supply(lcd_client: LCDClient, nluna_token_addr: string) {
