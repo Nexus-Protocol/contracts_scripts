@@ -55,11 +55,12 @@ export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet
 	return getContractAddress(result)
 }
 
-export async function execute_contract(lcd_client: LCDClient, sender: Wallet, contract_addr: string, execute_msg: object): Promise<BlockTxBroadcastResult | undefined> {
+export async function execute_contract(lcd_client: LCDClient, sender: Wallet, contract_addr: string, execute_msg: object, coins?: Coins): Promise<BlockTxBroadcastResult | undefined> {
 	const messages: Msg[] = [new MsgExecuteContract(
 		sender.key.accAddress,
 		contract_addr,
-		execute_msg
+		execute_msg,
+		coins
 	)];
 	const result = await send_message(lcd_client, sender, messages);
 	return result
@@ -119,7 +120,7 @@ export async function create_token_to_token_terraswap_pair(lcd_client: LCDClient
 	}
 }
 
-function parse_pair_creation(pair_creation_result: BlockTxBroadcastResult): TerraswapPairInfo {
+export function parse_pair_creation(pair_creation_result: BlockTxBroadcastResult): TerraswapPairInfo {
 	const pair_info: TerraswapPairInfo = {
 		pair_contract_addr: '',
 		liquidity_token_addr: ''
