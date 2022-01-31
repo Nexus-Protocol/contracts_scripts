@@ -723,6 +723,8 @@ async function runProgram() {
     const rewards_1 = extractRewardsInfo(result!, nexusPol, astro, psi);
     assert.deepStrictEqual(buyInfo.psi_rewards.toFixed(), rewards_1.psiAmount);
     assert.deepStrictEqual(buyInfo.astro_rewards.toFixed(), rewards_1.astroAmount);
+    assert(buyInfo.psi_rewards.greaterThan(0));
+    assert(buyInfo.astro_rewards.greaterThan(0));
     let astroBalance: BalanceResponse =
         await lcdClient.wasm.contractQuery(astro, { balance: { address: communityPool } });
     let psiBalance: BalanceResponse =
@@ -743,6 +745,8 @@ async function runProgram() {
     console.log(`Check contract attributes`);
     assert.deepStrictEqual(claimInfo.psi_rewards, rewards_2.psiAmount);
     assert.deepStrictEqual(claimInfo.astro_rewards, rewards_2.astroAmount);
+    assert(buyInfo.psi_rewards.greaterThan(0));
+    assert(buyInfo.astro_rewards.greaterThan(0));
     console.log(`Check transfered rewards`);
     astroBalance = await lcdClient.wasm.contractQuery(astro, { balance: { address: communityPool } });
     psiBalance = await lcdClient.wasm.contractQuery(psi, { balance: { address: communityPool } });
