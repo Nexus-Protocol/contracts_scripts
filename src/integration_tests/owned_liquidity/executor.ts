@@ -723,8 +723,10 @@ async function runProgram() {
     const rewards_1 = extractRewardsInfo(result!, nexusPol, astro, psi);
     assert.deepStrictEqual(buyInfo.psi_rewards.toFixed(), rewards_1.psiAmount);
     assert.deepStrictEqual(buyInfo.astro_rewards.toFixed(), rewards_1.astroAmount);
-    let astroBalance: BalanceResponse = await lcdClient.wasm.contractQuery(astro, { balance: { address: communityPool } });
-    let psiBalance: BalanceResponse = await lcdClient.wasm.contractQuery(psi, { balance: { address: communityPool } });
+    let astroBalance: BalanceResponse =
+        await lcdClient.wasm.contractQuery(astro, { balance: { address: communityPool } });
+    let psiBalance: BalanceResponse =
+        await lcdClient.wasm.contractQuery(psi, { balance: { address: communityPool } });
     assert.deepStrictEqual(psiBalance.balance, rewards_1.psiAmount);
     assert.deepStrictEqual(astroBalance.balance, rewards_1.astroAmount);
     console.log(`======================================================`);
@@ -744,12 +746,21 @@ async function runProgram() {
     console.log(`Check transfered rewards`);
     astroBalance = await lcdClient.wasm.contractQuery(astro, { balance: { address: communityPool } });
     psiBalance = await lcdClient.wasm.contractQuery(psi, { balance: { address: communityPool } });
-    assert.deepStrictEqual(psiBalance.balance, (new Decimal(rewards_1.psiAmount).add(new Decimal(rewards_2.psiAmount))).toFixed());
-    assert.deepStrictEqual(astroBalance.balance, (new Decimal(rewards_1.astroAmount).add(new Decimal(rewards_2.astroAmount))).toFixed());
+    assert.deepStrictEqual(
+        psiBalance.balance,
+        (new Decimal(rewards_1.psiAmount).add(new Decimal(rewards_2.psiAmount))).toFixed(),
+    );
+    assert.deepStrictEqual(
+        astroBalance.balance,
+        (new Decimal(rewards_1.astroAmount).add(new Decimal(rewards_2.astroAmount))).toFixed(),
+    );
     console.log(`======================================================`);
 
     console.log(`Check all added vesting records`);
-    const vestingResult: VestingResponse = await lcdClient.wasm.contractQuery(nexusVesting, { vesting_account: { address: sender.key.accAddress } });
+    const vestingResult: VestingResponse = await lcdClient.wasm.contractQuery(
+        nexusVesting,
+        { vesting_account: { address: sender.key.accAddress } },
+    );
     for (const [i, schedule] of vestingResult.info.schedules.entries()) {
         assert.deepStrictEqual(schedule.end_time - schedule.start_time, 5 * 24 * 3600);
         assert.deepStrictEqual(schedule.start_time, schedule.cliff_end_time);
@@ -833,7 +844,12 @@ function parseBuy(result: BlockTxBroadcastResult) {
     return buyInfo;
 }
 
-function extractRewardsInfo(result: BlockTxBroadcastResult, nexusPol: string, astro: string, psi: string) {
+function extractRewardsInfo(
+    result: BlockTxBroadcastResult,
+    nexusPol: string,
+    astro: string,
+    psi: string
+) {
     let psiAmount = new Decimal(0);
     let astroAmount = new Decimal(0);
     const events = getContractEvents(result);
