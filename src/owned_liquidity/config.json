@@ -1,0 +1,27 @@
+{
+	"lcd_client": {
+		"localterra": true,
+		"url": "http://127.0.0.1:1317",
+		"chain_id": "columbus-5",
+		"aws_secrets": {
+			"region": "eu-west-1",
+			"secret_name": "seeds/testnet"
+		}
+	},
+	"psi": "",
+	"genesisTime": "",
+	"governance": "",
+	"pairs": [
+		""
+	],
+	"vestingPeriod": 432000,
+	"bondControlVar": "2.5",
+	"excludedPsi": [
+		""
+	],
+	"maxBondsAmount": "0.00001",
+	"communityPool": "",
+	"astroGenerator": "",
+	"astro": "",
+	"polPsiBalance": ""
+}
