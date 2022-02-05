@@ -1,5 +1,4 @@
 import { LCDClient, Wallet } from '@terra-money/terra.js';
-import { Decimal } from 'decimal.js';
 import { execute_contract, create_contract, to_utc_seconds } from './../utils';
 
 interface VestingPolConfig {
@@ -11,14 +10,14 @@ interface VestingPolConfig {
 interface polConfig {
 	governance: string,
 	pairs: Array<string>,
-	psi: string,
+	psi_token: string,
 	vesting_period: number,
 	bond_control_var: string,
 	excluded_psi: Array<string>,
 	max_bonds_amount: string,
 	community_pool: string,
 	astro_generator: string,
-	astro: string,
+	astro_token: string,
 }
 
 async function initVestingPol(lcdClient: LCDClient, sender: Wallet, initMsg: VestingPolConfig): Promise<string> {
@@ -37,14 +36,16 @@ export async function fullInit(
 	governance: string,
 	pairs: Array<string>,
 	vestingPeriod: number,
-	bondControlVar: Decimal,
+	bondControlVar: string,
 	excludedPsi: Array<string>,
-	maxBondsAmount: Decimal,
+	maxBondsAmount: string,
 	communityPool: string,
 	astroGenerator: string,
 	astro: string,
-	polPsiBalance: Decimal,
+	polPsiBalance: string,
 ) {
+	console.log(`Sender: ${sender.key.accAddress}`);
+
 	const vestingPolInit = {
 		owner: sender.key.accAddress,
 		psi_token: psi,
@@ -56,23 +57,28 @@ export async function fullInit(
 	const polInit = {
 		governance,
 		pairs,
-		psi,
+		psi_token: psi,
 		vesting: vestingPol,
 		vesting_period: vestingPeriod,
-		bond_control_var: bondControlVar.toFixed(),
+		bond_control_var: bondControlVar,
 		excluded_psi: excludedPsi,
-		max_bonds_amount: maxBondsAmount.toFixed(),
+		max_bonds_amount: maxBondsAmount,
 		community_pool: communityPool,
 		autostake_lp_tokens: true,
 		astro_generator: astroGenerator,
-		astro,
+		astro_token: astro,
 	};
 	const pol = await initPol(lcdClient, sender, polInit);
 	console.log(`=======================`);
 
 	console.log(`Transfer PSI tokens to PoL`);
 	await execute_contract(lcdClient, sender, psi, {
-		transfer: { recipient: pol, amount: polPsiBalance.toFixed(0) }
+		transfer: { recipient: pol, amount: polPsiBalance }
 	});
+	console.log(`=======================`);
+
+	console.log(`Set PoL as vesting owner`);
+	const updateConfig = { update_config: { owner: pol } };
+	await execute_contract(lcdClient, sender, vestingPol, updateConfig);
 	console.log(`=======================`);
 }

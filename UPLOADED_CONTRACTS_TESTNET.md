@@ -81,4 +81,14 @@ airdrop_contract uploaded
 airdrop_contract instantiated
         address: terra1s3qv2na283q7835d6qxcp5llp6ax7ydl7py4kd
 =======================
+
+vesting_pol uploaded
+        code_id: 40510
+vesting_pol instantiated
+        address: terra1kx06spgl45xvekjq0klv03pqdr2zd7c4at28qc
+=======================
+pol uploaded
+        code_id: 40511
+pol instantiated
+        address: terra15yrf2575z2r8ytggwff8nwmmnzm8emkydj4kn6
 ```

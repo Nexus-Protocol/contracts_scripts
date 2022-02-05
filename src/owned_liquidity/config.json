@@ -1,27 +1,33 @@
 {
-	"lcd_client": {
-		"localterra": true,
-		"url": "http://127.0.0.1:1317",
-		"chain_id": "columbus-5",
-		"aws_secrets": {
-			"region": "eu-west-1",
-			"secret_name": "seeds/testnet"
-		}
+	"lcdClient": {
+		"localterra": false,
+		"url": "http://ec2-54-78-45-136.eu-west-1.compute.amazonaws.com:1317",
+		"chain_id": "bombay-12"
 	},
-	"psi": "",
-	"genesisTime": "",
-	"governance": "",
+	"psi": "terra18nle009rtynpjgleh2975rleu5zts0zdtqryte",
+	"genesisTime": "2022-01-11T03:00:00",
 	"pairs": [
-		""
+		"terra1mt63aef37fx9z7jfadtgk8a5swxlxce9pjdgvy",
+		"terra1uwf0yn9rnt7anpceqm7s00zfgevnwaaqde2eee",
+		"terra1a7vcghx2vjyg74nqk5krd9ppa8ks8ytz5vdsgp"
 	],
 	"vestingPeriod": 432000,
 	"bondControlVar": "2.5",
 	"excludedPsi": [
-		""
+		"terra10d3jnl00vzyq5qqyachks2x8u2ywxkatpmzmlk",
+		"terra14r89lj2e87qz2vwmdjxs70khh89n3w2xy2zkgn",
+		"terra18vqwp39c4jcgaax2d6275ghdtywz3xazzhl4xx",
+		"terra1qsc7y8448payj9fyjxn6ffxxmdcj5g5dtptfq2",
+		"terra1s3qv2na283q7835d6qxcp5llp6ax7ydl7py4kd",
+		"terra1sxhfaud8svmazlvg2qffsgke96e7qguf057pc9",
+		"terra1t6zrtyug2fdq9s5ryk8x5cr86jy2lk3j8hv6an",
+		"terra1tr4uxvmsfx7sl06m7xnp848ta20gesj0hpufjd",
+		"terra1u8gvskrt5n6vdeeuc4428pxhjh75h0jcntm7ca",
+		"terra1xeq2ej8s0t9z2ch08x5tc7009za43w8983elv0"
 	],
-	"maxBondsAmount": "0.00001",
-	"communityPool": "",
-	"astroGenerator": "",
-	"astro": "",
-	"polPsiBalance": ""
+	"maxBondsAmount": "0.0001",
+	"communityPool": "terra1tr4uxvmsfx7sl06m7xnp848ta20gesj0hpufjd",
+	"astroGenerator": "terra1gjm7d9nmewn27qzrvqyhda8zsfl40aya7tvaw5",
+	"astro": "terra1jqcw39c42mf7ngq4drgggakk3ymljgd3r5c3r5",
+	"polPsiBalance": "5000000000"
 }

@@ -2,22 +2,20 @@ import { fullInit } from "./definition";
 import { readFileSync } from 'fs';
 import { Command } from 'commander';
 import { get_lcd_config_with_wallet, LCDConfig } from './../utils';
-import { Decimal } from "decimal.js";
 
 interface Config {
 	lcdClient: LCDConfig,
 	psi: string,
 	genesisTime: string,
-	governance: string,
 	pairs: Array<string>,
 	vestingPeriod: number,
-	bondControlVar: Decimal,
+	bondControlVar: string,
 	excludedPsi: Array<string>,
-	maxBondsAmount: Decimal,
+	maxBondsAmount: string,
 	communityPool: string,
 	astroGenerator: string,
 	astro: string,
-	polPsiBalance: Decimal,
+	polPsiBalance: string,
 }
 
 const DEFAULT_CONFIG_PATH = 'src/owned_liquidity/config.json';
@@ -48,7 +46,7 @@ async function run(configPath: string) {
 		sender,
 		config.psi,
 		config.genesisTime,
-		config.governance,
+		sender.key.accAddress,
 		config.pairs,
 		config.vestingPeriod,
 		config.bondControlVar,
