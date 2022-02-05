@@ -280,17 +280,21 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, c
 
 export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[], tax?: Coin[]): Promise<BlockTxBroadcastResult | undefined> {
 	try {
-		const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);
-		if (estimated_tx_fee === undefined) {
-			return undefined;
-		}
-
+		let estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);
+		let estimation_failed = estimated_tx_fee === undefined;
+        if (estimation_failed) {
+			estimated_tx_fee = new StdFee(200000000_000_000/0.15, [new Coin("uusd", 200000000_101_000)]);
+        }
 		const signed_tx = await sender.createAndSignTx({
 			msgs: messages,
 			fee: estimated_tx_fee,
 		});
 
 		const tx_result = await lcd_client.tx.broadcast(signed_tx);
+		if (estimation_failed) {
+			console.log("FAILED TRANSACTION", tx_result);
+			return undefined;
+		}
 		return tx_result;
 	} catch (err) {
 		console.error(`calc_fee_and_send_tx return err: ${err}`)

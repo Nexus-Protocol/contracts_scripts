@@ -359,6 +359,7 @@ export function BethTokenConfig(
 export interface AnchorMarketInfo {
     contract_addr: Addr,
     overseer_addr: Addr,
+    interest_model_addr: Addr,
     oracle_addr: Addr,
     basset_hub_addr: Addr,
     anchor_token_addr: Addr,
@@ -368,11 +369,14 @@ export interface AnchorMarketInfo {
     beth_token_addr: Addr,
     bluna_custody_addr: Addr,
     beth_custody_addr: Addr,
+    bluna_reward_addr: Addr,
+    beth_reward_addr: Addr,
 }
 
 export function AnchorMarketInfo(
     contract_addr: Addr,
     overseer_addr: Addr,
+    interest_model_addr: Addr,
     oracle_addr: Addr,
     basset_hub_addr: Addr,
     anchor_token_addr: Addr,
@@ -382,10 +386,13 @@ export function AnchorMarketInfo(
     beth_token_addr: Addr,
     bluna_custody_addr: Addr,
     beth_custody_addr: Addr,
+    bluna_reward_addr: Addr,
+    beth_reward_addr: Addr,
 ): AnchorMarketInfo {
     return {
         contract_addr: contract_addr,
         overseer_addr: overseer_addr,
+        interest_model_addr: interest_model_addr,
         oracle_addr: oracle_addr,
         basset_hub_addr: basset_hub_addr,
         anchor_token_addr: anchor_token_addr,
@@ -395,6 +402,8 @@ export function AnchorMarketInfo(
         beth_token_addr: beth_token_addr,
         bluna_custody_addr: bluna_custody_addr,
         beth_custody_addr: beth_custody_addr,
+        bluna_reward_addr: bluna_reward_addr,
+        beth_reward_addr: beth_reward_addr,
     }
 }
 

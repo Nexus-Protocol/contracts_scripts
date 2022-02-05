@@ -1,4 +1,5 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
+import * as assert from "assert";
 import {
 	astroport_factory_wasm,
 	astroport_pair_wasm,
@@ -6,6 +7,7 @@ import {
 	terraswap_factory_wasm,
 	terraswap_pair_wasm
 } from "./basset_vault/definition"
+import { AnchorMarketInfo } from './integration_tests/deploy_anchor/config';
 import {instantiate_contract, store_contract} from './utils';
 
 // ================================================
@@ -305,6 +307,11 @@ export interface BassetVaultStrategyConfig {
 	basset_max_ltv: string,
 	buffer_part: string,
 	price_timeframe: number,
+	anchor_market_addr: string,
+    anchor_interest_model_addr: string,
+    anchor_overseer_addr: string,
+    anchor_token_addr: string,
+    anc_ust_swap_addr: string,
 }
 
 export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr: string): BassetVaultStrategyConfig {
@@ -319,14 +326,19 @@ export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr:
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
 		price_timeframe: 25,
+		anchor_market_addr: "todo",
+    	anchor_interest_model_addr: "todo",
+    	anchor_overseer_addr: "todo",
+    	anchor_token_addr: "todo",
+    	anc_ust_swap_addr: "todo",
 	}
 }
 
-export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_addr: string): BassetVaultStrategyConfig {
+export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_addr: string, anchor_market_info: AnchorMarketInfo): BassetVaultStrategyConfig {
 	return {
 		governance_contract_addr: governance_contract_addr,
-		oracle_contract_addr: "terra1p4gg3p2ue6qy2qfuxtrmgv2ec3f4jmgqtazum8",
-		basset_token_addr: "terra1u0t35drzyy0mujj8rkdyzhe264uls4ug3wdp3x",
+		oracle_contract_addr: anchor_market_info.oracle_addr,
+		basset_token_addr: anchor_market_info.bluna_token_addr,
 		stable_denom: "uusd",
 		borrow_ltv_max: "0.85",
 		borrow_ltv_min: "0.75",
@@ -334,14 +346,20 @@ export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_ad
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
 		price_timeframe: 25,
+		anchor_market_addr: anchor_market_info.contract_addr,
+    	anchor_interest_model_addr: anchor_market_info.interest_model_addr,
+    	anchor_overseer_addr: anchor_market_info.overseer_addr,
+    	anchor_token_addr: anchor_market_info.anchor_token_addr,
+    	anc_ust_swap_addr: anchor_market_info.anc_stable_swap_addr,
 	}
 }
 
-export function BassetVaultStrategyConfigForbLuna(lcd_client: LCDClient, governance_contract_addr: string): BassetVaultStrategyConfig {
+export function BassetVaultStrategyConfigForbLuna(lcd_client: LCDClient, governance_contract_addr: string, anchor_market_info?: AnchorMarketInfo): BassetVaultStrategyConfig {
 	if (is_prod(lcd_client)) {
 		return prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr);
 	} else {
-		return testnet_BassetVaultStrategyConfigForbLuna(governance_contract_addr);
+		assert(anchor_market_info != null && anchor_market_info !== undefined);
+		return testnet_BassetVaultStrategyConfigForbLuna(governance_contract_addr, anchor_market_info);
 	}
 }
 
@@ -357,10 +375,15 @@ export function prod_BassetVaultStrategyConfigForbEth(governance_contract_addr: 
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
 		price_timeframe: 25,
+		anchor_market_addr: "todo",
+    	anchor_interest_model_addr: "todo",
+    	anchor_overseer_addr: "todo",
+    	anchor_token_addr: "todo",
+    	anc_ust_swap_addr: "todo",
 	}
 }
 
-export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_addr: string): BassetVaultStrategyConfig {
+export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_addr: string, anchor_market_info: AnchorMarketInfo): BassetVaultStrategyConfig {
 	return {
 		governance_contract_addr: governance_contract_addr,
 		oracle_contract_addr: "terra1p4gg3p2ue6qy2qfuxtrmgv2ec3f4jmgqtazum8",
@@ -372,14 +395,20 @@ export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_add
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
 		price_timeframe: 25,
+		anchor_market_addr: anchor_market_info.contract_addr,
+    	anchor_interest_model_addr: anchor_market_info.interest_model_addr,
+    	anchor_overseer_addr: anchor_market_info.overseer_addr,
+    	anchor_token_addr: anchor_market_info.anchor_token_addr,
+    	anc_ust_swap_addr: anchor_market_info.anc_stable_swap_addr,
 	}
 }
 
-export function BassetVaultStrategyConfigForbEth(lcd_client: LCDClient, governance_contract_addr: string): BassetVaultStrategyConfig {
+export function BassetVaultStrategyConfigForbEth(lcd_client: LCDClient, governance_contract_addr: string, anchor_market_info?: AnchorMarketInfo): BassetVaultStrategyConfig {
 	if (is_prod(lcd_client)) {
 		return prod_BassetVaultStrategyConfigForbEth(governance_contract_addr);
 	} else {
-		return testnet_BassetVaultStrategyConfigForbEth(governance_contract_addr);
+		assert(anchor_market_info != null && anchor_market_info !== undefined);
+		return testnet_BassetVaultStrategyConfigForbEth(governance_contract_addr, anchor_market_info);
 	}
 }
 // ================================================
@@ -430,6 +459,7 @@ export interface BassetVaultConfig {
 	fee_rate: string,
 	tax_rate: string,
 	ts_factory_addr: string
+	a_basset_reward_addr: string,
 }
 
 export function prod_BassetVaultConfigForbLuna(
@@ -442,7 +472,7 @@ export function prod_BassetVaultConfigForbLuna(
 	psi_token_addr: string,
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string,
-	ts_factory_addr: string
+	ts_factory_addr: string,
 ): BassetVaultConfig {
 	 return {
 		 gov_addr: governance_contract_addr,
@@ -474,6 +504,7 @@ export function prod_BassetVaultConfigForbLuna(
 		 fee_rate: "0.5",
 		 tax_rate: "0.25",
 		 ts_factory_addr: ts_factory_addr,
+		 a_basset_reward_addr: "todo",
 	 }
 }
 
@@ -487,7 +518,8 @@ export function testnet_BassetVaultConfigForbLuna(
 	psi_token_addr: string,
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string,
-	ts_factory_addr: string
+	ts_factory_addr: string,
+	anchor_basset_reward_addr: string,
 ): BassetVaultConfig {
 	return {
 		gov_addr: governance_contract_addr,
@@ -518,7 +550,8 @@ export function testnet_BassetVaultConfigForbLuna(
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
-		ts_factory_addr: ts_factory_addr
+		ts_factory_addr: ts_factory_addr,
+		a_basset_reward_addr: anchor_basset_reward_addr,
 	}
 }
 
@@ -533,7 +566,8 @@ export function BassetVaultConfigForbLuna(
 	psi_token_addr: string,
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string,
-	ts_factory_addr: string
+	ts_factory_addr: string,
+	anchor_basset_reward_addr?: string,
 ): BassetVaultConfig {
 	if (is_prod(lcd_client)) {
 		return prod_BassetVaultConfigForbLuna(
@@ -549,6 +583,7 @@ export function BassetVaultConfigForbLuna(
 			ts_factory_addr
 		);
 	} else {
+		assert(anchor_basset_reward_addr != undefined);
 		return testnet_BassetVaultConfigForbLuna(
 			governance_contract_addr,
 			community_pool_contract_addr,
@@ -559,7 +594,8 @@ export function BassetVaultConfigForbLuna(
 			psi_token_addr,
 			psi_stable_swap_contract_addr,
 			basset_vault_strategy_contract_addr,
-			ts_factory_addr
+			ts_factory_addr,
+			anchor_basset_reward_addr,
 		);
 	}
 }
@@ -605,7 +641,8 @@ export function prod_BassetVaultConfigForbEth(
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
-		 ts_factory_addr: ts_factory_addr
+		ts_factory_addr: ts_factory_addr,
+		a_basset_reward_addr: "todo",
 	}
 }
 
@@ -619,7 +656,8 @@ export function testnet_BassetVaultConfigForbEth(
 	psi_token_addr: string,
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string,
-	ts_factory_addr: string
+	ts_factory_addr: string,
+	anchor_basset_reward_addr: string,
 ): BassetVaultConfig {
 	return {
 		gov_addr: governance_contract_addr,
@@ -650,7 +688,8 @@ export function testnet_BassetVaultConfigForbEth(
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
-		ts_factory_addr: ts_factory_addr
+		ts_factory_addr: ts_factory_addr,
+		a_basset_reward_addr: anchor_basset_reward_addr,
 	}
 }
 
@@ -665,7 +704,8 @@ export function BassetVaultConfigForbEth(
 	psi_token_addr: string,
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string,
-	ts_factory_addr: string
+	ts_factory_addr: string,
+	anchor_basset_reward_addr?: string,
 ): BassetVaultConfig {
 	if (is_prod(lcd_client)) {
 		return prod_BassetVaultConfigForbEth(
@@ -681,6 +721,7 @@ export function BassetVaultConfigForbEth(
 			ts_factory_addr
 		);
 	} else {
+		assert(anchor_basset_reward_addr != undefined);
 		return testnet_BassetVaultConfigForbEth(
 			governance_contract_addr,
 			community_pool_contract_addr,
@@ -691,7 +732,8 @@ export function BassetVaultConfigForbEth(
 			psi_token_addr,
 			psi_stable_swap_contract_addr,
 			basset_vault_strategy_contract_addr,
-			ts_factory_addr
+			ts_factory_addr,
+			anchor_basset_reward_addr
 		);
 	}
 }

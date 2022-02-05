@@ -38,6 +38,7 @@ export interface AddressesHolderConfig {
     aterra_token_addr: string,
     anchor_oracle_addr: string,
     anchor_overseer_addr: string,
+    anchor_interest_model_addr: string,
     basset_vault_for_bluna_addr: string,
     nluna_token_addr: string,
     basset_vault_for_beth_addr: string,
@@ -47,6 +48,7 @@ export interface AddressesHolderConfig {
     anchor_custody_bluna_addr: string,
     beth_token_addr: string,
     anchor_custody_beth_addr: string,
+    anc_stable_swap_addr: string,
 }
 
 export function AddressesHolderConfig(
@@ -60,6 +62,7 @@ export function AddressesHolderConfig(
         aterra_token_addr: anchor_market_info.aterra_token_addr,
         anchor_oracle_addr: anchor_market_info.oracle_addr,
         anchor_overseer_addr: anchor_market_info.overseer_addr,
+        anchor_interest_model_addr: anchor_market_info.interest_model_addr,
         basset_vault_for_bluna_addr: basset_vault_info_for_bluna.addr,
         nluna_token_addr: basset_vault_info_for_bluna.nasset_token_addr,
         basset_vault_for_beth_addr: basset_vault_info_for_beth.addr,
@@ -69,6 +72,7 @@ export function AddressesHolderConfig(
         anchor_custody_bluna_addr: anchor_market_info.bluna_custody_addr,
         beth_token_addr: anchor_market_info.beth_token_addr,
         anchor_custody_beth_addr: anchor_market_info.beth_custody_addr,
+        anc_stable_swap_addr: anchor_market_info.anc_stable_swap_addr,
     }
 }
 

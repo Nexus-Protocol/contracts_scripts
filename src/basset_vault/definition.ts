@@ -137,19 +137,14 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 	let basset_vault_info_for_bluna;
 	{
 		// instantiate basset_vault_strategy for bLuna
-		let basset_vault_strategy_config_for_bluna = BassetVaultStrategyConfigForbLuna(lcd_client, governance_contract_addr);
-
-		if (anchor_market_info != null && anchor_market_info !== undefined) {
-			basset_vault_strategy_config_for_bluna.basset_token_addr = anchor_market_info.bluna_token_addr;
-			basset_vault_strategy_config_for_bluna.oracle_contract_addr = anchor_market_info.oracle_addr;
-		}
+		let basset_vault_strategy_config_for_bluna = BassetVaultStrategyConfigForbLuna(lcd_client, governance_contract_addr, anchor_market_info);
 
 		let basset_vault_strategy_contract_addr_for_bluna = await instantiate_contract(lcd_client, sender, sender.key.accAddress, basset_vault_strategy_code_id, basset_vault_strategy_config_for_bluna);
 		console.log(`basset_vault_strategy_for_bluna instantiated\n\taddress: ${basset_vault_strategy_contract_addr_for_bluna}`);
 		console.log(`=======================`);
 
 		// instantiate basset_vault for bLuna
-		let basset_vault_config_for_bluna = BassetVaultConfigForbLuna(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_bluna, astroport_factory_contract_addr);
+		let basset_vault_config_for_bluna = BassetVaultConfigForbLuna(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_bluna, astroport_factory_contract_addr, anchor_market_info?.bluna_reward_addr);
 
 		if (anchor_market_info !== null && anchor_market_info !== undefined) {
 			basset_vault_config_for_bluna.anchor_addr = anchor_market_info.anchor_token_addr;
@@ -169,17 +164,14 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 	let basset_vault_info_for_beth;
 	{
 		// instantiate basset_vault_strategy for bETH
-		let basset_vault_strategy_config_for_beth = BassetVaultStrategyConfigForbEth(lcd_client, governance_contract_addr);
-		if (anchor_market_info != null && anchor_market_info !== undefined) {
-			basset_vault_strategy_config_for_beth.basset_token_addr = anchor_market_info.beth_token_addr;
-			basset_vault_strategy_config_for_beth.oracle_contract_addr = anchor_market_info.oracle_addr;
-		}
+		let basset_vault_strategy_config_for_beth = BassetVaultStrategyConfigForbEth(lcd_client, governance_contract_addr, anchor_market_info);
+		
 		let basset_vault_strategy_contract_addr_for_beth = await instantiate_contract(lcd_client, sender, sender.key.accAddress, basset_vault_strategy_code_id, basset_vault_strategy_config_for_beth);
 		console.log(`basset_vault_strategy_for_beth instantiated\n\taddress: ${basset_vault_strategy_contract_addr_for_beth}`);
 		console.log(`=======================`);
 
 		// instantiate basset_vault for bETH
-		let basset_vault_config_for_beth = BassetVaultConfigForbEth(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_beth, astroport_factory_contract_addr);
+		let basset_vault_config_for_beth = BassetVaultConfigForbEth(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_beth, astroport_factory_contract_addr, anchor_market_info?.beth_reward_addr);
 
 		if (anchor_market_info !== null && anchor_market_info !== undefined) {
 			basset_vault_config_for_beth.anchor_addr = anchor_market_info.anchor_token_addr;

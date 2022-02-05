@@ -341,6 +341,7 @@ async function anchor_init_verbose(
 	return AnchorMarketInfo(
 		anchor_market_addr,
 		anchor_overseer_addr,
+		anchor_interest_model_addr,
 		anchor_oracle_addr,
 		anchor_basset_hub_bluna_addr,
 		anchor_token_addr,
@@ -349,6 +350,8 @@ async function anchor_init_verbose(
 		basset_token_addr,
 		beth_token_addr,
 		anchor_custody_bluna_addr,
-		anchor_custody_beth_addr
+		anchor_custody_beth_addr,
+		basset_reward_addr,
+		beth_reward_addr,
 	);
 }
