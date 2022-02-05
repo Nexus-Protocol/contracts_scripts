@@ -277,7 +277,6 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, c
 // ============================================================
 // ============================================================
 // ============================================================
-
 export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[], tax?: Coin[]): Promise<BlockTxBroadcastResult | undefined> {
 	try {
 		let estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);

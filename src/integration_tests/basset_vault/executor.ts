@@ -6,9 +6,11 @@ import {
     borrow_more_on_bluna_price_increasing,
     borrow_zero_amount_issue,
     expired_basset_price_rebalance,
-    normal_case,
+    simple_deposit,
+    recursive_repay_ok,
     repay_on_bluna_price_decreasing,
     withdraw_all_on_negative_profit,
+    recursive_repay_fail,
 } from "./definition";
 
 async function run_program() {
@@ -17,7 +19,8 @@ async function run_program() {
     program
         .action(async () => {
             const addresses_holder_addr = await deploy();
-            await run_normal_case(addresses_holder_addr);
+            await run_recursive_repay_ok(addresses_holder_addr);
+            await run_simple_deposit(addresses_holder_addr);
             await run_borrow_more_on_bluna_price_increasing(addresses_holder_addr);
             await run_repay_on_bluna_price_decreasing(addresses_holder_addr);
             await run_expired_basset_price_rebalance(addresses_holder_addr);
@@ -30,10 +33,10 @@ async function run_program() {
         });
 
     program
-        .command('normal_case')
+        .command('simple_deposit')
         .option('-A, --address <address>', `addresses holder contract address`)
-        .action(async (_options) => {
-            await run_normal_case("terra1a7v7mcqx6gcufkmgcvm2m844day2ngvtzhpdwc");
+        .action(async (options) => {
+            await run_simple_deposit(options.address);
         });
 
     program
@@ -55,6 +58,20 @@ async function run_program() {
         .option('-A, --address <address>', `addresses holder contract address`)
         .action(async (options) => {
             await run_repay_on_bluna_price_decreasing(options.address);
+        });
+
+    program
+        .command('recursive_repay_ok')
+        .option('-A, --address <address>', `addresses holder contract address`)
+        .action(async (options) => {
+            await run_recursive_repay_ok(options.address);
+        });
+
+    program
+        .command('recursive_repay_fail')
+        .option('-A, --address <address>', `addresses holder contract address`)
+        .action(async (options) => {
+            await run_recursive_repay_fail(options.address);
         });
 
     program
@@ -96,9 +113,9 @@ async function deploy() {
     return addresses_holder_addr;
 }
 
-async function run_normal_case(addresses_holder_addr: string) {
+async function run_simple_deposit(addresses_holder_addr: string) {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
-    await normal_case(lcd_client, sender, addresses_holder_addr);
+    await simple_deposit(lcd_client, sender, addresses_holder_addr);
 }
 
 async function run_borrow_zero_amount_issue(addresses_holder_addr: string) {
@@ -114,6 +131,16 @@ async function run_borrow_more_on_bluna_price_increasing(addresses_holder_addr: 
 async function run_repay_on_bluna_price_decreasing(addresses_holder_addr: string) {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
     await repay_on_bluna_price_decreasing(lcd_client, sender, addresses_holder_addr);
+}
+
+async function run_recursive_repay_ok(addresses_holder_addr: string) {
+    const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
+    await recursive_repay_ok(lcd_client, sender, addresses_holder_addr);
+}
+
+async function run_recursive_repay_fail(addresses_holder_addr: string) {
+    const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
+    await recursive_repay_fail(lcd_client, sender, addresses_holder_addr);
 }
 
 async function run_expired_basset_price_rebalance(addresses_holder_addr: string) {

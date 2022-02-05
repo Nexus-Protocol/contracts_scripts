@@ -76,3 +76,20 @@ export function AddressesHolderConfig(
     }
 }
 
+export interface AnchorEpochStateResponse {
+    exchange_rate: string,
+    aterra_supply: string,
+}
+
+export interface AnchorStateResponse {
+    total_liabilities: string,
+    total_reserves: string,
+    last_interest_updated: number,
+    last_reward_updated: number,
+    global_interest_index: string,
+    global_reward_index: string,
+    anc_emission_rate: string,
+    prev_aterra_supply: string,
+    prev_exchange_rate: string,
+}
+
