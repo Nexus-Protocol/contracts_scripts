@@ -49,8 +49,8 @@ async function run_program() {
     program
         .command('borrow_more_on_bluna_price_increasing')
         .option('-A, --address <address>', `addresses holder contract address`)
-        .action(async (_options) => {
-            await run_borrow_more_on_bluna_price_increasing("terra1x4l06cxsayqnvk4npnhchp3g73r5xymqhv3cjd");
+        .action(async (options) => {
+            await run_borrow_more_on_bluna_price_increasing(options.address);
         });
 
     program
@@ -77,22 +77,22 @@ async function run_program() {
     program
         .command('expired_basset_price_rebalance')
         .option('-A, --address <address>', `addresses holder contract address`)
-        .action(async (_options) => {
-            await run_expired_basset_price_rebalance("terra1a7v7mcqx6gcufkmgcvm2m844day2ngvtzhpdwc");
+        .action(async (options) => {
+            await run_expired_basset_price_rebalance(options.address);
         });
 
     program
         .command('anchor_apr_calculation')
         .option('-A, --address <address>', 'addresses holder contract address')
-        .action(async (_options) => {
-            await run_anchor_apr_calculation('terra157f8edfmwwl7uneqwnnh3j9gwhaagsvv3hecw9');
+        .action(async (options) => {
+            await run_anchor_apr_calculation(options.address);
         });
 
     program
         .command('withdraw_all_on_negative_profit')
         .option('-A, --address <address>', 'addresses holder contract address')
-        .action(async (_options) => {
-            await run_withdraw_all_on_negative_profit('terra157f8edfmwwl7uneqwnnh3j9gwhaagsvv3hecw9');
+        .action(async (options) => {
+            await run_withdraw_all_on_negative_profit(options.address);
         });
 
     await program.parseAsync(process.argv);
