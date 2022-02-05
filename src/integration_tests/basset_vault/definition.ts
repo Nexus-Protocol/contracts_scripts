@@ -481,6 +481,9 @@ async function setup_anchor(lcd_client: LCDClient, addresses: AddressesHolderCon
 
     const bluna_token_addr = addresses.bluna_token_addr;
 
+    //deposit some UST to be able to borrow it
+    await deposit_stable(lcd_client, other_wallet, addresses.anchor_market_addr, "100000000000000");
+
     const bluna_to_deposit = "150000000000000";
     
     await bond_luna(lcd_client, other_wallet, addresses.bluna_hub_addr, bluna_to_deposit);
@@ -753,7 +756,7 @@ async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_vault_add
     }
 }
 
-async function deposit_stable(lcd_client: LCDClient, sender: Wallet, anchor_market_contract: string, amount: number) {
+async function deposit_stable(lcd_client: LCDClient, sender: Wallet, anchor_market_contract: string, amount: number | string) {
     await sleep(500);
 
     const deposit_result = await execute_contract(
