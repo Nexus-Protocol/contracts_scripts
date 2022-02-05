@@ -23,7 +23,7 @@ const addresses_holder_wasm = "wasm_artifacts/utils/addr_holder.wasm";
 // ===================================================
 
 export async function borrow_zero_amount_issue(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
-
+    console.log(`-= Start 'borrow_zero_amount_issue' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const bluna_token_addr = addresses.bluna_token_addr;
@@ -50,7 +50,7 @@ export async function borrow_zero_amount_issue(lcd_client: LCDClient, sender: Wa
 }
 
 export async function simple_deposit(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
-
+    console.log(`-= Start 'simple_deposit' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const anchor_market_addr = addresses.anchor_market_addr;
@@ -123,6 +123,7 @@ export async function simple_deposit(lcd_client: LCDClient, sender: Wallet, addr
 }
 
 export async function borrow_more_on_bluna_price_increasing(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'borrow_more_on_bluna_price_increasing' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const anchor_market_addr = addresses.anchor_market_addr;
@@ -165,6 +166,7 @@ export async function borrow_more_on_bluna_price_increasing(lcd_client: LCDClien
 }
 
 export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'repay_on_bluna_price_decreasing' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const anchor_market_addr = addresses.anchor_market_addr;
@@ -206,6 +208,7 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
 }
 
 export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'recursive_repay_ok' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const anchor_market_addr = addresses.anchor_market_addr;
@@ -299,6 +302,7 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
 // Repay iterations amount assert shows that its equal to max iterations amount.
 // Next 3 assets show that loan is not repayed as expected but basset withdrawn and nasset burned
 export async function recursive_repay_fail(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'recursive_repay_fail' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const anchor_market_addr = addresses.anchor_market_addr;
@@ -376,6 +380,7 @@ export async function recursive_repay_fail(lcd_client: LCDClient, sender: Wallet
 }
 
 export async function expired_basset_price_rebalance(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'expired_basset_price_rebalance' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const anchor_market_addr = addresses.anchor_market_addr;
@@ -581,11 +586,8 @@ async function query_basset_vault_strategy_addr(lcd_client: LCDClient, basset_va
 }
 
 export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, _sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'withdraw_all_on_negative_profit' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
-
-    const anchor_market_addr = addresses.anchor_market_addr;
-    const bluna_token_addr = addresses.bluna_token_addr;
-    const bluna_hub_addr = addresses.bluna_hub_addr;
 
     const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
     const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
@@ -606,6 +608,7 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, _se
 }
 
 export async function anchor_apr_calculation(lcd_client: LCDClient, _sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'anchor_apr_calculation' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const basset_vault_strategy_addr = await query_basset_vault_strategy_addr(lcd_client, addresses.basset_vault_for_bluna_addr);
