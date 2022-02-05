@@ -877,5 +877,8 @@ async function calculate_repay_cycles_amount(result: BlockTxBroadcastResult) {
 
 function assert_numbers_with_inaccuracy(expected: number, actual: number, inaccuracy: number) {
     let diff = Math.abs(expected - actual);
+    if (diff <= inaccuracy) {
+        console.log(`Expected: ${expected}, actual: ${actual}`);
+    }
     assert(diff <= inaccuracy);
 }
