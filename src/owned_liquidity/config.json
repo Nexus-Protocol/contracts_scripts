@@ -5,6 +5,8 @@
 		"chain_id": "bombay-12"
 	},
 	"psi": "terra18nle009rtynpjgleh2975rleu5zts0zdtqryte",
+	"governance": "terra1u7tnl4326ge86mzqeqnzxxjg7xkgj8nfg65a2h",
+	"minStakedPsiAmount": "100",
 	"genesisTime": "2022-01-11T03:00:00",
 	"pairs": [
 		"terra1mt63aef37fx9z7jfadtgk8a5swxlxce9pjdgvy",

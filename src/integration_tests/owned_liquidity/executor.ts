@@ -422,11 +422,56 @@ async function instantiateNexusVesting(lcdClient: LCDClient, sender: Wallet, psi
     );
 }
 
+async function instantiateNexusGovernance(lcdClient: LCDClient, sender: Wallet, psi: string) {
+    const init = {
+        quorum: '0.1',
+        threshold: '0.5',
+        voting_period: 172800,
+        timelock_period: 86400,
+        proposal_deposit: '10000000000',
+        snapshot_period: 86400,
+    };
+    const nexusGovernance = await create_contract(
+        lcdClient,
+        sender,
+        'nexus governance',
+        'wasm_artifacts/nexus/services/nexus_governance.wasm',
+        init,
+    );
+
+    const registerMsg = { anyone: { anyone_msg: { register_token: { psi_token: psi } } } };
+    await execute_contract(lcdClient, sender, nexusGovernance, registerMsg);
+
+    return nexusGovernance;
+}
+
+async function stakePsi(
+    lcdClient: LCDClient,
+    sender: Wallet,
+    nexusGovernance: string,
+    psi: string,
+    amount: Decimal
+) {
+    const msgStakeJson = JSON.stringify({ stake_voting_tokens: {} });
+    const msgStakeBase64 = Buffer.from(msgStakeJson).toString('base64');
+    await execute_contract(lcdClient, sender, psi,
+        {
+            send: {
+                contract: nexusGovernance,
+                amount: amount.toFixed(0),
+                msg: msgStakeBase64,
+            }
+        }
+    );
+}
+
 async function instantiateNexusPolWithBalance(
     lcdClient: LCDClient,
     sender: Wallet,
+    governance: string,
     pairs: Array<string>,
     psi: string,
+    minStakedPsiAmount: Decimal,
     nexusVesting: string,
     nexusVestingPeriod: number,
     excludedPsi: Array<string>,
@@ -438,9 +483,10 @@ async function instantiateNexusPolWithBalance(
     balance: Decimal,
 ) {
     const init = {
-        governance: sender.key.accAddress,
-        pairs: pairs,
+        governance,
+        pairs,
         psi_token: psi,
+        min_staked_psi_amount: minStakedPsiAmount.toFixed(0),
         vesting: nexusVesting,
         vesting_period: nexusVestingPeriod,
         bond_control_var: bcv.toFixed(5),
@@ -583,12 +629,18 @@ async function runProgram() {
     const nexusVesting = await instantiateNexusVesting(lcdClient, sender, psi);
     console.log(`======================================================`);
 
+    const nexusGovernance = await instantiateNexusGovernance(lcdClient, sender, psi);
+    // await stakePsi(lcdClient, sender, nexusGovernance, psi, new Decimal(1000));
+    console.log(`======================================================`);
+
     const communityPool = astroFactory;
     const nexusPol = await instantiateNexusPolWithBalance(
         lcdClient,
         sender,
+        nexusGovernance,
         [astroPsiUstPair.pair_contract_addr, astroPsiTstPair.pair_contract_addr],
         psi,
+        new Decimal(10),
         nexusVesting,
         5 * 24 * 3600,
         [astro],
@@ -602,14 +654,13 @@ async function runProgram() {
     console.log(`======================================================`);
 
     const msgUpdateConfig = { update_config: { owner: nexusPol } };
-    let result = await execute_contract(lcdClient, sender, nexusVesting, msgUpdateConfig);
+    await execute_contract(lcdClient, sender, nexusVesting, msgUpdateConfig);
 
     //======================================================================
     // Actually testing
 
     const buysInfo = [];
 
-    console.log(`Make first buy with native tokens`);
     const ustPayment = new Decimal(1_000_000_000);
     const taxedUstPayment = await getTaxed(ustPayment, taxRate, taxCap.amount);
     let assetCostInPsi = taxedUstPayment.mul(psiLiquidityU).div(ustLiquidity);
@@ -622,7 +673,20 @@ async function runProgram() {
         bcv,
     ).truncated();
 
+    console.log(`Try to buy without staked psi`);
     const msgBuy = { buy: { min_amount: '0' } };
+    let result = await execute_contract(
+        lcdClient, sender, nexusPol, msgBuy, new Coins([new Coin('uusd', ustPayment.toNumber())]));
+    assert(result === undefined);
+
+    console.log(`Try to buy with not enough staked psi`);
+    await stakePsi(lcdClient, sender, nexusGovernance, psi, new Decimal(5));
+    result = await execute_contract(
+        lcdClient, sender, nexusPol, msgBuy, new Coins([new Coin('uusd', ustPayment.toNumber())]));
+    assert(result === undefined);
+
+    console.log(`Make first buy with native tokens`);
+    await stakePsi(lcdClient, sender, nexusGovernance, psi, new Decimal(1000));
     result = await execute_contract(
         lcdClient, sender, nexusPol, msgBuy, new Coins([new Coin('uusd', ustPayment.toNumber())]));
     let buyInfo = parseBuy(result!);
