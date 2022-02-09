@@ -11,6 +11,7 @@ import {
     repay_on_bluna_price_decreasing,
     withdraw_all_on_negative_profit,
     recursive_repay_fail,
+    deposit_and_withdraw_all,
 } from "./definition";
 
 async function run_program() {
@@ -89,6 +90,13 @@ async function run_program() {
         });
 
     program
+        .command('deposit_and_withdraw_all')
+        .option('-A, --address <address>', 'addresses holder contract address')
+        .action(async (options) => {
+            await run_deposit_and_withdraw_all(options.address);
+        });
+
+    program
         .command('withdraw_all_on_negative_profit')
         .option('-A, --address <address>', 'addresses holder contract address')
         .action(async (options) => {
@@ -151,6 +159,11 @@ async function run_expired_basset_price_rebalance(addresses_holder_addr: string)
 async function run_anchor_apr_calculation(addresses_holder_addr: string) {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
     await anchor_apr_calculation(lcd_client, sender, addresses_holder_addr);
+}
+
+async function run_deposit_and_withdraw_all(addresses_holder_addr: string) {
+    const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
+    await deposit_and_withdraw_all(lcd_client, sender, addresses_holder_addr);
 }
 
 async function run_withdraw_all_on_negative_profit(addresses_holder_addr: string) {

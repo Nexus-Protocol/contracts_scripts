@@ -305,7 +305,7 @@ async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[], ta
 	try {
 		const estimated_fee_res = await lcd_client.tx.estimateFee(sender.key.accAddress, msgs, {
 			gasPrices: new Coins([new Coin("uusd", 0.15)]),
-			gasAdjustment: 1.2,
+			gasAdjustment: 2.0,
 			feeDenoms: ["uusd"],
 		});
 

@@ -14,7 +14,6 @@ import {
 } from "./config"
 import {isTxSuccess} from "../../transaction";
 import * as assert from "assert";
-import { stringify } from 'querystring';
 import Decimal from 'decimal.js';
 
 // ===================================================
@@ -37,6 +36,7 @@ export async function borrow_zero_amount_issue(lcd_client: LCDClient, sender: Wa
 
     await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr); //deposit all bluna in contract
+    console.log("Bluna to deposit:", bluna_to_deposit);
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
 
     const expected_query_rebalance = {
@@ -45,6 +45,10 @@ export async function borrow_zero_amount_issue(lcd_client: LCDClient, sender: Wa
     const actual_rebalance_query = await lcd_client.wasm.contractQuery(basset_vault_for_bluna_addr, {
         rebalance: {}
     });
+
+    if (JSON.stringify(expected_query_rebalance) != JSON.stringify(actual_rebalance_query)) {
+        console.log(actual_rebalance_query);
+    }
 
     assert(JSON.stringify(expected_query_rebalance) == JSON.stringify(actual_rebalance_query));
 }
@@ -144,14 +148,12 @@ export async function borrow_more_on_bluna_price_increasing(lcd_client: LCDClien
 
     await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr); //deposit all bluna in contract
-    let dep = await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
-    console.log("DEP", dep);
+    await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
     let collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
 
     //locked_basset * bluna_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
     let user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
-
     bluna_price = bluna_price * 2;
     await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_price);
 
@@ -221,8 +223,11 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     const nluna_token_addr = addresses.nluna_token_addr;
 
     //deposit some UST directly to anchor_marker in order to basset_vault could borrow it
-    const initial_ust_for_anchor = 100_000_000;
+    console.log("ANCHOR MARKET CAP", await lcd_client.bank.balance(anchor_market_addr));
+    let initial_ust_for_anchor = 99_000_000;
     await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
+    initial_ust_for_anchor = Number((await lcd_client.bank.balance(anchor_market_addr)).get('uusd')!.amount);
+    console.log("ANCHOR MARKET CAP", initial_ust_for_anchor, await lcd_client.bank.balance(anchor_market_addr));
 
     const luna_to_bond = 100_000_000;
     let basset_price = 1;
@@ -233,15 +238,22 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr);
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
 
+    console.log("A", bluna_to_deposit);
     // redeem rest of directly deposited UST from anchor market
     let anchor_ust_balance = await query_stable_balance(lcd_client, anchor_market_addr);
+    console.log("B", anchor_ust_balance);
     const aust_exchange_rate = await get_aust_exchange_rate(lcd_client, anchor_market_addr);
+    console.log("C", aust_exchange_rate);
     const anchor_initial_funds = 1_000_000;
     const aust_to_burn = Math.round((anchor_ust_balance - anchor_initial_funds) / aust_exchange_rate);
-    await redeem_stable(lcd_client, sender, aust_token_addr, anchor_market_addr, aust_to_burn);
+    console.log("D", aust_to_burn);
+    let redeem = await redeem_stable(lcd_client, sender, aust_token_addr, anchor_market_addr, aust_to_burn);
+    console.log("E", redeem);
     anchor_ust_balance = await query_stable_balance(lcd_client, anchor_market_addr);
+    console.log("F", anchor_ust_balance);
     //check whether there is no UST in anchor_market
     assert_numbers_with_inaccuracy(anchor_initial_funds, anchor_ust_balance, 10);
+    console.log("D");
 
     let actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
         borrower_info: {
@@ -315,7 +327,7 @@ export async function recursive_repay_fail(lcd_client: LCDClient, sender: Wallet
     const nluna_token_addr = addresses.nluna_token_addr;
 
     //deposit some UST directly to anchor_marker in order to basset_vault could borrow it
-    const initial_ust_for_anchor = 100_000_000;
+    const initial_ust_for_anchor = 99_000_000;
     await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
 
     const luna_to_bond = 100_000_000;
@@ -486,8 +498,11 @@ async function setup_anchor(lcd_client: LCDClient, addresses: AddressesHolderCon
 
     const bluna_token_addr = addresses.bluna_token_addr;
 
-    //deposit some UST to be able to borrow it
-    await deposit_stable(lcd_client, other_wallet, addresses.anchor_market_addr, "100000000000000");
+    // 100000000000000
+    //  90000000000000
+    // 150000000000000
+    // 4086932083576651
+    await deposit_stable(lcd_client, other_wallet, addresses.anchor_market_addr, "1000000000000000");
 
     const bluna_to_deposit = "150000000000000";
     
@@ -526,12 +541,6 @@ async function setup_anchor(lcd_client: LCDClient, addresses: AddressesHolderCon
             borrow_amount: ust_to_borrow,
         }
     });
-
-    const stables_to_deposit = "45000000000000";
-
-    await execute_contract(lcd_client, other_wallet, addresses.anchor_market_addr, {
-        deposit_stable: { }
-    }, [new Coin("uusd", stables_to_deposit)]);
 }
 
 async function provide_liquidity_to_anc_stable_swap(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
@@ -585,26 +594,160 @@ async function query_basset_vault_strategy_addr(lcd_client: LCDClient, basset_va
     return config.basset_vault_strategy_contract_addr;
 }
 
-export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, _sender: Wallet, addresses_holder_addr: string) {
+
+export async function deposit_and_withdraw_all(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'deposit_and_withdraw_all' test =-`);
+    const addresses = await get_addresses(lcd_client, addresses_holder_addr);
+
+    const bluna_price = 1;
+    await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, addresses.bluna_token_addr, bluna_price);
+
+    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 100_000_000);
+
+    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 1_000_000);
+
+    const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+    console.log("Bluna to deposit", bluna_to_deposit);
+
+    await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+
+    await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+
+    let bluna_balance = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+
+    assert(bluna_balance == bluna_to_deposit);
+    
+    console.log(`deposit_and_withdraw_all test passed`);
+}
+
+// WIP. TEST ISNT DONE
+export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
     console.log(`-= Start 'withdraw_all_on_negative_profit' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
+
+    const bluna_price = 1;
+    await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, addresses.bluna_token_addr, bluna_price);
+
+    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 100_000_000);
 
     const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
     const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
     const anchor_apr = borrow_apr + earn_apr;
     assert(anchor_apr > 0);
+    console.log("Initial anchor apr", anchor_apr);
 
-    const basset_vault_strategy_addr = await query_basset_vault_strategy_addr(lcd_client, addresses.basset_vault_for_bluna_addr);
+    // Deposit with positive apr
 
-    const borrow_action = await lcd_client.wasm.contractQuery(basset_vault_strategy_addr, {
-        borrower_action: {
-            basset_in_contract_address: "10000000000",
-            borrowed_amount: "0",
-            locked_basset_amount: "0",
-        },
+    // console.log("Aterra rate", await get_aust_exchange_rate(lcd_client, addresses.anchor_market_addr));
+
+    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 1_000_000);
+    const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+
+    console.log("Bluna to deposit", bluna_to_deposit);
+
+    console.log("Aterra rate", await get_aust_exchange_rate(lcd_client, addresses.anchor_market_addr));
+
+    await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+
+    console.log("Vault ust uusd balance", await lcd_client.bank.balance(addresses.basset_vault_for_bluna_addr));
+
+    const collateral = await get_collateral_amount(lcd_client, addresses.anchor_overseer_addr, addresses.basset_vault_for_bluna_addr);
+    
+    console.log("Collateral", collateral);
+    // const aterra_balance = await get_token_balance(lcd_client, addresses.basset_vault_for_bluna_addr, addresses.aterra_token_addr);
+    // const aust_exchange_rate = await get_aust_exchange_rate(lcd_client, addresses.anchor_market_addr);
+    // console.log("Aterra", aterra_balance, aust_exchange_rate);
+    
+
+    console.log("Aterra rate", await get_aust_exchange_rate(lcd_client, addresses.anchor_market_addr));
+    // await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 50000000000000);
+    // console.log("Aterra rate", await get_aust_exchange_rate(lcd_client, addresses.anchor_market_addr));
+
+    // assert(bluna_to_deposit == collateral);
+
+    //locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
+    // let user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
+    // await assert_loan(lcd_client, addresses.anchor_market_addr, addresses.basset_vault_for_bluna_addr, user_liability);
+
+    // Set negative apr to anchor
+    await execute_contract(lcd_client, sender, addresses.anchor_interest_model_addr, {
+        update_config: {
+            base_rate: '0.000001',
+        }
     });
 
-    console.log(borrow_action);
+    console.log("Aterra rate2", await get_aust_exchange_rate(lcd_client, addresses.anchor_market_addr));
+
+    const borrow_apr2 = await query_anchor_borrow_net_apr(lcd_client, addresses);
+    const earn_apr2 = await query_anchor_earn_apr(lcd_client, addresses);
+    const anchor_apr2 = borrow_apr2 + earn_apr2;
+    assert(anchor_apr2 < 0);
+    console.log("Negative anchor apr", anchor_apr2);
+
+    console.log("Vault ust uusd balance", await lcd_client.bank.balance(addresses.basset_vault_for_bluna_addr));
+
+    // let reb = await lcd_client.wasm.contractQuery(addresses.basset_vault_for_bluna_addr, {
+    //     rebalance: {}
+    // });
+    // console.log("Rebalance", reb);
+
+    // const borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+    //     borrower_info: {
+    //         borrower: addresses.basset_vault_for_bluna_addr,
+    //     }
+    // });
+
+    // console.log("Borrower info", borrower_info);
+
+    // const borrow_limit = await lcd_client.wasm.contractQuery(addresses.anchor_overseer_addr, {
+    //     borrow_limit: {
+    //         borrower: addresses.basset_vault_for_bluna_addr,
+    //     }
+    // });
+
+    // console.log("Borrow limit", borrow_limit);
+
+    let reb2 = await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
+        anyone: {
+            anyone_msg: {
+                rebalance: {}
+            }
+        }
+    });
+
+    console.log("Vault ust uusd balance", await lcd_client.bank.balance(addresses.basset_vault_for_bluna_addr));
+    
+    console.log(reb2);
+
+    // await rebalance(lcd_client, sender, addresses.basset_vault_for_bluna_addr);
+
+    const borrower_info2: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        borrower_info: {
+            borrower: addresses.basset_vault_for_bluna_addr,
+        }
+    });
+
+    console.log("Borrower info2", borrower_info2);
+
+    const collateral2 = await get_collateral_amount(lcd_client, addresses.anchor_overseer_addr, addresses.basset_vault_for_bluna_addr);
+    
+    console.log("Collateral2", collateral2);
+    // const aterra_balance2 = await get_token_balance(lcd_client, addresses.basset_vault_for_bluna_addr, addresses.aterra_token_addr);
+    // const aust_exchange_rate2 = await get_aust_exchange_rate(lcd_client, addresses.anchor_market_addr);
+    // console.log("Aterra", aterra_balance2, aust_exchange_rate2);
+
+    const vault_bassest_balance = await get_token_balance(lcd_client, addresses.basset_vault_for_bluna_addr, addresses.bluna_token_addr);
+
+    console.log("Vault bassest balance", vault_bassest_balance);
+
+    // assert(vault_bassest_balance == bluna_to_deposit);
+
+    // Return apr to the state that was before contract
+    await execute_contract(lcd_client, sender, addresses.anchor_interest_model_addr, {
+        update_config: {
+            base_rate: '0.000000004076272770',
+        }
+    });
 }
 
 export async function anchor_apr_calculation(lcd_client: LCDClient, _sender: Wallet, addresses_holder_addr: string) {
@@ -614,7 +757,9 @@ export async function anchor_apr_calculation(lcd_client: LCDClient, _sender: Wal
     const basset_vault_strategy_addr = await query_basset_vault_strategy_addr(lcd_client, addresses.basset_vault_for_bluna_addr);
     
     const anchor_apr = await lcd_client.wasm.contractQuery(basset_vault_strategy_addr, {
-        anchor_apr: {},
+        anchor_apr: {
+            which_one: false,
+        },
     }) as {
         anchor_earn_apr: number,
         anchor_borrow_distribution_apr: number,
@@ -657,7 +802,7 @@ export async function anchor_nexus_full_init(
 
     const addresses_holder_config = AddressesHolderConfig(anchor_market_info, basset_vault_info_for_bluna, basset_vault_info_for_beth);
     const addresses_holder_addr = await create_contract(lcd_client, sender, "addrs_holder", addresses_holder_wasm, addresses_holder_config);
-    
+
     await provide_liquidity_to_anc_stable_swap(lcd_client, sender, addresses_holder_config);
 
     await setup_anchor(lcd_client, addresses_holder_config);
