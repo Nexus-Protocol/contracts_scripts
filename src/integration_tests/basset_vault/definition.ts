@@ -412,6 +412,31 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
     console.log(`basset_vault_for_bluna test: "expired_bluna_price" passed!`);
 }
 
+export async function deposit_and_withdraw_all(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'deposit_and_withdraw_all' test =-`);
+    const addresses = await get_addresses(lcd_client, addresses_holder_addr);
+
+    const bluna_price = 1;
+    await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, addresses.bluna_token_addr, bluna_price);
+
+    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 100_000_000);
+
+    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 1_000_000);
+
+    const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+    console.log("Bluna to deposit", bluna_to_deposit);
+
+    await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+
+    await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+
+    let bluna_balance = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+
+    assert(bluna_balance == bluna_to_deposit, `Deposited amount: ${bluna_to_deposit}, withdrawed amount: ${bluna_balance}`);
+    
+    console.log(`deposit_and_withdraw_all test passed`);
+}
+
 export async function anchor_nexus_full_init(
     lcd_client: LCDClient,
     sender: Wallet,
