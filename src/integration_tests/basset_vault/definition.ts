@@ -412,8 +412,8 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
     console.log(`basset_vault_for_bluna test: "expired_bluna_price" passed!`);
 }
 
-export async function deposit_and_withdraw_all(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
-    console.log(`-= Start 'deposit_and_withdraw_all' test =-`);
+export async function deposit_and_repay_all(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'deposit_and_repay_all' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const bluna_price = 1;
@@ -428,13 +428,33 @@ export async function deposit_and_withdraw_all(lcd_client: LCDClient, sender: Wa
 
     await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
 
-    await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+    const borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        borrower_info: {
+            borrower: addresses.basset_vault_for_bluna_addr,
+        }
+    });
 
-    let bluna_balance = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+    console.log(borrower_info.loan_amount);
+    let repay = await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
+        anyone: {
+            anyone_msg: {
+                repay: {
+                    amount: borrower_info.loan_amount,
+                    aim_buffer_size: "0",
+                },
+            },
+        },
+    });
 
-    assert(bluna_balance == bluna_to_deposit, `Deposited amount: ${bluna_to_deposit}, withdrawed amount: ${bluna_balance}`);
-    
-    console.log(`deposit_and_withdraw_all test passed`);
+    console.log(repay);
+
+    const borrower_info2: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        borrower_info: {
+            borrower: addresses.basset_vault_for_bluna_addr,
+        }
+    });
+
+    console.log("Loan amount2", borrower_info2.loan_amount);
 }
 
 export async function anchor_nexus_full_init(
