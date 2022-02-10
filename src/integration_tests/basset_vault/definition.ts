@@ -10,6 +10,7 @@ import {
     BalanceResponse,
     BorrowerInfoResponse,
     CollateralsResponse,
+    PoolResponse,
     TokenInfoResponse,
 } from "./config"
 import {isTxSuccess} from "../../transaction";
@@ -475,46 +476,29 @@ async function query_anchor_earn_apr(lcd_client: LCDClient, addresses: Addresses
 }
 
 async function query_anchor_price(lcd_client: LCDClient, addresses: AddressesHolderConfig): Promise<number> {
-    const simulation = await lcd_client.wasm.contractQuery(addresses.anc_stable_swap_addr, {
-        simulation: {
-            offer_asset: {
-                info: {
-                    token: {
-                        contract_addr: addresses.anchor_token_addr,
-                    }
-                },
-                amount: "1000000"
-            }
-        }
-    }) as {
-        return_amount: string,
-    };
-    return Number(simulation.return_amount) / 1_000_000
+    const pool: PoolResponse = await lcd_client.wasm.contractQuery(addresses.anc_stable_swap_addr, {
+        pool: {}
+    });
+    const [anc_asset, ust_asset] = pool.assets;
+    return Number(ust_asset.amount) / Number(anc_asset.amount);
 }
 
-async function setup_anchor(lcd_client: LCDClient, addresses: AddressesHolderConfig) {
-    const localterra = new LocalTerra();
-    const other_wallet = localterra.wallets.test2;
-
+async function setup_anchor(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
     const bluna_token_addr = addresses.bluna_token_addr;
 
-    // 100000000000000
-    //  90000000000000
-    // 150000000000000
-    // 4086932083576651
-    await deposit_stable(lcd_client, other_wallet, addresses.anchor_market_addr, "1000000000000000");
+    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, "1000000000000000");
 
     const bluna_to_deposit = "150000000000000";
     
-    await bond_luna(lcd_client, other_wallet, addresses.bluna_hub_addr, bluna_to_deposit);
+    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, bluna_to_deposit);
 
-    await get_token_balance(lcd_client, other_wallet.key.accAddress, bluna_token_addr);
+    await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr);
 
     const send_bluna_msg = {
         deposit_collateral: {}
     };
 
-    await execute_contract(lcd_client, other_wallet, bluna_token_addr, {
+    await execute_contract(lcd_client, sender, bluna_token_addr, {
         send: {
             contract: addresses.anchor_custody_bluna_addr,
             amount: bluna_to_deposit,
@@ -522,7 +506,7 @@ async function setup_anchor(lcd_client: LCDClient, addresses: AddressesHolderCon
         }
     });
 
-    await execute_contract(lcd_client, other_wallet, addresses.anchor_overseer_addr, {
+    await execute_contract(lcd_client, sender, addresses.anchor_overseer_addr, {
         lock_collateral: {
             collaterals: [[bluna_token_addr, String(bluna_to_deposit)]]
         }
@@ -530,13 +514,13 @@ async function setup_anchor(lcd_client: LCDClient, addresses: AddressesHolderCon
 
     await lcd_client.wasm.contractQuery(addresses.anchor_custody_bluna_addr, {
         borrower: {
-            address: other_wallet.key.accAddress,
+            address: sender.key.accAddress,
         }
     });
 
     const ust_to_borrow = "90000000000000";
 
-    await execute_contract(lcd_client, other_wallet, addresses.anchor_market_addr, {
+    await execute_contract(lcd_client, sender, addresses.anchor_market_addr, {
         borrow_stable: {
             borrow_amount: ust_to_borrow,
         }
@@ -769,13 +753,10 @@ export async function anchor_apr_calculation(lcd_client: LCDClient, _sender: Wal
     const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
 
     let queried_borrow_apr = anchor_apr.anchor_borrow_distribution_apr - anchor_apr.anchor_borrow_interest_apr;
-    const borrow_apr_diff = Math.abs(borrow_apr - queried_borrow_apr);
-    assert(borrow_apr_diff < 0.0001); // inaccuracy is less than 0,01 %
+    assert_numbers_with_inaccuracy(borrow_apr, queried_borrow_apr, 0.0001); // inaccuracy is less than 0,01 %
 
     const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
-
-    const earn_apr_diff = Math.abs(earn_apr - anchor_apr.anchor_earn_apr);
-    assert(earn_apr_diff < 0.0001); // inaccuracy is less than 0,01 %
+    assert_numbers_with_inaccuracy(earn_apr, anchor_apr.anchor_earn_apr, 0.0001); // inaccuracy is less than 0,01 %
 
     console.log(`Apr calculation test passed:\n\tEarn apr. Expected: ${earn_apr}, calculated: ${anchor_apr.anchor_earn_apr}\n\tBorrow apr. Expected: ${borrow_apr}, calculated: ${queried_borrow_apr}`);
 }
@@ -805,7 +786,7 @@ export async function anchor_nexus_full_init(
 
     await provide_liquidity_to_anc_stable_swap(lcd_client, sender, addresses_holder_config);
 
-    await setup_anchor(lcd_client, addresses_holder_config);
+    await setup_anchor(lcd_client, sender, addresses_holder_config);
 
     // await execute_contract(lcd_client, sender, addresses_holder_config.anchor_overseer_addr, {
     //     execute_epoch_operations: {}

@@ -93,3 +93,11 @@ export interface AnchorStateResponse {
     prev_exchange_rate: string,
 }
 
+export interface PoolResponse {
+    assets: Asset[],
+    total_share: string,
+}
+
+export interface Asset {
+    amount: string,
+}
