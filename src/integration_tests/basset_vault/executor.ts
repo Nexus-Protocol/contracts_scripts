@@ -12,6 +12,7 @@ import {
     withdraw_all_on_negative_profit,
     recursive_repay_fail,
     deposit_and_withdraw_all,
+    bvault_deposit_and_withdraw_half,
 } from "./definition";
 
 async function run_program() {
@@ -103,6 +104,13 @@ async function run_program() {
             await run_withdraw_all_on_negative_profit(options.address);
         });
 
+    program
+        .command('bvault_deposit_and_withdraw_half')
+        .option('-A, --address <address>', 'addresses holder contract address')
+        .action(async (options) => {
+            await run_bvault_deposit_and_withdraw_half(options.address);
+        });
+
     await program.parseAsync(process.argv);
 }
 
@@ -169,4 +177,9 @@ async function run_deposit_and_withdraw_all(addresses_holder_addr: string) {
 async function run_withdraw_all_on_negative_profit(addresses_holder_addr: string) {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
     await withdraw_all_on_negative_profit(lcd_client, sender, addresses_holder_addr);
+}
+
+async function run_bvault_deposit_and_withdraw_half(addresses_holder_addr: string) {
+    const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
+    await bvault_deposit_and_withdraw_half(lcd_client, sender, addresses_holder_addr);
 }

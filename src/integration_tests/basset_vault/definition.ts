@@ -741,9 +741,7 @@ export async function anchor_apr_calculation(lcd_client: LCDClient, _sender: Wal
     const basset_vault_strategy_addr = await query_basset_vault_strategy_addr(lcd_client, addresses.basset_vault_for_bluna_addr);
     
     const anchor_apr = await lcd_client.wasm.contractQuery(basset_vault_strategy_addr, {
-        anchor_apr: {
-            which_one: false,
-        },
+        anchor_apr: {},
     }) as {
         anchor_earn_apr: number,
         anchor_borrow_distribution_apr: number,
@@ -759,6 +757,35 @@ export async function anchor_apr_calculation(lcd_client: LCDClient, _sender: Wal
     assert_numbers_with_inaccuracy(earn_apr, anchor_apr.anchor_earn_apr, 0.0001); // inaccuracy is less than 0,01 %
 
     console.log(`Apr calculation test passed:\n\tEarn apr. Expected: ${earn_apr}, calculated: ${anchor_apr.anchor_earn_apr}\n\tBorrow apr. Expected: ${borrow_apr}, calculated: ${queried_borrow_apr}`);
+}
+
+export async function bvault_deposit_and_withdraw_half(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'bvault_deposit_and_withdraw_half' test =-`);
+    const addresses = await get_addresses(lcd_client, addresses_holder_addr);
+
+    const bluna_price = 1;
+    await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, addresses.bluna_token_addr, bluna_price);
+
+    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 100_000_000);
+
+    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 1_000_000);
+
+    const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+    console.log("Bluna to deposit", bluna_to_deposit);
+
+    await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+
+    const bluna_to_withdraw = Math.floor(bluna_to_deposit / 2);
+
+    await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_withdraw);
+
+    let bluna_balance = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+    let collateral = await get_collateral_amount(lcd_client, addresses.anchor_overseer_addr, addresses.basset_vault_for_bluna_addr);
+    
+    assert(bluna_balance === bluna_to_withdraw, `expected balance: ${bluna_to_withdraw}, actual balance: ${bluna_balance}`);
+    assert(collateral === (bluna_to_deposit - bluna_to_withdraw), `collateral expected: ${bluna_to_deposit - bluna_to_withdraw}, collateral actual: ${collateral}`);
+    
+    console.log(`bvault_deposit_and_withdraw_half test passed`);
 }
 
 export async function anchor_nexus_full_init(
