@@ -434,12 +434,33 @@ export async function deposit_and_repay_all(lcd_client: LCDClient, sender: Walle
         }
     });
 
-    console.log(borrower_info.loan_amount);
+    console.log(borrower_info);
+
+    await sleep(5000);
+
+    const borrower_info2: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        borrower_info: {
+            borrower: addresses.basset_vault_for_bluna_addr,
+        }
+    });
+
+    console.log(borrower_info2);
+
+    let honest_work = await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
+        anyone: {
+            anyone_msg: {
+                honest_work: {},
+            },
+        },
+    });
+
+    console.log(honest_work);
+
     let repay = await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
         anyone: {
             anyone_msg: {
                 repay: {
-                    amount: borrower_info.loan_amount,
+                    amount: borrower_info2.loan_amount,
                     aim_buffer_size: "0",
                 },
             },
@@ -448,13 +469,13 @@ export async function deposit_and_repay_all(lcd_client: LCDClient, sender: Walle
 
     console.log(repay);
 
-    const borrower_info2: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+    const borrower_info3: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
         borrower_info: {
             borrower: addresses.basset_vault_for_bluna_addr,
         }
     });
 
-    console.log("Loan amount2", borrower_info2.loan_amount);
+    console.log(borrower_info3.loan_amount);
 }
 
 export async function anchor_nexus_full_init(
