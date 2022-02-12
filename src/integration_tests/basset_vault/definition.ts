@@ -586,22 +586,74 @@ export async function deposit_and_withdraw_all(lcd_client: LCDClient, sender: Wa
     const bluna_price = 1;
     await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, addresses.bluna_token_addr, bluna_price);
 
-    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 100_000_000);
+    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 1000_000_000);
 
-    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 1_000_000);
+    await sleep(10000);
 
-    const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
-    console.log("Bluna to deposit", bluna_to_deposit);
+    const borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        borrower_info: {
+            borrower: sender.key.accAddress,
+        }
+    });
 
-    await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+    console.log(borrower_info);
 
-    await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+    let claim = await execute_contract(lcd_client, sender, addresses.anchor_market_addr, {
+        claim_rewards: {},
+    });
 
-    let bluna_balance = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+    console.log(claim);
 
-    assert(bluna_balance == bluna_to_deposit);
+    const borrower_info2: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        borrower_info: {
+            borrower: sender.key.accAddress,
+        }
+    });
+
+    console.log(borrower_info2);
+
+    // await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 1_000_000_000);
+
+    // const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+    // console.log("Bluna to deposit", bluna_to_deposit);
+
+    // await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+
+    // await sleep(10000);
+
+    // const borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+    //     borrower_info: {
+    //         borrower: addresses.basset_vault_for_bluna_addr,
+    //     }
+    // });
+
+    // console.log(borrower_info);
+
+    // let honest_work = await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
+    //     anyone: {
+    //         anyone_msg: {
+    //             honest_work: {},
+    //         },
+    //     },
+    // });
+
+    // console.log("Honest work", honest_work);
+
+    // await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+
+    // let bluna_balance = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+
+    // const borrower_info2: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+    //     borrower_info: {
+    //         borrower: addresses.basset_vault_for_bluna_addr,
+    //     }
+    // });
+
+    // console.log(borrower_info2);
+
+    // assert(bluna_balance == bluna_to_deposit);
     
-    console.log(`deposit_and_withdraw_all test passed`);
+    // console.log(`deposit_and_withdraw_all test passed`);
 }
 
 // WIP. TEST ISNT DONE
