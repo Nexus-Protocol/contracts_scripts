@@ -428,6 +428,16 @@ export async function deposit_and_repay_all(lcd_client: LCDClient, sender: Walle
 
     await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
 
+    const borrower_info0: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        borrower_info: {
+            borrower: addresses.basset_vault_for_bluna_addr,
+        }
+    });
+
+    console.log(borrower_info0);
+
+    await sleep(5000);
+
     const borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
         borrower_info: {
             borrower: addresses.basset_vault_for_bluna_addr,
@@ -435,16 +445,6 @@ export async function deposit_and_repay_all(lcd_client: LCDClient, sender: Walle
     });
 
     console.log(borrower_info);
-
-    await sleep(5000);
-
-    const borrower_info2: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
-        borrower_info: {
-            borrower: addresses.basset_vault_for_bluna_addr,
-        }
-    });
-
-    console.log(borrower_info2);
 
     let honest_work = await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
         anyone: {
@@ -456,11 +456,19 @@ export async function deposit_and_repay_all(lcd_client: LCDClient, sender: Walle
 
     console.log(honest_work);
 
+    const borrower_info2: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        borrower_info: {
+            borrower: addresses.basset_vault_for_bluna_addr,
+        }
+    });
+
+    console.log(borrower_info2.loan_amount);
+
     let repay = await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
         anyone: {
             anyone_msg: {
                 repay: {
-                    amount: borrower_info2.loan_amount,
+                    amount: borrower_info.loan_amount,
                     aim_buffer_size: "0",
                 },
             },
@@ -501,7 +509,23 @@ export async function anchor_nexus_full_init(
     const addresses_holder_config = AddressesHolderConfig(anchor_market_info, basset_vault_info_for_bluna, basset_vault_info_for_beth);
     const addresses_holder_addr = await create_contract(lcd_client, sender, "addrs_holder", addresses_holder_wasm, addresses_holder_config);
 
+    await setup_anchor_token_distributor(lcd_client, sender, addresses_holder_config);
+
     return addresses_holder_addr;
+}
+
+async function setup_anchor_token_distributor(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
+    const config = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        config: {},
+    }) as {
+        distributor_contract: string,
+    };
+    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
+        mint: {
+            recipient: config.distributor_contract,
+            amount: '1000000000000000',
+        }
+    });
 }
 
 async function register_basset_price_feeder(lcd_client: LCDClient, sender: Wallet, oracle_addr: string, basset_token_addr: string) {
