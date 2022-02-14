@@ -9,7 +9,7 @@ import {
 } from '../../utils';
 import {
 	AnchorCustodyBassetConfig,
-	AnchorDistrConfig,
+	AnchorMoneyMarketDistrModelConfig,
 	AnchorHubBLunaConfig,
 	AnchorInterestConfig,
 	AnchorLiquidationConfig,
@@ -20,7 +20,8 @@ import {
 	BassetRewardConfig,
 	BassetTokenConfig,
 	BethRewardConfig,
-	BethTokenConfig
+	BethTokenConfig,
+	AnchorTokenDistrConfig
 } from './config';
 import {Cw20CodeId, init_astroport_factory, TokenConfig} from '../../config';
 
@@ -30,6 +31,7 @@ const path_to_anchor_mm_artifacts = `${artifacts_path}/anchor/mm`;
 const path_to_anchor_basset_artifacts = `${artifacts_path}/anchor/basset`;
 const path_to_anchor_beth_artifacts = `${artifacts_path}/anchor/beth`;
 const path_to_anchor_mocks = `${artifacts_path}/anchor/mocks`
+const path_to_anchor_token = `${artifacts_path}/anchor/token`
 //=============================================================================
 const anchor_market_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_market.wasm`;
 const anchor_oracle_wasm = `${path_to_anchor_mm_artifacts}/moneymarket_oracle.wasm`;
@@ -50,6 +52,8 @@ const anchor_basset_token_wasm = `${path_to_anchor_basset_artifacts}/anchor_bass
 //=============================================================================
 const anchor_beth_reward_wasm = `${path_to_anchor_beth_artifacts}/anchor_beth_reward.wasm`;
 const anchor_beth_token_wasm = `${path_to_anchor_beth_artifacts}/anchor_beth_token.wasm`;
+//=============================================================================
+const anchor_token_distributor_wasm = `${path_to_anchor_token}/anchor_distributor.wasm`;
 //=============================================================================
 
 //STEPS:
@@ -179,8 +183,8 @@ async function anchor_init_verbose(
 	let anchor_liquidation_config = AnchorLiquidationConfig(sender, anchor_oracle_addr);
 	let anchor_liquidation_addr = await create_contract(lcd_client, sender, "anchor_liquidation", anchor_liquidation_wasm, anchor_liquidation_config);
 	console.log(`=======================`);
-	//instantiate distribution
-	let anchor_distribution_model_config = AnchorDistrConfig(sender);
+	//instantiate distribution model
+	let anchor_distribution_model_config = AnchorMoneyMarketDistrModelConfig(sender);
 	let anchor_distribution_model_addr = await create_contract(lcd_client, sender, "anchor_distribution_model", anchor_distribution_model_wasm, anchor_distribution_model_config);
 	console.log(`=======================`);
 	//instantiate overseer
@@ -193,6 +197,11 @@ async function anchor_init_verbose(
 	let anchor_interest_model_addr = await create_contract(lcd_client, sender, "anchor_interest_model", anchor_interest_model_wasm, anchor_interest_model_config);
 	console.log(`=======================`);
 
+	//instantiate distributor
+	let anchor_token_distributor_config = AnchorTokenDistrConfig(anchor_token_addr, anchor_token_addr, [anchor_market_addr]);
+	let anchor_token_distributor_addr = await create_contract(lcd_client, sender, "anchor_token_distributor", anchor_token_distributor_wasm, anchor_token_distributor_config);
+	console.log(`=======================`);
+
 	await execute_contract(lcd_client, sender, anchor_market_addr,
 		{
 			register_contracts: {
@@ -200,7 +209,7 @@ async function anchor_init_verbose(
 				interest_model: anchor_interest_model_addr,
 				distribution_model: anchor_distribution_model_addr,
 				collector_contract: sender.key.accAddress,
-				distributor_contract: anchor_distribution_model_addr,
+				distributor_contract: anchor_token_distributor_addr,
 			}
 		}
 	);

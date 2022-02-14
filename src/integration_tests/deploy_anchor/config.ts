@@ -86,7 +86,7 @@ export function AnchorLiquidationConfig(
 
 // ============================================================
 
-export interface AnchorDistrConfig {
+export interface AnchorMoneyMarketDistrModelConfig {
     decrement_multiplier: Decimal256,
     emission_cap: Decimal256,
     emission_floor: Decimal256,
@@ -94,15 +94,37 @@ export interface AnchorDistrConfig {
     owner: Addr,
 }
 
-export function AnchorDistrConfig(
+export function AnchorMoneyMarketDistrModelConfig(
     wallet: Wallet,
-    ): AnchorDistrConfig{
+    ): AnchorMoneyMarketDistrModelConfig{
     return {
 		owner: wallet.key.accAddress,
         emission_cap: '20381363.851572310123647620',
         emission_floor: '6793787.950524103374549206',
         increment_multiplier: '1.007266723782294841',
         decrement_multiplier: '0.997102083349256160',
+	}
+}
+
+// ============================================================
+
+export interface AnchorTokenDistrConfig {
+    gov_contract: string,
+    anchor_token: string,
+    whitelist: string[],
+    spend_limit: Uint256,
+}
+
+export function AnchorTokenDistrConfig(
+    gov_contract: string,
+    anchor_token: string,
+    whitelist: string[],
+    ): AnchorTokenDistrConfig{
+    return {
+		gov_contract,
+        anchor_token,
+        whitelist,
+        spend_limit: '1000000000000000'
 	}
 }
 
@@ -425,4 +447,3 @@ export function AnchorAndNexusDeploymentResult(
         basset_vault_info_for_beth: basset_vault_info_for_beth,
     }
 }
-

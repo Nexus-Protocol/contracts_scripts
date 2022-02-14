@@ -527,9 +527,23 @@ async function setup_anchor(lcd_client: LCDClient, sender: Wallet, addresses: Ad
     });
 }
 
+async function setup_anchor_token_distributor(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
+    const config = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        config: {},
+    }) as {
+        distributor_contract: string,
+    };
+    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
+        mint: {
+            recipient: config.distributor_contract,
+            amount: '1000000000000000',
+        }
+    });
+}
+
 async function provide_liquidity_to_anc_stable_swap(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
-    let anc_amount = "100000000";
-    let stable_amount = "300000000";
+    let anc_amount = "100000000000000";
+    let stable_amount = "300000000000000";
     
     await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
         mint: {
@@ -864,7 +878,7 @@ export async function anchor_nexus_full_init(
     const addresses_holder_addr = await create_contract(lcd_client, sender, "addrs_holder", addresses_holder_wasm, addresses_holder_config);
 
     await provide_liquidity_to_anc_stable_swap(lcd_client, sender, addresses_holder_config);
-
+    await setup_anchor_token_distributor(lcd_client, sender, addresses_holder_config);
     await setup_anchor(lcd_client, sender, addresses_holder_config);
 
     // await execute_contract(lcd_client, sender, addresses_holder_config.anchor_overseer_addr, {
