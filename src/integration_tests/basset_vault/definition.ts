@@ -2,7 +2,7 @@ import {BlockTxBroadcastResult, Coin, getContractEvents, isTxError, LCDClient, W
 import {full_init as full_basset_vault_init} from "../../basset_vault/definition";
 import {anchor_init} from "../deploy_anchor/definition";
 import {create_contract, execute_contract, sleep} from "../../utils";
-import {LOCALTERRA_DEFAULT_VALIDATOR_ADDR} from "../deploy_anchor/config";
+import {LOCALTERRA_DEFAULT_VALIDATOR_ADDR, Uint256} from "../deploy_anchor/config";
 import {
     AddressesHolderConfig,
     AnchorEpochStateResponse,
@@ -421,7 +421,7 @@ export async function deposit_and_repay_all(lcd_client: LCDClient, sender: Walle
 
     await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 100_000_000);
 
-    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 1_000_000);
+    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 10_000_000);
 
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
     console.log("Bluna to deposit", bluna_to_deposit);
@@ -436,7 +436,7 @@ export async function deposit_and_repay_all(lcd_client: LCDClient, sender: Walle
 
     console.log(borrower_info0);
 
-    await sleep(5000);
+    await sleep(10000);
 
     const borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
         borrower_info: {
@@ -462,7 +462,7 @@ export async function deposit_and_repay_all(lcd_client: LCDClient, sender: Walle
         }
     });
 
-    console.log(borrower_info2.loan_amount);
+    console.log(borrower_info2);
 
     let repay = await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
         anyone: {
@@ -483,7 +483,7 @@ export async function deposit_and_repay_all(lcd_client: LCDClient, sender: Walle
         }
     });
 
-    console.log(borrower_info3.loan_amount);
+    console.log(borrower_info3);
 }
 
 export async function anchor_nexus_full_init(
@@ -510,6 +510,8 @@ export async function anchor_nexus_full_init(
     const addresses_holder_addr = await create_contract(lcd_client, sender, "addrs_holder", addresses_holder_wasm, addresses_holder_config);
 
     await setup_anchor_token_distributor(lcd_client, sender, addresses_holder_config);
+    await provide_liquidity_to_anc_stable_swap(lcd_client, sender, addresses_holder_config);
+    await setup_anchor(lcd_client, sender, addresses_holder_config);
 
     return addresses_holder_addr;
 }
@@ -524,6 +526,98 @@ async function setup_anchor_token_distributor(lcd_client: LCDClient, sender: Wal
         mint: {
             recipient: config.distributor_contract,
             amount: '1000000000000000',
+        }
+    });
+}
+
+async function provide_liquidity_to_anc_stable_swap(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
+    let anc_amount = "10000000000000";
+    let stable_amount = "30000000000000";
+
+    const anc_stable_swap_addr = await lcd_client.wasm.contractQuery(addresses.basset_vault_for_bluna_addr, {
+        config: {},
+    }) as {
+        anc_stable_swap_contract_addr: string,
+    };
+    
+    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
+        mint: {
+            recipient: sender.key.accAddress,
+            amount: anc_amount,
+        }
+    });
+
+    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
+        increase_allowance: {
+            spender: anc_stable_swap_addr.anc_stable_swap_contract_addr,
+            amount: anc_amount,
+        }
+    });
+
+    await execute_contract(lcd_client, sender, anc_stable_swap_addr.anc_stable_swap_contract_addr, {
+        provide_liquidity: {
+            assets: [
+                {
+                    info: {
+                        token: {
+                            contract_addr: addresses.anchor_token_addr,
+                        }
+                    },
+                    amount: anc_amount
+                },
+                {
+                    info: {
+                        native_token: {
+                            denom: "uusd"
+                        }
+                    },
+                    amount: stable_amount
+                }
+            ]
+        }
+    }, [new Coin("uusd", stable_amount)]);
+}
+
+async function setup_anchor(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
+    const bluna_token_addr = addresses.bluna_token_addr;
+
+    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, "1000000");
+
+    const bluna_to_deposit = "150000";
+    
+    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, bluna_to_deposit);
+
+    await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr);
+
+    const send_bluna_msg = {
+        deposit_collateral: {}
+    };
+
+    await execute_contract(lcd_client, sender, bluna_token_addr, {
+        send: {
+            contract: addresses.anchor_custody_bluna_addr,
+            amount: bluna_to_deposit,
+            msg: Buffer.from(JSON.stringify(send_bluna_msg)).toString('base64'),
+        }
+    });
+
+    await execute_contract(lcd_client, sender, addresses.anchor_overseer_addr, {
+        lock_collateral: {
+            collaterals: [[bluna_token_addr, String(bluna_to_deposit)]]
+        }
+    });
+
+    await lcd_client.wasm.contractQuery(addresses.anchor_custody_bluna_addr, {
+        borrower: {
+            address: sender.key.accAddress,
+        }
+    });
+
+    const ust_to_borrow = "90000";
+
+    await execute_contract(lcd_client, sender, addresses.anchor_market_addr, {
+        borrow_stable: {
+            borrow_amount: ust_to_borrow,
         }
     });
 }
@@ -558,7 +652,7 @@ async function feed_price(lcd_client: LCDClient, sender: Wallet, oracle_addr: st
     return result;
 }
 
-async function bond_luna(lcd_client: LCDClient, sender: Wallet, bluna_hub_addr: string, amount: number) {
+async function bond_luna(lcd_client: LCDClient, sender: Wallet, bluna_hub_addr: string, amount: number | Uint256) {
     const bond_result = await execute_contract(lcd_client, sender, bluna_hub_addr,
         {
             bond: {
@@ -618,7 +712,7 @@ async function rebalance(lcd_client: LCDClient, sender: Wallet, basset_vault_add
     }
 }
 
-async function deposit_stable(lcd_client: LCDClient, sender: Wallet, anchor_market_contract: string, amount: number) {
+async function deposit_stable(lcd_client: LCDClient, sender: Wallet, anchor_market_contract: string, amount: number | Uint256) {
     await sleep(500);
 
     const deposit_result = await execute_contract(

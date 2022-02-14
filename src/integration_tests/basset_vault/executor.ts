@@ -84,6 +84,9 @@ async function run_program() {
         .command('deposit_and_repay_all')
         .option('-A, --address <address>', `addresses holder contract address`)
         .action(async (options) => {
+            if (options.address == undefined) {
+                options.address = await deploy();
+            }
             await run_deposit_and_repay_all(options.address);
         });
 
