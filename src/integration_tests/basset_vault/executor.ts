@@ -35,6 +35,9 @@ async function run_program() {
         .command('simple_deposit')
         .option('-A, --address <address>', `addresses holder contract address`)
         .action(async (options) => {
+            if (options.address == undefined) {
+                options.address = await deploy();
+            }
             await run_simple_deposit(options.address);
         });
 
@@ -42,6 +45,9 @@ async function run_program() {
         .command('borrow_zero_amount_issue')
         .option('-A, --address <address>', `addresses holder contract address`)
         .action(async (options) => {
+            if (options.address == undefined) {
+                options.address = await deploy();
+            }
             await run_borrow_zero_amount_issue(options.address);
         });
 
@@ -49,6 +55,9 @@ async function run_program() {
         .command('borrow_more_on_bluna_price_increasing')
         .option('-A, --address <address>', `addresses holder contract address`)
         .action(async (options) => {
+            if (options.address == undefined) {
+                options.address = await deploy();
+            }
             await run_borrow_more_on_bluna_price_increasing(options.address);
         });
 
@@ -56,6 +65,9 @@ async function run_program() {
         .command('repay_on_bluna_price_decreasing')
         .option('-A, --address <address>', `addresses holder contract address`)
         .action(async (options) => {
+            if (options.address == undefined) {
+                options.address = await deploy();
+            }
             await run_repay_on_bluna_price_decreasing(options.address);
         });
 
@@ -63,6 +75,9 @@ async function run_program() {
         .command('recursive_repay_ok')
         .option('-A, --address <address>', `addresses holder contract address`)
         .action(async (options) => {
+            if (options.address == undefined) {
+                options.address = await deploy();
+            }
             await run_recursive_repay_ok(options.address);
         });
 
@@ -70,6 +85,9 @@ async function run_program() {
         .command('recursive_repay_fail')
         .option('-A, --address <address>', `addresses holder contract address`)
         .action(async (options) => {
+            if (options.address == undefined) {
+                options.address = await deploy();
+            }
             await run_recursive_repay_fail(options.address);
         });
 
@@ -77,6 +95,9 @@ async function run_program() {
         .command('expired_basset_price_rebalance')
         .option('-A, --address <address>', `addresses holder contract address`)
         .action(async (options) => {
+            if (options.address == undefined) {
+                options.address = await deploy();
+            }
             await run_expired_basset_price_rebalance(options.address);
         });
 
