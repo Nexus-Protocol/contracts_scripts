@@ -673,69 +673,6 @@ async function provide_liquidity_to_nasset_psi_swap2(lcd_client: LCDClient, send
     // console.log("LIQ", await lcd_client.wasm.contractQuery(psi_distributor_config.nasset_psi_swap_contract_addr, { pool: {} }));
 }
 
-export async function deposit_and_withdraw_all(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
-    console.log(`-= Start 'deposit_and_withdraw_all' test =-`);
-    const addresses = await get_addresses(lcd_client, addresses_holder_addr);
-
-    const bluna_price = 1;
-    await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, addresses.bluna_token_addr, bluna_price);
-
-    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 1_000_000_000);
-
-    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 50_000_000);
-
-    const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
-    console.log("Bluna to deposit", bluna_to_deposit);
-
-    await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
-
-    await provide_liquidity_to_nasset_psi_swap2(lcd_client, sender, addresses);
-
-    await sleep(10000);
-
-    const borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
-        borrower_info: {
-            borrower: addresses.basset_vault_for_bluna_addr,
-        }
-    });
-
-    console.log(borrower_info);
-
-    let honest_work = await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
-        anyone: {
-            anyone_msg: {
-                honest_work: {},
-            },
-        },
-    });
-
-    console.log("Honest work", honest_work);
-
-    const borrower_info2: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
-        borrower_info: {
-            borrower: addresses.basset_vault_for_bluna_addr,
-        }
-    });
-
-    console.log(borrower_info2);
-
-    await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
-
-    let bluna_balance = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
-
-    const borrower_info3: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
-        borrower_info: {
-            borrower: addresses.basset_vault_for_bluna_addr,
-        }
-    });
-
-    console.log(borrower_info3);
-
-    assert(bluna_balance == bluna_to_deposit);
-    
-    console.log(`deposit_and_withdraw_all test passed`);
-}
-
 export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
     console.log(`-= Start 'withdraw_all_on_negative_profit' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
@@ -842,6 +779,8 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
     console.log(`Vault state after rebalance when anchor has became profitable again. Collateral: ${collateral3}, balance: ${vault_bassest_balance2}`);
     assert_numbers_with_inaccuracy(bluna_to_deposit, collateral3, 100_000);
     assert(vault_bassest_balance2 == 0);
+
+    console.log("withdraw_all_on_negative_profit test passed!")
 }
 
 export async function anchor_apr_calculation(lcd_client: LCDClient, _sender: Wallet, addresses_holder_addr: string) {
@@ -925,10 +864,6 @@ export async function anchor_nexus_full_init(
     await provide_liquidity_to_anc_stable_swap(lcd_client, sender, addresses_holder_config);
     await provide_liquidity_to_psi_stable_swap(lcd_client, sender, addresses_holder_config);
     await setup_anchor(lcd_client, sender, addresses_holder_config);
-
-    // await execute_contract(lcd_client, sender, addresses_holder_config.anchor_overseer_addr, {
-    //     execute_epoch_operations: {}
-    // });
 
     return addresses_holder_addr;
 }
