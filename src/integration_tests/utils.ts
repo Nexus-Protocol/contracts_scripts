@@ -3,7 +3,7 @@ import {LCDClient, LocalTerra, MnemonicKey, Wallet} from '@terra-money/terra.js'
 export async function get_lcd_config_with_wallet_for_integration_tests_only(): Promise<[LCDClient, Wallet]> {
 	const localterra = new LocalTerra()
 	const lcd_client: LCDClient = localterra;
-	const sender: Wallet = localterra.wallets["test3"];
+	const sender: Wallet = localterra.wallets["test1"];
 
 	return [lcd_client, sender];
 }
