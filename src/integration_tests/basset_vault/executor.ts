@@ -11,7 +11,6 @@ import {
     repay_on_bluna_price_decreasing,
     withdraw_all_on_negative_profit,
     recursive_repay_fail,
-    deposit_and_withdraw_all,
     bvault_deposit_and_withdraw_half,
 } from "./definition";
 
