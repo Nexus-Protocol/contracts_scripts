@@ -169,7 +169,7 @@ export function AnchorOverseerConfig(
         liquidation_contract: liquidation_contract,
         collector_contract: wallet.key.accAddress,
         stable_denom: 'uusd',
-        epoch_period: 1681,
+        epoch_period: 50,
         threshold_deposit_rate: '0.000000030572045778',
         target_deposit_rate: '0.000000040762727704',
         buffer_distribution_factor: '0.1',

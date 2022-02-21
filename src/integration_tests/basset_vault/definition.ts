@@ -788,8 +788,8 @@ export async function anchor_apr_calculation(lcd_client: LCDClient, sender: Wall
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const basset_vault_strategy_addr = await query_basset_vault_strategy_addr(lcd_client, addresses.basset_vault_for_bluna_addr);
-    
-    await sleep(10000);
+
+    await sleep(5000);
 
     await execute_contract(lcd_client, sender, addresses.anchor_overseer_addr, {
         execute_epoch_operations: {}
