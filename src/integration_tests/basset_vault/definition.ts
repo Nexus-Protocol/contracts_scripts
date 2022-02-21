@@ -783,12 +783,18 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
     console.log("withdraw_all_on_negative_profit test passed!")
 }
 
-export async function anchor_apr_calculation(lcd_client: LCDClient, _sender: Wallet, addresses_holder_addr: string) {
+export async function anchor_apr_calculation(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
     console.log(`-= Start 'anchor_apr_calculation' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const basset_vault_strategy_addr = await query_basset_vault_strategy_addr(lcd_client, addresses.basset_vault_for_bluna_addr);
     
+    await sleep(10000);
+
+    await execute_contract(lcd_client, sender, addresses.anchor_overseer_addr, {
+        execute_epoch_operations: {}
+    });
+
     const anchor_apr = await lcd_client.wasm.contractQuery(basset_vault_strategy_addr, {
         anchor_apr: {},
     }) as {
