@@ -120,8 +120,8 @@ export async function simple_deposit(lcd_client: LCDClient, sender: Wallet, addr
     const actual_collateral_amount = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
     assert(expected_collateral_amount == actual_collateral_amount);
 
-    //locked_basset * basset_price * basset_max_ltv(0,8) * borrow_ltv_aim(0,8)
-    let user_liability = Math.round(total_bluna_amount * bluna_price * 0.8 * 0.8);
+    //locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
+    let user_liability = Math.round(total_bluna_amount * bluna_price * 0.6 * 0.8);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
     console.log(`basset_vault_for_bluna test: "simple_deposit" passed(rebalanced)!`);
@@ -152,8 +152,8 @@ export async function borrow_more_on_bluna_price_increasing(lcd_client: LCDClien
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
     let collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
 
-    //locked_basset * bluna_price * basset_max_ltv(0,8) * borrow_ltv_aim(0,8)
-    let user_liability = Math.round(collateral * bluna_price * 0.8 * 0.8);
+    //locked_basset * bluna_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
+    let user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
     bluna_price = bluna_price * 2;
     await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_price);
@@ -162,7 +162,7 @@ export async function borrow_more_on_bluna_price_increasing(lcd_client: LCDClien
 
     collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
 
-    user_liability = Math.round(collateral * bluna_price * 0.8 * 0.8);
+    user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
     console.log(`basset_vault_for_bluna test: "borrow_more_on_bluna_price_increasing" passed!`);
@@ -193,8 +193,8 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
     let collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
 
-    //locked_basset * basset_price * basset_max_ltv(0,8) * borrow_ltv_aim(0,8)
-    let user_liability = Math.round(collateral * bluna_price * 0.8 * 0.8);
+    //locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
+    let user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
     bluna_price = bluna_price / 2;
@@ -204,7 +204,7 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
 
     collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
 
-    user_liability = Math.round(collateral * bluna_price * 0.8 * 0.8);
+    user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
     console.log(`basset_vault_for_bluna test: "repay_on_bluna_price_decreasing" passed!`);
@@ -236,6 +236,7 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, basset_price);
 
     await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
+    console.log("A0");
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr);
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
 
@@ -291,6 +292,8 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     });
     const actual_loan_after_withdraw = +actual_borrower_info.loan_amount;
     const expected_loan_after_withdraw = Math.floor(loan_before_withdraw * (1 - part_to_withdraw));
+
+    console.log(actual_loan_after_withdraw, expected_loan_after_withdraw);
     //See comment for assert_loan fn
     assert_numbers_with_inaccuracy(expected_loan_after_withdraw, actual_loan_after_withdraw, 10);
 
@@ -417,17 +420,17 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
     let collateral = await get_collateral_amount(lcd_client, overseer_addr, basset_vault_for_bluna_addr);
 
-    //locked_basset * basset_price * basset_max_ltv(0,8) * borrow_ltv_aim(0,8)
-    let user_liability = Math.round(collateral * bluna_price * 0.8 * 0.8);
+    //locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,8)
+    let user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
     await sleep(26000);
 
     await rebalance(lcd_client, sender, basset_vault_for_bluna_addr);
 
-    //locked_basset * basset_price * basset_max_ltv(0,8) * borrow_ltv_aim(0,4)
+    //locked_basset * basset_price * basset_max_ltv(0,6) * borrow_ltv_aim(0,4)
     //borrow_ltv_aim drops on 50% in emergency mode
-    user_liability = Math.round(collateral * bluna_price * 0.8 * 0.4);
+    user_liability = Math.round(collateral * bluna_price * 0.6 * 0.4);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
     console.log(`basset_vault_for_bluna test: "expired_bluna_price" passed!`);
@@ -866,10 +869,10 @@ export async function anchor_nexus_full_init(
     const addresses_holder_config = AddressesHolderConfig(anchor_market_info, basset_vault_info_for_bluna, basset_vault_info_for_beth);
     const addresses_holder_addr = await create_contract(lcd_client, sender, "addrs_holder", addresses_holder_wasm, addresses_holder_config);
 
-    await setup_anchor_token_distributor(lcd_client, sender, addresses_holder_config);
-    await provide_liquidity_to_anc_stable_swap(lcd_client, sender, addresses_holder_config);
-    await provide_liquidity_to_psi_stable_swap(lcd_client, sender, addresses_holder_config);
-    await setup_anchor(lcd_client, sender, addresses_holder_config);
+    // await setup_anchor_token_distributor(lcd_client, sender, addresses_holder_config);
+    // await provide_liquidity_to_anc_stable_swap(lcd_client, sender, addresses_holder_config);
+    // await provide_liquidity_to_psi_stable_swap(lcd_client, sender, addresses_holder_config);
+    // await setup_anchor(lcd_client, sender, addresses_holder_config);
 
     return addresses_holder_addr;
 }
