@@ -244,7 +244,7 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     await redeem_stable(lcd_client, sender, aust_token_addr, anchor_market_addr, aust_to_burn);
     anchor_ust_balance = await query_stable_balance(lcd_client, anchor_market_addr);
     //check whether there is no UST in anchor_market
-    assert_numbers_with_inaccuracy(anchor_initial_funds, anchor_ust_balance, 10);
+    assert_numbers_with_inaccuracy(anchor_initial_funds, anchor_ust_balance, 50);
 
     let actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
         borrower_info: {
@@ -477,6 +477,8 @@ async function query_anchor_price(lcd_client: LCDClient, addresses: AddressesHol
 
 async function setup_anchor(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
     const bluna_token_addr = addresses.bluna_token_addr;
+
+    await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, bluna_token_addr, 1);
 
     await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, "10000000000");
 
