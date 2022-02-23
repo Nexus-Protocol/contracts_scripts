@@ -425,248 +425,6 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
     console.log(`basset_vault_for_bluna test: "expired_bluna_price" passed!`);
 }
 
-async function query_anchor_borrow_net_apr(lcd_client: LCDClient, addresses: AddressesHolderConfig): Promise<number> {
-    const market_state = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
-        state: {},
-    }) as {
-        total_liabilities: string,
-        total_reserves: string,
-        anc_emission_rate: string,
-    };
-
-    const coins = await lcd_client.bank.balance(addresses.anchor_market_addr);
-
-    let borrow_rate = await lcd_client.wasm.contractQuery(addresses.anchor_interest_model_addr, {
-        borrow_rate: {
-            market_balance: coins.get('uusd')?.amount,
-            total_liabilities: market_state.total_liabilities,
-            total_reserves: market_state.total_reserves,
-        },
-    }) as {
-        rate: string,
-    };
-
-    let anc_price = await query_anchor_price(lcd_client, addresses);
-
-    let distribution_apr = Number(market_state.anc_emission_rate) * anc_price * 4656810 / Number(market_state.total_liabilities);
-
-    let interest_apr = Number(borrow_rate.rate) * 4656810;
-
-    let net_apr = distribution_apr - interest_apr;
-
-    return net_apr;
-}
-
-async function query_anchor_earn_apr(lcd_client: LCDClient, addresses: AddressesHolderConfig): Promise<number> {
-    let epoch_state = await lcd_client.wasm.contractQuery(addresses.anchor_overseer_addr, {
-        epoch_state: {},
-    }) as {
-        deposit_rate: number,
-    }; 
-
-    return epoch_state.deposit_rate * 4656810;
-}
-
-async function query_anchor_price(lcd_client: LCDClient, addresses: AddressesHolderConfig): Promise<number> {
-    const pool: PoolResponse = await lcd_client.wasm.contractQuery(addresses.anc_stable_swap_addr, {
-        pool: {}
-    });
-    const [anc_asset, ust_asset] = pool.assets;
-    return Number(ust_asset.amount) / Number(anc_asset.amount);
-}
-
-async function setup_anchor(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
-    const bluna_token_addr = addresses.bluna_token_addr;
-
-    await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, bluna_token_addr, 1);
-
-    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, "10000000000");
-
-    const bluna_to_deposit = "15000000000";
-    
-    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, bluna_to_deposit);
-
-    await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr);
-
-    const send_bluna_msg = {
-        deposit_collateral: {}
-    };
-
-    await execute_contract(lcd_client, sender, bluna_token_addr, {
-        send: {
-            contract: addresses.anchor_custody_bluna_addr,
-            amount: bluna_to_deposit,
-            msg: Buffer.from(JSON.stringify(send_bluna_msg)).toString('base64'),
-        }
-    });
-
-    await execute_contract(lcd_client, sender, addresses.anchor_overseer_addr, {
-        lock_collateral: {
-            collaterals: [[bluna_token_addr, String(bluna_to_deposit)]]
-        }
-    });
-
-    await lcd_client.wasm.contractQuery(addresses.anchor_custody_bluna_addr, {
-        borrower: {
-            address: sender.key.accAddress,
-        }
-    });
-
-    const ust_to_borrow = "9000000000";
-
-    await execute_contract(lcd_client, sender, addresses.anchor_market_addr, {
-        borrow_stable: {
-            borrow_amount: ust_to_borrow,
-        }
-    });
-}
-
-async function setup_anchor_token_distributor(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
-    const config = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
-        config: {},
-    }) as {
-        distributor_contract: string,
-    };
-    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
-        mint: {
-            recipient: config.distributor_contract,
-            amount: '1000000000000000',
-        }
-    });
-}
-
-async function provide_liquidity_to_anc_stable_swap(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
-    let anc_amount = "100000000000000";
-    let stable_amount = "300000000000000";
-    
-    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
-        mint: {
-            recipient: sender.key.accAddress,
-            amount: anc_amount,
-        }
-    });
-
-    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
-        increase_allowance: {
-            spender: addresses.anc_stable_swap_addr,
-            amount: anc_amount,
-        }
-    });
-
-    await execute_contract(lcd_client, sender, addresses.anc_stable_swap_addr, {
-        provide_liquidity: {
-            assets: [
-                {
-                    info: {
-                        token: {
-                            contract_addr: addresses.anchor_token_addr,
-                        }
-                    },
-                    amount: anc_amount
-                },
-                {
-                    info: {
-                        native_token: {
-                            denom: "uusd"
-                        }
-                    },
-                    amount: stable_amount
-                }
-            ]
-        }
-    }, [new Coin("uusd", stable_amount)]);
-}
-
-async function query_basset_vault_strategy_addr(lcd_client: LCDClient, basset_vault_addr: string): Promise<string> {
-    const config = await lcd_client.wasm.contractQuery(basset_vault_addr, {
-        config: {},
-    }) as {
-        basset_vault_strategy_contract_addr: string,
-    }; 
-    return config.basset_vault_strategy_contract_addr;
-}
-
-async function provide_liquidity_to_nasset_psi_swap2(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
-    let amount = "300000000";
-
-    const basset_config = await lcd_client.wasm.contractQuery(addresses.basset_vault_for_bluna_addr, {
-        config: {},
-    }) as {
-        psi_distributor_addr: string,
-        psi_token_addr: string,
-        nasset_token_addr: string,
-    };
-
-    const psi_distributor_config = await lcd_client.wasm.contractQuery(basset_config.psi_distributor_addr, {
-        config: {},
-    }) as {
-        nasset_psi_swap_contract_addr: string,
-    };
-
-    let nasset_amount = (await get_token_balance(lcd_client, sender.key.accAddress, basset_config.nasset_token_addr) - 50).toString();
-
-    console.log("nasset_amount", nasset_amount);
-
-    await execute_contract(lcd_client, sender, basset_config.psi_token_addr, {
-        increase_allowance: {
-            spender: psi_distributor_config.nasset_psi_swap_contract_addr,
-            amount,
-        }
-    });
-
-    await execute_contract(lcd_client, sender, basset_config.nasset_token_addr, {
-        increase_allowance: {
-            spender: psi_distributor_config.nasset_psi_swap_contract_addr,
-            amount: nasset_amount,
-        }
-    });
-
-    await execute_contract(lcd_client, sender, psi_distributor_config.nasset_psi_swap_contract_addr, {
-        provide_liquidity: {
-            assets: [
-                {
-                    info: {
-                        token: {
-                            contract_addr: basset_config.psi_token_addr,
-                        }
-                    },
-                    amount,
-                },
-                {
-                    info: {
-                        token: {
-                            contract_addr: basset_config.nasset_token_addr,
-                        }
-                    },
-                    amount: nasset_amount,
-                },
-            ]
-        }
-    });
-
-    // console.log("LIQ", await lcd_client.wasm.contractQuery(psi_distributor_config.nasset_psi_swap_contract_addr, { pool: {} }));
-
-    // const swap_msg = {
-    //     swap: {
-    //         to: sender.key.accAddress,
-    //     }
-    // };
-
-    // const s = await execute_contract(lcd_client, sender, basset_config.psi_token_addr, {
-    //     send: {
-    //         contract: psi_distributor_config.nasset_psi_swap_contract_addr,
-    //         amount: "500000",
-    //         msg: Buffer.from(JSON.stringify(swap_msg)).toString('base64'),
-    //     }
-    // });
-
-    // console.log(basset_config.nasset_token_addr, psi_distributor_config.nasset_psi_swap_contract_addr);
-
-    // console.log("SWAP", s);
-
-    // console.log("LIQ", await lcd_client.wasm.contractQuery(psi_distributor_config.nasset_psi_swap_contract_addr, { pool: {} }));
-}
-
 export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
     console.log(`-= Start 'withdraw_all_on_negative_profit' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
@@ -704,7 +462,7 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
         }
     });
 
-    await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
+    const honest_work = await execute_contract(lcd_client, sender, addresses.basset_vault_for_bluna_addr, {
         anyone: {
             anyone_msg: {
                 honest_work: {},
@@ -718,7 +476,7 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
         }
     });
 
-    assert(borrower_info_before_honest_work.pending_rewards > borrower_info_after_honest_work.pending_rewards, `Pending reward after honest work: ${borrower_info_after_honest_work.pending_rewards}, before: ${borrower_info_before_honest_work.pending_rewards}`);
+    assert(borrower_info_before_honest_work.pending_rewards > borrower_info_after_honest_work.pending_rewards, `Pending reward after honest work: ${borrower_info_after_honest_work.pending_rewards}, before: ${borrower_info_before_honest_work.pending_rewards}, transaction: ${JSON.stringify(honest_work)}`);
     
     await rebalance(lcd_client, sender, addresses.basset_vault_for_bluna_addr);
 
@@ -868,6 +626,62 @@ export async function anchor_nexus_full_init(
     return addresses_holder_addr;
 }
 
+async function setup_anchor_token_distributor(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
+    const config = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        config: {},
+    }) as {
+        distributor_contract: string,
+    };
+    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
+        mint: {
+            recipient: config.distributor_contract,
+            amount: '1000000000000000',
+        }
+    });
+}
+
+async function provide_liquidity_to_anc_stable_swap(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
+    let anc_amount = "100000000000000";
+    let stable_amount = "300000000000000";
+    
+    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
+        mint: {
+            recipient: sender.key.accAddress,
+            amount: anc_amount,
+        }
+    });
+
+    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
+        increase_allowance: {
+            spender: addresses.anc_stable_swap_addr,
+            amount: anc_amount,
+        }
+    });
+
+    await execute_contract(lcd_client, sender, addresses.anc_stable_swap_addr, {
+        provide_liquidity: {
+            assets: [
+                {
+                    info: {
+                        token: {
+                            contract_addr: addresses.anchor_token_addr,
+                        }
+                    },
+                    amount: anc_amount
+                },
+                {
+                    info: {
+                        native_token: {
+                            denom: "uusd"
+                        }
+                    },
+                    amount: stable_amount
+                }
+            ]
+        }
+    }, [new Coin("uusd", stable_amount)]);
+}
+
 async function provide_liquidity_to_psi_stable_swap(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
     let amount = "300000000000000";
 
@@ -907,6 +721,168 @@ async function provide_liquidity_to_psi_stable_swap(lcd_client: LCDClient, sende
             ]
         }
     }, [new Coin("uusd", amount)]);
+}
+
+async function setup_anchor(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
+    const bluna_token_addr = addresses.bluna_token_addr;
+
+    await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, bluna_token_addr, 1);
+
+    await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, "10000000000");
+
+    const bluna_to_deposit = "15000000000";
+    
+    await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, bluna_to_deposit);
+
+    await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr);
+
+    const send_bluna_msg = {
+        deposit_collateral: {}
+    };
+
+    await execute_contract(lcd_client, sender, bluna_token_addr, {
+        send: {
+            contract: addresses.anchor_custody_bluna_addr,
+            amount: bluna_to_deposit,
+            msg: Buffer.from(JSON.stringify(send_bluna_msg)).toString('base64'),
+        }
+    });
+
+    await execute_contract(lcd_client, sender, addresses.anchor_overseer_addr, {
+        lock_collateral: {
+            collaterals: [[bluna_token_addr, String(bluna_to_deposit)]]
+        }
+    });
+
+    await lcd_client.wasm.contractQuery(addresses.anchor_custody_bluna_addr, {
+        borrower: {
+            address: sender.key.accAddress,
+        }
+    });
+
+    const ust_to_borrow = "9000000000";
+
+    await execute_contract(lcd_client, sender, addresses.anchor_market_addr, {
+        borrow_stable: {
+            borrow_amount: ust_to_borrow,
+        }
+    });
+}
+
+async function query_anchor_borrow_net_apr(lcd_client: LCDClient, addresses: AddressesHolderConfig): Promise<number> {
+    const market_state = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
+        state: {},
+    }) as {
+        total_liabilities: string,
+        total_reserves: string,
+        anc_emission_rate: string,
+    };
+
+    const coins = await lcd_client.bank.balance(addresses.anchor_market_addr);
+
+    let borrow_rate = await lcd_client.wasm.contractQuery(addresses.anchor_interest_model_addr, {
+        borrow_rate: {
+            market_balance: coins.get('uusd')?.amount,
+            total_liabilities: market_state.total_liabilities,
+            total_reserves: market_state.total_reserves,
+        },
+    }) as {
+        rate: string,
+    };
+
+    let anc_price = await query_anchor_price(lcd_client, addresses);
+
+    let distribution_apr = Number(market_state.anc_emission_rate) * anc_price * 4656810 / Number(market_state.total_liabilities);
+
+    let interest_apr = Number(borrow_rate.rate) * 4656810;
+
+    let net_apr = distribution_apr - interest_apr;
+
+    return net_apr;
+}
+
+async function query_anchor_earn_apr(lcd_client: LCDClient, addresses: AddressesHolderConfig): Promise<number> {
+    let epoch_state = await lcd_client.wasm.contractQuery(addresses.anchor_overseer_addr, {
+        epoch_state: {},
+    }) as {
+        deposit_rate: number,
+    }; 
+
+    return epoch_state.deposit_rate * 4656810;
+}
+
+async function query_anchor_price(lcd_client: LCDClient, addresses: AddressesHolderConfig): Promise<number> {
+    const pool: PoolResponse = await lcd_client.wasm.contractQuery(addresses.anc_stable_swap_addr, {
+        pool: {}
+    });
+    const [anc_asset, ust_asset] = pool.assets;
+    return Number(ust_asset.amount) / Number(anc_asset.amount);
+}
+
+async function query_basset_vault_strategy_addr(lcd_client: LCDClient, basset_vault_addr: string): Promise<string> {
+    const config = await lcd_client.wasm.contractQuery(basset_vault_addr, {
+        config: {},
+    }) as {
+        basset_vault_strategy_contract_addr: string,
+    }; 
+    return config.basset_vault_strategy_contract_addr;
+}
+
+async function provide_liquidity_to_nasset_psi_swap2(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
+    let amount = "300000000";
+
+    const basset_config = await lcd_client.wasm.contractQuery(addresses.basset_vault_for_bluna_addr, {
+        config: {},
+    }) as {
+        psi_distributor_addr: string,
+        psi_token_addr: string,
+        nasset_token_addr: string,
+    };
+
+    const psi_distributor_config = await lcd_client.wasm.contractQuery(basset_config.psi_distributor_addr, {
+        config: {},
+    }) as {
+        nasset_psi_swap_contract_addr: string,
+    };
+
+    let nasset_amount = (await get_token_balance(lcd_client, sender.key.accAddress, basset_config.nasset_token_addr) - 50).toString();
+
+    await execute_contract(lcd_client, sender, basset_config.psi_token_addr, {
+        increase_allowance: {
+            spender: psi_distributor_config.nasset_psi_swap_contract_addr,
+            amount,
+        }
+    });
+
+    await execute_contract(lcd_client, sender, basset_config.nasset_token_addr, {
+        increase_allowance: {
+            spender: psi_distributor_config.nasset_psi_swap_contract_addr,
+            amount: nasset_amount,
+        }
+    });
+
+    await execute_contract(lcd_client, sender, psi_distributor_config.nasset_psi_swap_contract_addr, {
+        provide_liquidity: {
+            assets: [
+                {
+                    info: {
+                        token: {
+                            contract_addr: basset_config.psi_token_addr,
+                        }
+                    },
+                    amount,
+                },
+                {
+                    info: {
+                        token: {
+                            contract_addr: basset_config.nasset_token_addr,
+                        }
+                    },
+                    amount: nasset_amount,
+                },
+            ]
+        }
+    });
 }
 
 async function register_basset_price_feeder(lcd_client: LCDClient, sender: Wallet, oracle_addr: string, basset_token_addr: string) {
@@ -1120,8 +1096,8 @@ async function calculate_repay_cycles_amount(result: BlockTxBroadcastResult) {
 
 function assert_numbers_with_inaccuracy(expected: number, actual: number, inaccuracy: number) {
     let diff = Math.abs(expected - actual);
-    // if (diff > inaccuracy) {
-    console.log(`Expected: ${expected}, actual: ${actual}`);
-    // }
+    if (diff > inaccuracy) {
+        console.log(`Expected: ${expected}, actual: ${actual}`);
+    }
     assert(diff <= inaccuracy);
 }
