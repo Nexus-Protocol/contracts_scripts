@@ -224,11 +224,8 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     const nluna_token_addr = addresses.nluna_token_addr;
 
     //deposit some UST directly to anchor_marker in order to basset_vault could borrow it
-    console.log("ANCHOR MARKET CAP", await lcd_client.bank.balance(anchor_market_addr));
-    let initial_ust_for_anchor = 99_000_000;
+    const initial_ust_for_anchor = 100_000_000;
     await deposit_stable(lcd_client, sender, anchor_market_addr, initial_ust_for_anchor);
-    initial_ust_for_anchor = Number((await lcd_client.bank.balance(anchor_market_addr)).get('uusd')!.amount);
-    console.log("ANCHOR MARKET CAP", initial_ust_for_anchor, await lcd_client.bank.balance(anchor_market_addr));
 
     const luna_to_bond = 100_000_000;
     let basset_price = 1;
@@ -236,26 +233,18 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, basset_price);
 
     await bond_luna(lcd_client, sender, bluna_hub_addr, luna_to_bond);
-    console.log("A0");
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, bluna_token_addr);
     await deposit_bluna(lcd_client, sender, bluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit);
 
-    console.log("A", bluna_to_deposit);
     // redeem rest of directly deposited UST from anchor market
     let anchor_ust_balance = await query_stable_balance(lcd_client, anchor_market_addr);
-    console.log("B", anchor_ust_balance);
     const aust_exchange_rate = await get_aust_exchange_rate(lcd_client, anchor_market_addr);
-    console.log("C", aust_exchange_rate);
     const anchor_initial_funds = 1_000_000;
     const aust_to_burn = Math.round((anchor_ust_balance - anchor_initial_funds) / aust_exchange_rate);
-    console.log("D", aust_to_burn);
-    let redeem = await redeem_stable(lcd_client, sender, aust_token_addr, anchor_market_addr, aust_to_burn);
-    console.log("E", redeem);
+    await redeem_stable(lcd_client, sender, aust_token_addr, anchor_market_addr, aust_to_burn);
     anchor_ust_balance = await query_stable_balance(lcd_client, anchor_market_addr);
-    console.log("F", anchor_ust_balance);
     //check whether there is no UST in anchor_market
     assert_numbers_with_inaccuracy(anchor_initial_funds, anchor_ust_balance, 10);
-    console.log("D");
 
     let actual_borrower_info: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {
         borrower_info: {
@@ -273,8 +262,10 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     // According to basset_vault_config it's impossible to withdraw more bAsset than 18% of nAsset total supply.
     // There is only one farmer in our test => farmer nAsset balance is equal to total nAsset supply.
     // That's why only 15% of deposited bluna to withdraw.
-    const part_to_withdraw = 0.15;
-    const withdraw_result = await withdraw_bluna(lcd_client, sender, nluna_token_addr, basset_vault_for_bluna_addr, bluna_to_deposit * part_to_withdraw);
+    let part_to_withdraw = 0.15;
+    const amount_to_withdraw = Math.ceil(bluna_to_deposit * part_to_withdraw)
+    part_to_withdraw = amount_to_withdraw / bluna_to_deposit;
+    const withdraw_result = await withdraw_bluna(lcd_client, sender, nluna_token_addr, basset_vault_for_bluna_addr, amount_to_withdraw);
     if (withdraw_result === undefined) {
         throw new Error(
             `Withdraw basset failed`
@@ -292,8 +283,6 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     });
     const actual_loan_after_withdraw = +actual_borrower_info.loan_amount;
     const expected_loan_after_withdraw = Math.floor(loan_before_withdraw * (1 - part_to_withdraw));
-
-    console.log(actual_loan_after_withdraw, expected_loan_after_withdraw);
     //See comment for assert_loan fn
     assert_numbers_with_inaccuracy(expected_loan_after_withdraw, actual_loan_after_withdraw, 10);
 
@@ -869,10 +858,10 @@ export async function anchor_nexus_full_init(
     const addresses_holder_config = AddressesHolderConfig(anchor_market_info, basset_vault_info_for_bluna, basset_vault_info_for_beth);
     const addresses_holder_addr = await create_contract(lcd_client, sender, "addrs_holder", addresses_holder_wasm, addresses_holder_config);
 
-    // await setup_anchor_token_distributor(lcd_client, sender, addresses_holder_config);
-    // await provide_liquidity_to_anc_stable_swap(lcd_client, sender, addresses_holder_config);
-    // await provide_liquidity_to_psi_stable_swap(lcd_client, sender, addresses_holder_config);
-    // await setup_anchor(lcd_client, sender, addresses_holder_config);
+    await setup_anchor_token_distributor(lcd_client, sender, addresses_holder_config);
+    await provide_liquidity_to_anc_stable_swap(lcd_client, sender, addresses_holder_config);
+    await provide_liquidity_to_psi_stable_swap(lcd_client, sender, addresses_holder_config);
+    await setup_anchor(lcd_client, sender, addresses_holder_config);
 
     return addresses_holder_addr;
 }
@@ -1129,8 +1118,8 @@ async function calculate_repay_cycles_amount(result: BlockTxBroadcastResult) {
 
 function assert_numbers_with_inaccuracy(expected: number, actual: number, inaccuracy: number) {
     let diff = Math.abs(expected - actual);
-    if (diff > inaccuracy) {
-        console.log(`Expected: ${expected}, actual: ${actual}`);
-    }
+    // if (diff > inaccuracy) {
+    console.log(`Expected: ${expected}, actual: ${actual}`);
+    // }
     assert(diff <= inaccuracy);
 }
