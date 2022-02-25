@@ -210,6 +210,8 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
     console.log(`basset_vault_for_bluna test: "repay_on_bluna_price_decreasing" passed!`);
 }
 
+// Run this test with default localterra config, otherwise there is a big inaccuracy.
+// For more info see comment for the `assert_loan` fn
 export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
     console.log(`-= Start 'recursive_repay_ok' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
