@@ -7,17 +7,32 @@ interface Config {
 	lcdClient: LCDConfig,
 	psi: string,
 	governance: string,
-	genesisTime: string,
-	minStakedPsiAmount: string,
+	tokenCodeId: number,
+	vesting: VestingConfig,
+	pol: PolConfig,
+}
+
+interface PolConfig {
 	pairs: Array<string>,
 	vestingPeriod: number,
-	bondControlVar: string,
-	excludedPsi: Array<string>,
-	maxBondsAmount: string,
 	communityPool: string,
 	astroGenerator: string,
 	astro: string,
-	polPsiBalance: string,
+	phase: PhaseConfig,
+	bondCost: string,
+	psiBalance: string,
+}
+
+interface PhaseConfig {
+	maxDiscount: string,
+	psiAmountTotal: string,
+	psiAmountStart: string,
+	startTime: number,
+	endTime: number,
+}
+
+interface VestingConfig {
+	genesisTime: string,
 }
 
 const DEFAULT_CONFIG_PATH = 'src/owned_liquidity/config.json';
@@ -47,18 +62,21 @@ async function run(configPath: string) {
 		lcdClient,
 		sender,
 		config.psi,
-		config.genesisTime,
 		config.governance,
-		config.minStakedPsiAmount,
-		config.pairs,
-		config.vestingPeriod,
-		config.bondControlVar,
-		config.excludedPsi,
-		config.maxBondsAmount,
-		config.communityPool,
-		config.astroGenerator,
-		config.astro,
-		config.polPsiBalance,
+		config.tokenCodeId,
+		config.vesting.genesisTime,
+		config.pol.pairs,
+		config.pol.vestingPeriod,
+		config.pol.communityPool,
+		config.pol.astroGenerator,
+		config.pol.astro,
+		config.pol.bondCost,
+		config.pol.phase.maxDiscount,
+		config.pol.phase.psiAmountTotal,
+		config.pol.phase.psiAmountStart,
+		config.pol.phase.startTime,
+		config.pol.phase.endTime,
+		config.pol.psiBalance,
 	);
 }
 

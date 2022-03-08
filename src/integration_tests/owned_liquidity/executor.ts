@@ -47,6 +47,19 @@ async function instantiateTstToken(lcdClient: LCDClient, sender: Wallet, tokenCo
     return await instantiate_contract(lcdClient, sender, sender.key.accAddress, tokenCodeId, config);
 }
 
+async function instantiateUtilityToken(lcdClient: LCDClient, sender: Wallet, tokenCodeId: number, minter: string) {
+    const config = {
+        name: 'Nexus Utility Token',
+        symbol: 'uPsi',
+        decimals: 6,
+        initial_balances: [],
+        mint: {
+            minter,
+        }
+    };
+    return await instantiate_contract(lcdClient, sender, sender.key.accAddress, tokenCodeId, config);
+}
+
 async function instantiateAstroToken(
     lcdClient: LCDClient,
     sender: Wallet,
@@ -450,7 +463,7 @@ async function stakePsi(
     sender: Wallet,
     nexusGovernance: string,
     psi: string,
-    amount: Decimal
+    amount: Decimal,
 ) {
     const msgStakeJson = JSON.stringify({ stake_voting_tokens: {} });
     const msgStakeBase64 = Buffer.from(msgStakeJson).toString('base64');
@@ -465,37 +478,54 @@ async function stakePsi(
     );
 }
 
+async function lockPsi(
+    lcdClient: LCDClient,
+    sender: Wallet,
+    nexusGovernance: string,
+    amount: Decimal,
+) {
+    await execute_contract(lcdClient, sender, nexusGovernance,
+        {
+            anyone: {
+                anyone_msg: {
+                    lock_tokens_for_utility: { amount: amount.toFixed(0) },
+                }
+            }
+        }
+    );
+}
+
 async function instantiateNexusPolWithBalance(
     lcdClient: LCDClient,
     sender: Wallet,
-    governance: string,
     pairs: Array<string>,
     psi: string,
-    minStakedPsiAmount: Decimal,
     nexusVesting: string,
     nexusVestingPeriod: number,
-    excludedPsi: Array<string>,
-    bcv: Decimal,
-    maxBondsAmount: Decimal,
     communityPool: string,
     astroGenerator: string,
     astroToken: string,
+    utilityToken: string,
+    bondCostInUtilityTokens: Decimal,
+    psiAmountTotal: Decimal,
+    psiAmountStart: Decimal,
+    startTime: number,
+    endTime: number,
+    maxDiscount: Decimal,
     balance: Decimal,
 ) {
     const init = {
-        governance,
+        governance: sender.key.accAddress,
         pairs,
         psi_token: psi,
-        min_staked_psi_amount: minStakedPsiAmount.toFixed(0),
         vesting: nexusVesting,
         vesting_period: nexusVestingPeriod,
-        bond_control_var: bcv.toFixed(5),
-        excluded_psi: excludedPsi,
-        max_bonds_amount: maxBondsAmount.toFixed(5),
         community_pool: communityPool,
         autostake_lp_tokens: true,
         astro_generator: astroGenerator,
         astro_token: astroToken,
+        utility_token: utilityToken,
+        bond_cost_in_utility_tokens: bondCostInUtilityTokens.toFixed(5),
     };
     const nexusPol = await create_contract(
         lcdClient, sender, 'nexus PoL', 'wasm_artifacts/nexus/services/nexus_pol.wasm', init);
@@ -503,6 +533,21 @@ async function instantiateNexusPolWithBalance(
     await execute_contract(lcdClient, sender, psi, {
         transfer: { recipient: nexusPol, amount: balance.toFixed(0) }
     });
+
+    const phaseMsg = {
+        governance: {
+            msg: {
+                phase: {
+                    max_discount: maxDiscount.toFixed(),
+                    psi_amount_total: psiAmountTotal.toFixed(),
+                    psi_amount_start: psiAmountStart.toFixed(),
+                    start_time: startTime,
+                    end_time: endTime,
+                }
+            }
+        }
+    };
+    await execute_contract(lcdClient, sender, nexusPol, phaseMsg);
 
     return nexusPol;
 }
@@ -522,7 +567,6 @@ async function runProgram() {
     const taxCap = await lcdClient.treasury.taxCap('uusd');
 
     const tokensPerBlock = new Decimal('10_000');
-    const bcv = new Decimal('2.5');
 
     //======================================================================
     // Prepare infrastructure for testing
@@ -630,25 +674,39 @@ async function runProgram() {
     console.log(`======================================================`);
 
     const nexusGovernance = await instantiateNexusGovernance(lcdClient, sender, psi);
-    // await stakePsi(lcdClient, sender, nexusGovernance, psi, new Decimal(1000));
     console.log(`======================================================`);
 
+    const utilityToken = await instantiateUtilityToken(lcdClient, sender, tokenCodeId, nexusGovernance);
+    console.log(`uPSI: ${utilityToken}`);
+    console.log(`======================================================`);
+
+    const utilityMsg = { governance: { governance_msg: { init_utility: { token: utilityToken } } } };
+    await execute_contract(lcdClient, sender, nexusGovernance, utilityMsg);
+
     const communityPool = astroFactory;
+    const psiTotal = new Decimal(36_000_000);
+    const psiStart = new Decimal(10_800_000);
+    const maxDiscount = new Decimal(0.5);
+    const startTime = Math.floor(Date.now() / 1000);
+    const endTime = Math.floor(Date.now() / 1000) + 30 * 24 * 3600;
+    const bondCost = new Decimal(0.5);
     const nexusPol = await instantiateNexusPolWithBalance(
         lcdClient,
         sender,
-        nexusGovernance,
         [astroPsiUstPair.pair_contract_addr, astroPsiTstPair.pair_contract_addr],
         psi,
-        new Decimal(10),
         nexusVesting,
         5 * 24 * 3600,
-        [astro],
-        bcv,
-        new Decimal('0.0001'),
         communityPool,
         astroGenerator,
         astro,
+        utilityToken,
+        bondCost,
+        psiTotal,
+        psiStart,
+        startTime,
+        endTime,
+        maxDiscount,
         new Decimal('1_000_000_000_000_000'),
     );
     console.log(`======================================================`);
@@ -661,39 +719,45 @@ async function runProgram() {
 
     const buysInfo = [];
 
-    const ustPayment = new Decimal(1_000_000_000);
-    const taxedUstPayment = await getTaxed(ustPayment, taxRate, taxCap.amount);
-    let assetCostInPsi = taxedUstPayment.mul(psiLiquidityU).div(ustLiquidity);
-    let bondsAmount = calculate(
-        assetCostInPsi,
-        psiLiquidityU,
-        ustLiquidity,
-        totalSupply.sub(notCirculatingPsi),
-        new Decimal(0),
-        bcv,
-    ).truncated();
-
-    console.log(`Try to buy without staked psi`);
-    const msgBuy = { buy: { min_amount: '0' } };
-    let result = await execute_contract(
-        lcdClient, sender, nexusPol, msgBuy, new Coins([new Coin('uusd', ustPayment.toNumber())]));
-    assert(result === undefined);
-
-    console.log(`Try to buy with not enough staked psi`);
-    await stakePsi(lcdClient, sender, nexusGovernance, psi, new Decimal(5));
-    result = await execute_contract(
-        lcdClient, sender, nexusPol, msgBuy, new Coins([new Coin('uusd', ustPayment.toNumber())]));
-    assert(result === undefined);
+    const ustPayment = new Decimal(1_000);
 
     console.log(`Make first buy with native tokens`);
-    await stakePsi(lcdClient, sender, nexusGovernance, psi, new Decimal(1000));
-    result = await execute_contract(
+    let utilityAmount = new Decimal(150_000);
+    await stakePsi(lcdClient, sender, nexusGovernance, psi, utilityAmount);
+    await lockPsi(lcdClient, sender, nexusGovernance, utilityAmount);
+    const msgIncreaseAllowance = {
+        increase_allowance: {
+            spender: nexusPol,
+            amount: utilityAmount.toFixed(),
+        }
+    };
+    await execute_contract(lcdClient, sender, utilityToken, msgIncreaseAllowance);
+
+    const msgBuy = { buy: { min_amount: '0' } };
+    let result = await execute_contract(
         lcdClient, sender, nexusPol, msgBuy, new Coins([new Coin('uusd', ustPayment.toNumber())]));
     let buyInfo = parseBuy(result!);
     buysInfo.push(buyInfo);
 
+    const taxedUstPayment = await getTaxed(ustPayment, taxRate, taxCap.amount);
+    let assetCostInPsi = taxedUstPayment.mul(psiLiquidityU).div(ustLiquidity);
+    let bondsAmount = calculate(
+        assetCostInPsi,
+        psiTotal,
+        psiStart,
+        new Decimal(0),
+        startTime,
+        Math.floor(Date.parse((await lcdClient.tendermint.blockInfo()).block.header.time) / 1000),
+        endTime,
+        maxDiscount,
+    ).truncated();
+
     console.log(`Check contract attributes`);
     assert.deepStrictEqual(buyInfo.bonds.toFixed(), bondsAmount.toFixed());
+    assert.deepStrictEqual(
+        buyInfo.utility_tokens_burned.toFixed(),
+        bondsAmount.mul(bondCost).truncated().toFixed(),
+    );
     assert.deepStrictEqual(
         buyInfo.psi_liquidity.toFixed(),
         taxedUstPayment.mul(psiLiquidityU).div(ustLiquidity).toFixed(0),
@@ -714,6 +778,12 @@ async function runProgram() {
     let vestingBalance: BalanceResponse = await lcdClient.wasm.contractQuery(
         psi, { balance: { address: nexusVesting } });
     assert.deepStrictEqual(vestingBalance.balance, buyInfo.bonds.toFixed());
+
+    console.log(`Check utility balance`);
+    let utilityBalance: BalanceResponse = await lcdClient.wasm.contractQuery(
+        utilityToken, { balance: { address: sender.key.accAddress } });
+    assert.deepStrictEqual(utilityBalance.balance, utilityAmount.sub(buyInfo.utility_tokens_burned).toFixed());
+    utilityAmount = new Decimal(utilityBalance.balance);
     console.log(`======================================================`);
 
     console.log(`Wait for new blocks`);
@@ -721,16 +791,7 @@ async function runProgram() {
     console.log(`======================================================`);
 
     console.log(`Make second buy with CW20 tokens`);
-    const tstPayment = new Decimal(2_000_000_000);
-    assetCostInPsi = tstPayment.mul(psiLiquidityT).div(tstLiquidity);
-    bondsAmount = calculate(
-        assetCostInPsi,
-        psiLiquidityU,
-        ustLiquidity,
-        totalSupply.sub(notCirculatingPsi),
-        bondsAmount,
-        bcv,
-    ).truncated();
+    const tstPayment = new Decimal(2_000);
 
     const msgBuyJson = JSON.stringify(msgBuy);
     const msgBuyBase64 = Buffer.from(msgBuyJson).toString('base64');
@@ -745,8 +806,24 @@ async function runProgram() {
     buyInfo = parseBuy(result!);
     buysInfo.push(buyInfo);
 
+    assetCostInPsi = tstPayment.mul(psiLiquidityT).div(tstLiquidity);
+    bondsAmount = calculate(
+        assetCostInPsi,
+        psiTotal,
+        psiStart,
+        bondsAmount,
+        startTime,
+        Math.floor(Date.parse((await lcdClient.tendermint.blockInfo()).block.header.time) / 1000),
+        endTime,
+        maxDiscount,
+    ).truncated();
+
     console.log(`Check contract attributes`);
     assert.deepStrictEqual(buyInfo.bonds.toFixed(), bondsAmount.toFixed());
+    assert.deepStrictEqual(
+        buyInfo.utility_tokens_burned.toFixed(),
+        bondsAmount.mul(bondCost).truncated().toFixed(),
+    );
     assert.deepStrictEqual(
         buyInfo.psi_liquidity.toFixed(),
         tstPayment.mul(psiLiquidityT).div(tstLiquidity).toFixed(0),
@@ -765,6 +842,11 @@ async function runProgram() {
     console.log(`Check vesting balance`);
     vestingBalance = await lcdClient.wasm.contractQuery(psi, { balance: { address: nexusVesting } });
     assert.deepStrictEqual(vestingBalance.balance, buyInfo.bonds.add(buysInfo[0].bonds).toFixed());
+
+    console.log(`Check utility balance`);
+    utilityBalance = await lcdClient.wasm.contractQuery(
+        utilityToken, { balance: { address: sender.key.accAddress } });
+    assert.deepStrictEqual(utilityBalance.balance, utilityAmount.sub(buyInfo.utility_tokens_burned).toFixed());
     console.log(`======================================================`);
 
     console.log(`Wait for new blocks`);
@@ -845,17 +927,24 @@ async function runProgram() {
 
 function calculate(
     assetCostInPsi: Decimal,
-    psiLiquidity: Decimal,
-    ustLiquidity: Decimal,
-    circulatingPsi: Decimal,
-    issuedBonds: Decimal,
-    bcv: Decimal,
+    psiTotal: Decimal,
+    psiStart: Decimal,
+    psiSold: Decimal,
+    startTime: number,
+    curTime: number,
+    endTime: number,
+    maxDiscount: Decimal,
 ) {
-    const psiPrice = ustLiquidity.div(psiLiquidity);
-    const instrinsic = circulatingPsi.mul(psiPrice).div(totalSupply);
-    const premium = issuedBonds.mul(bcv).div(totalSupply);
-    const bondPrice = instrinsic.add(premium);
-    return assetCostInPsi.mul(psiPrice).div(bondPrice);
+    const two = new Decimal(2);
+    const topup = psiTotal.sub(psiStart).mul(curTime - startTime).div(endTime - startTime).truncated();
+    const psiToSell = psiStart.add(topup).sub(psiSold);
+    const a = new Decimal(1).sub(maxDiscount.mul(psiToSell).div(psiTotal));
+    const a2 = a.mul(a);
+    const b = maxDiscount.mul(two).mul(assetCostInPsi).div(psiTotal);
+    const c = a2.add(b).sqrt();
+    const d = psiTotal.add(psiTotal.mul(c)).sub(maxDiscount.mul(psiToSell));
+    const bonds = two.mul(psiTotal).mul(assetCostInPsi).div(d);
+    return bonds;
 }
 
 type BalanceResponse = {
@@ -881,6 +970,7 @@ type VestingResponse = {
 function parseBuy(result: BlockTxBroadcastResult) {
     const buyInfo = {
         bonds: new Decimal(0),
+        utility_tokens_burned: new Decimal(0),
         psi_liquidity: new Decimal(0),
         asset_liquidity: new Decimal(0),
         psi_rewards: new Decimal(0),
@@ -891,6 +981,10 @@ function parseBuy(result: BlockTxBroadcastResult) {
         const bonds = e['bonds_issued'];
         if (bonds !== undefined) {
             buyInfo.bonds = new Decimal(bonds);
+        }
+        const utility_tokens_burned = e['utility_tokens_burned'];
+        if (utility_tokens_burned !== undefined) {
+            buyInfo.utility_tokens_burned = new Decimal(utility_tokens_burned);
         }
         const psi_liquidity = e['provided_liquidity_in_psi'];
         if (psi_liquidity !== undefined) {
