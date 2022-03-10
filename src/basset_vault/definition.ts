@@ -9,7 +9,8 @@ import {
 	GovernanceConfig,
 	init_astroport_factory,
 	PSiTokensOwner,
-	TokenConfig
+	TokenConfig,
+	is_prod,
 } from './../config';
 import {
 	create_contract,
@@ -25,6 +26,7 @@ import {AnchorMarketInfo} from "../integration_tests/deploy_anchor/config";
 const artifacts_path = "wasm_artifacts";
 const path_to_cosmwasm_artifacts = `${artifacts_path}/cosmwasm_plus`;
 const path_to_basset_vault_artifacts = `${artifacts_path}/nexus/basset_vaults`;
+const path_to_basset_vault_integration_tests_artifacts = `${artifacts_path}/nexus/basset_vaults_integration_tests`;
 const path_to_services_contracts_artifacts = `${artifacts_path}/nexus/services`;
 const path_to_terraswap_contracts_artifacts = `${artifacts_path}/terraswap`;
 const path_to_astroport_contracts_artifacts = `${artifacts_path}/astroport`;
@@ -46,6 +48,8 @@ const nasset_token_wasm = `${path_to_basset_vault_artifacts}/basset_vault_nasset
 const nasset_token_config_holder_wasm = `${path_to_basset_vault_artifacts}/basset_vault_nasset_config_holder.wasm`;
 const nasset_token_rewards_wasm = `${path_to_basset_vault_artifacts}/basset_vault_nasset_rewards.wasm`;
 const psi_distributor_wasm = `${path_to_basset_vault_artifacts}/basset_vault_psi_distributor.wasm`;
+// ===================================================
+const basset_vault_integration_tests_wasm = `${path_to_basset_vault_integration_tests_artifacts}/basset_vault_basset_vault.wasm`;
 // ===================================================
 
 async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
@@ -130,7 +134,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 
 	let basset_vault_strategy_code_id = await store_contract(lcd_client, sender, basset_vault_strategy_contract_wasm);
 	console.log(`basset_vault_strategy uploaded\n\tcode_id: ${basset_vault_strategy_code_id}`);
-	let basset_vault_code_id = await store_contract(lcd_client, sender, basset_vault_wasm);
+	let basset_vault_code_id = await store_contract(lcd_client, sender, is_prod(lcd_client) ? basset_vault_wasm : basset_vault_integration_tests_wasm);
 	console.log(`basset_vault uploaded\n\tcode_id: ${basset_vault_code_id}`);
 	console.log(`=======================`);
 	// bLUNA

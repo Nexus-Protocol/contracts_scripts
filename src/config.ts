@@ -312,6 +312,7 @@ export interface BassetVaultStrategyConfig {
     anchor_overseer_addr: string,
     anchor_token_addr: string,
     anc_ust_swap_addr: string,
+	staking_apr: string,
 }
 
 export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr: string): BassetVaultStrategyConfig {
@@ -331,6 +332,7 @@ export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr:
     	anchor_overseer_addr: "todo",
     	anchor_token_addr: "todo",
     	anc_ust_swap_addr: "todo",
+		staking_apr: "todo",
 	}
 }
 
@@ -351,6 +353,7 @@ export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_ad
     	anchor_overseer_addr: anchor_market_info.overseer_addr,
     	anchor_token_addr: anchor_market_info.anchor_token_addr,
     	anc_ust_swap_addr: anchor_market_info.anc_stable_swap_addr,
+		staking_apr: "0.0",
 	}
 }
 
@@ -380,6 +383,7 @@ export function prod_BassetVaultStrategyConfigForbEth(governance_contract_addr: 
     	anchor_overseer_addr: "todo",
     	anchor_token_addr: "todo",
     	anc_ust_swap_addr: "todo",
+		staking_apr: "todo",
 	}
 }
 
@@ -400,6 +404,7 @@ export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_add
     	anchor_overseer_addr: anchor_market_info.overseer_addr,
     	anchor_token_addr: anchor_market_info.anchor_token_addr,
     	anc_ust_swap_addr: anchor_market_info.anc_stable_swap_addr,
+		staking_apr: "0.0",
 	}
 }
 

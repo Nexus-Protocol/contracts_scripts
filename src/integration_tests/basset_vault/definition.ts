@@ -552,20 +552,22 @@ export async function anchor_apr_calculation(lcd_client: LCDClient, sender: Wall
     const anchor_apr = await lcd_client.wasm.contractQuery(basset_vault_strategy_addr, {
         anchor_apr: {},
     }) as {
-        anchor_earn_apr: number,
-        anchor_borrow_distribution_apr: number,
-        anchor_borrow_interest_apr: number,
+        earn: number,
+        borrow: {
+            distribution_apr: number,
+            interest_apr: number,
+        },
     };
 
     const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
 
-    let queried_borrow_apr = anchor_apr.anchor_borrow_distribution_apr - anchor_apr.anchor_borrow_interest_apr;
+    let queried_borrow_apr = anchor_apr.borrow.distribution_apr - anchor_apr.borrow.interest_apr;
     assert_numbers_with_inaccuracy(borrow_apr, queried_borrow_apr, 0.0001); // inaccuracy is less than 0,01 %
 
     const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
-    assert_numbers_with_inaccuracy(earn_apr, anchor_apr.anchor_earn_apr, 0.0001); // inaccuracy is less than 0,01 %
+    assert_numbers_with_inaccuracy(earn_apr, anchor_apr.earn, 0.0001); // inaccuracy is less than 0,01 %
 
-    console.log(`Apr calculation test passed:\n\tEarn apr. Expected: ${earn_apr}, calculated: ${anchor_apr.anchor_earn_apr}\n\tBorrow apr. Expected: ${borrow_apr}, calculated: ${queried_borrow_apr}`);
+    console.log(`Apr calculation test passed:\n\tEarn apr. Expected: ${earn_apr}, calculated: ${anchor_apr.earn}\n\tBorrow apr. Expected: ${borrow_apr}, calculated: ${queried_borrow_apr}`);
 }
 
 export async function bvault_deposit_and_withdraw_half(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
