@@ -454,7 +454,7 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
     const collateral = await get_collateral_amount(lcd_client, addresses.anchor_overseer_addr, addresses.basset_vault_for_bluna_addr);
     assert_numbers_with_inaccuracy(bluna_to_deposit, collateral, 10);
 
-    await provide_liquidity_to_nasset_psi_swap2(lcd_client, sender, addresses);
+    await provide_liquidity_to_nasset_psi_swap(lcd_client, sender, addresses, "300000000");
 
     await sleep(10000);
 
@@ -832,9 +832,7 @@ async function query_basset_vault_strategy_addr(lcd_client: LCDClient, basset_va
     return config.basset_vault_strategy_contract_addr;
 }
 
-async function provide_liquidity_to_nasset_psi_swap2(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
-    let amount = "300000000";
-
+async function provide_liquidity_to_nasset_psi_swap(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig, amount: string) {
     const basset_config = await lcd_client.wasm.contractQuery(addresses.basset_vault_for_bluna_addr, {
         config: {},
     }) as {
