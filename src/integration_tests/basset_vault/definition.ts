@@ -19,9 +19,9 @@ import Decimal from 'decimal.js';
 
 // ===================================================
 const addresses_holder_wasm = "wasm_artifacts/utils/addr_holder.wasm";
-
 // ===================================================
-
+const number_of_blocks_per_year = 4656810;
+// ===================================================
 export async function borrow_zero_amount_issue(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
     console.log(`-= Start 'borrow_zero_amount_issue' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
@@ -796,9 +796,9 @@ async function query_anchor_borrow_net_apr(lcd_client: LCDClient, addresses: Add
 
     let anc_price = await query_anchor_price(lcd_client, addresses);
 
-    let distribution_apr = Number(market_state.anc_emission_rate) * anc_price * 4656810 / Number(market_state.total_liabilities);
+    let distribution_apr = Number(market_state.anc_emission_rate) * anc_price * number_of_blocks_per_year / Number(market_state.total_liabilities);
 
-    let interest_apr = Number(borrow_rate.rate) * 4656810;
+    let interest_apr = Number(borrow_rate.rate) * number_of_blocks_per_year;
 
     let net_apr = distribution_apr - interest_apr;
 
@@ -812,7 +812,7 @@ async function query_anchor_earn_apr(lcd_client: LCDClient, addresses: Addresses
         deposit_rate: number,
     }; 
 
-    return epoch_state.deposit_rate * 4656810;
+    return epoch_state.deposit_rate * number_of_blocks_per_year;
 }
 
 async function query_anchor_price(lcd_client: LCDClient, addresses: AddressesHolderConfig): Promise<number> {
