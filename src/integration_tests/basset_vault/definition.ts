@@ -507,7 +507,7 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
     const vault_bassest_balance = await get_token_balance(lcd_client, addresses.basset_vault_for_bluna_addr, addresses.bluna_token_addr);
     
     console.log(`Vault state after rebalance when anchor became not profitable. Collateral: ${collateral2}, balance: ${vault_bassest_balance}`);
-    assert_numbers_with_inaccuracy(bluna_to_deposit, vault_bassest_balance, 10000);
+    assert(bluna_to_deposit == vault_bassest_balance);
     assert(collateral2 == 0);
 
     // Return apr to the state that was before contract,
