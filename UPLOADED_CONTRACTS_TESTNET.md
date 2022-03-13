@@ -4,7 +4,7 @@
 cw20_base uploaded; code_id: 9324
 =======================
 governance_contract uploaded
-        code_id: 9325
+        code_id: 52470
 governance_contract instantiated
         address: terra1u7tnl4326ge86mzqeqnzxxjg7xkgj8nfg65a2h
 =======================
@@ -85,4 +85,22 @@ staking_contract instantiated (Astroport)
         Psi-UST staking address: terra1xeq2ej8s0t9z2ch08x5tc7009za43w8983elv0
         Psi-nLuna staking address: terra18vqwp39c4jcgaax2d6275ghdtywz3xazzhl4xx
         Psi-nETH staking address: terra1sxhfaud8svmazlvg2qffsgke96e7qguf057pc9
+=======================
+======= POL ===========
+=======================
+cw-20 token 'Psi utility for POL' instantiated
+        address: terra14yjlkdq05kt5uhhj4ljs9nmz3tsg76s0kspmpl
+=======================
+vesting_contract uploaded
+        code_id: 52355
+=======================
+vesting_contract instantiated
+        address: terra1m99gjxy2x650drvl33tv0mzfxzwq4gvr9equhw
+=======================
+pol_contract uploaded
+        code_id: 52474
+=======================
+pol_contract instantiated
+        address: terra13sm4ykavhjcv72c74u9rf6yd72jzknl4kfasmj
+=======================
 ```
