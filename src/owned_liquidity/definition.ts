@@ -1,34 +1,18 @@
 import { LCDClient, Wallet } from '@terra-money/terra.js';
 import { execute_contract, create_contract, to_utc_seconds, instantiate_contract } from './../utils';
 
-interface VestingPolConfig {
-	owner: string,
-	psi_token: string,
-	genesis_time: number,
-}
-
-interface polConfig {
-	governance: string,
-	pairs: Array<string>,
-	psi_token: string,
-	vesting_period: number,
-	community_pool: string,
-	astro_generator: string,
-	astro_token: string,
-}
-
-async function initVestingPol(lcdClient: LCDClient, sender: Wallet, initMsg: VestingPolConfig): Promise<string> {
+async function initVestingPol(lcdClient: LCDClient, sender: Wallet, initMsg: object): Promise<string> {
 	return await create_contract(lcdClient, sender, 'vesting_pol', 'wasm_artifacts/nexus/services/nexus_vesting_pol.wasm', initMsg);
 }
 
-async function initPol(lcdClient: LCDClient, sender: Wallet, initMsg: polConfig): Promise<string> {
+async function initPol(lcdClient: LCDClient, sender: Wallet, initMsg: object): Promise<string> {
 	return await create_contract(lcdClient, sender, 'pol', 'wasm_artifacts/nexus/services/nexus_pol.wasm', initMsg);
 }
 
 async function instantiateUtilityToken(lcdClient: LCDClient, sender: Wallet, tokenCodeId: number, minter: string) {
 	const config = {
-		name: 'Nexus Utility Token',
-		symbol: 'uPsi',
+		name: 'Nexus Utility Token for PoL',
+		symbol: 'upolPsi',
 		decimals: 6,
 		initial_balances: [],
 		mint: {
@@ -61,10 +45,10 @@ export async function fullInit(
 	console.log(`Sender: ${sender.key.accAddress}`);
 
 	const utilityToken = await instantiateUtilityToken(lcdClient, sender, tokenCodeId, governance);
-	console.log(`uPSI: ${utilityToken}`);
+	console.log(`upolPSI: ${utilityToken}`);
 	console.log(`=======================`);
 
-	console.log(`Register uPSI in the governance contract`);
+	console.log(`Register upolPSI in the governance contract`);
 	const utilityMsg = { governance: { governance_msg: { init_utility: { token: utilityToken } } } };
 	await execute_contract(lcdClient, sender, governance, utilityMsg);
 	console.log(`=======================`);
@@ -89,6 +73,13 @@ export async function fullInit(
 		astro_token: astro,
 		utility_token: utilityToken,
 		bond_cost_in_utility_tokens: bondCost,
+		initial_phase: {
+			max_discount: maxDiscount,
+			psi_amount_total: psiAmountTotal,
+			psi_amount_start: psiAmountStart,
+			start_time: startTime,
+			end_time: endTime,
+		}
 	};
 	const pol = await initPol(lcdClient, sender, polInit);
 	console.log(`=======================`);
@@ -102,22 +93,5 @@ export async function fullInit(
 	console.log(`Set PoL as vesting owner`);
 	const updateConfig = { update_config: { owner: pol } };
 	await execute_contract(lcdClient, sender, vestingPol, updateConfig);
-	console.log(`=======================`);
-
-	console.log("Activate PoL phase")
-	const phaseMsg = {
-		governance: {
-			msg: {
-				phase: {
-					max_discount: maxDiscount,
-					psi_amount_total: psiAmountTotal,
-					psi_amount_start: psiAmountStart,
-					start_time: startTime,
-					end_time: endTime,
-				}
-			}
-		}
-	};
-	await execute_contract(lcdClient, sender, pol, phaseMsg);
 	console.log(`=======================`);
 }

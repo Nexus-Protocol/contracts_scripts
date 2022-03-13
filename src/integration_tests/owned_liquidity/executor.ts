@@ -49,8 +49,8 @@ async function instantiateTstToken(lcdClient: LCDClient, sender: Wallet, tokenCo
 
 async function instantiateUtilityToken(lcdClient: LCDClient, sender: Wallet, tokenCodeId: number, minter: string) {
     const config = {
-        name: 'Nexus Utility Token',
-        symbol: 'uPsi',
+        name: 'Nexus Utility Token for PoL',
+        symbol: 'upolPsi',
         decimals: 6,
         initial_balances: [],
         mint: {
@@ -526,6 +526,13 @@ async function instantiateNexusPolWithBalance(
         astro_token: astroToken,
         utility_token: utilityToken,
         bond_cost_in_utility_tokens: bondCostInUtilityTokens.toFixed(5),
+        initial_phase: {
+            max_discount: maxDiscount.toFixed(),
+            psi_amount_total: psiAmountTotal.toFixed(),
+            psi_amount_start: psiAmountStart.toFixed(),
+            start_time: startTime,
+            end_time: endTime,
+        }
     };
     const nexusPol = await create_contract(
         lcdClient, sender, 'nexus PoL', 'wasm_artifacts/nexus/services/nexus_pol.wasm', init);
@@ -533,21 +540,6 @@ async function instantiateNexusPolWithBalance(
     await execute_contract(lcdClient, sender, psi, {
         transfer: { recipient: nexusPol, amount: balance.toFixed(0) }
     });
-
-    const phaseMsg = {
-        governance: {
-            msg: {
-                phase: {
-                    max_discount: maxDiscount.toFixed(),
-                    psi_amount_total: psiAmountTotal.toFixed(),
-                    psi_amount_start: psiAmountStart.toFixed(),
-                    start_time: startTime,
-                    end_time: endTime,
-                }
-            }
-        }
-    };
-    await execute_contract(lcdClient, sender, nexusPol, phaseMsg);
 
     return nexusPol;
 }
@@ -677,7 +669,7 @@ async function runProgram() {
     console.log(`======================================================`);
 
     const utilityToken = await instantiateUtilityToken(lcdClient, sender, tokenCodeId, nexusGovernance);
-    console.log(`uPSI: ${utilityToken}`);
+    console.log(`upolPSI: ${utilityToken}`);
     console.log(`======================================================`);
 
     const utilityMsg = { governance: { governance_msg: { init_utility: { token: utilityToken } } } };
