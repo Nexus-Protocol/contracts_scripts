@@ -432,12 +432,14 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
 
     await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 100_000_000);
 
-    const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
-    const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
-    const anchor_apr = borrow_apr + earn_apr;
-    assert(anchor_apr > 0);
-    console.log("Initial anchor apr", anchor_apr);
-
+    {
+        const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
+        const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
+        const anchor_apr = borrow_apr + earn_apr;
+        assert(anchor_apr > 0);
+        console.log("Initial anchor apr", anchor_apr);    
+    }
+    
     // Deposit with positive apr
 
     await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 10_000_000);
@@ -484,11 +486,14 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
             base_rate: '0.002259',
         }
     });
-    const borrow_apr2 = await query_anchor_borrow_net_apr(lcd_client, addresses);
-    const earn_apr2 = await query_anchor_earn_apr(lcd_client, addresses);
-    const anchor_apr2 = borrow_apr2 + earn_apr2;
-    console.log("Negative anchor apr", anchor_apr2);
-    assert(anchor_apr2 < 0);
+
+    {
+        const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
+        const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
+        const anchor_apr = borrow_apr + earn_apr;
+        console.log("Negative anchor apr", anchor_apr);
+        assert(anchor_apr < 0);
+    }
 
     await rebalance(lcd_client, sender, addresses.basset_vault_for_bluna_addr);
 
@@ -498,13 +503,14 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
         }
     });
     assert(Number(borrower_info.loan_amount) == 0, `Loan amount after rebalance when apr is negative: ${borrower_info.loan_amount}`);
-
-    const collateral2 = await get_collateral_amount(lcd_client, addresses.anchor_overseer_addr, addresses.basset_vault_for_bluna_addr);
-    const vault_bassest_balance = await get_token_balance(lcd_client, addresses.basset_vault_for_bluna_addr, addresses.bluna_token_addr);
     
-    console.log(`Vault state after rebalance when anchor became not profitable. Collateral: ${collateral2}, balance: ${vault_bassest_balance}`);
-    assert(bluna_to_deposit == vault_bassest_balance);
-    assert(collateral2 == 0);
+    {
+        const collateral = await get_collateral_amount(lcd_client, addresses.anchor_overseer_addr, addresses.basset_vault_for_bluna_addr);
+        const vault_bassest_balance = await get_token_balance(lcd_client, addresses.basset_vault_for_bluna_addr, addresses.bluna_token_addr);
+        console.log(`Vault state after rebalance when anchor became not profitable. Collateral: ${collateral}, balance: ${vault_bassest_balance}`);
+        assert(bluna_to_deposit == vault_bassest_balance);
+        assert(collateral == 0);
+    }
 
     // Return apr to the state that was before contract,
     // make it positive again
@@ -514,21 +520,25 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
         }
     });
 
-    const borrow_apr3 = await query_anchor_borrow_net_apr(lcd_client, addresses);
-    const earn_apr3 = await query_anchor_earn_apr(lcd_client, addresses);
-    const anchor_apr3 = borrow_apr3 + earn_apr3;
-    assert(anchor_apr3 > 0);
-    console.log("Again positive anchor apr", anchor_apr3);
+    {
+        const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
+        const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
+        const anchor_apr = borrow_apr + earn_apr;
+        assert(anchor_apr > 0);
+        console.log("Again positive anchor apr", anchor_apr);
+    }
 
     await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, addresses.bluna_token_addr, bluna_price);
 
     await rebalance(lcd_client, sender, addresses.basset_vault_for_bluna_addr);
 
-    const collateral3 = await get_collateral_amount(lcd_client, addresses.anchor_overseer_addr, addresses.basset_vault_for_bluna_addr);
-    const vault_bassest_balance2 = await get_token_balance(lcd_client, addresses.basset_vault_for_bluna_addr, addresses.bluna_token_addr);
-    console.log(`Vault state after rebalance when anchor has became profitable again. Collateral: ${collateral3}, balance: ${vault_bassest_balance2}`);
-    assert_numbers_with_inaccuracy(bluna_to_deposit, collateral3, 100_000);
-    assert(vault_bassest_balance2 == 0);
+    {
+        const collateral = await get_collateral_amount(lcd_client, addresses.anchor_overseer_addr, addresses.basset_vault_for_bluna_addr);
+        const vault_bassest_balance = await get_token_balance(lcd_client, addresses.basset_vault_for_bluna_addr, addresses.bluna_token_addr);
+        console.log(`Vault state after rebalance when anchor has became profitable again. Collateral: ${collateral}, balance: ${vault_bassest_balance}`);
+        assert(bluna_to_deposit == collateral);
+        assert(vault_bassest_balance == 0);
+    }
 
     console.log("withdraw_all_on_negative_profit test passed!")
 }
