@@ -764,12 +764,6 @@ async function setup_anchor(lcd_client: LCDClient, sender: Wallet, addresses: Ad
         }
     });
 
-    await lcd_client.wasm.contractQuery(addresses.anchor_custody_bluna_addr, {
-        borrower: {
-            address: sender.key.accAddress,
-        }
-    });
-
     const ust_to_borrow = "9000000000";
 
     await execute_contract(lcd_client, sender, addresses.anchor_market_addr, {
