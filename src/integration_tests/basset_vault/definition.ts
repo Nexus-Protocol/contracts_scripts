@@ -47,10 +47,6 @@ export async function borrow_zero_amount_issue(lcd_client: LCDClient, sender: Wa
         rebalance: {}
     });
 
-    if (JSON.stringify(expected_query_rebalance) != JSON.stringify(actual_rebalance_query)) {
-        console.log(actual_rebalance_query);
-    }
-
     assert(JSON.stringify(expected_query_rebalance) == JSON.stringify(actual_rebalance_query));
 }
 
