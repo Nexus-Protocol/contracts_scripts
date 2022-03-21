@@ -2,7 +2,7 @@ import {BlockTxBroadcastResult, Coin, getContractEvents, LCDClient, isTxError, L
 import {full_init as full_basset_vault_init} from "../../basset_vault/definition";
 import {anchor_init} from "../deploy_anchor/definition";
 import {create_contract, execute_contract, sleep} from "../../utils";
-import {LOCALTERRA_DEFAULT_VALIDATOR_ADDR} from "../deploy_anchor/config";
+import {LOCALTERRA_DEFAULT_VALIDATOR_ADDR, Uint256} from "../deploy_anchor/config";
 import {
     AddressesHolderConfig,
     AnchorEpochStateResponse,
@@ -650,6 +650,45 @@ async function setup_anchor_token_distributor(lcd_client: LCDClient, sender: Wal
     });
 }
 
+async function provide_liquidity_to_token_stable_swap(
+    lcd_client: LCDClient,
+    sender: Wallet,
+    swap_pair_addr: string,
+    token_addr: string,
+    token_amount: Uint256,
+    stable_amount: Uint256,
+) {
+    await execute_contract(lcd_client, sender, token_addr, {
+        increase_allowance: {
+            spender: swap_pair_addr,
+            amount: token_amount,
+        }
+    });
+
+    await execute_contract(lcd_client, sender, swap_pair_addr, {
+        provide_liquidity: {
+            assets: [
+                {
+                    info: {
+                        token: {
+                            contract_addr: token_addr,
+                        }
+                    },
+                    amount: token_amount,
+                },
+                {
+                    info: {
+                        native_token: {
+                            denom: "uusd"
+                        }
+                    },
+                    amount: stable_amount,
+                }
+            ]
+        }
+    }, [new Coin("uusd", stable_amount)]);
+}
+
 async function provide_liquidity_to_anc_stable_swap(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
     let anc_amount = "100000000000000";
     let stable_amount = "300000000000000";
@@ -661,35 +700,7 @@ async function provide_liquidity_to_anc_stable_swap(lcd_client: LCDClient, sende
         }
     });
 
-    await execute_contract(lcd_client, sender, addresses.anchor_token_addr, {
-        increase_allowance: {
-            spender: addresses.anc_stable_swap_addr,
-            amount: anc_amount,
-        }
-    });
-
-    await execute_contract(lcd_client, sender, addresses.anc_stable_swap_addr, {
-        provide_liquidity: {
-            assets: [
-                {
-                    info: {
-                        token: {
-                            contract_addr: addresses.anchor_token_addr,
-                        }
-                    },
-                    amount: anc_amount
-                },
-                {
-                    info: {
-                        native_token: {
-                            denom: "uusd"
-                        }
-                    },
-                    amount: stable_amount
-                }
-            ]
-        }
-    }, [new Coin("uusd", stable_amount)]);
+    await provide_liquidity_to_token_stable_swap(lcd_client, sender, addresses.anc_stable_swap_addr, addresses.anchor_token_addr, anc_amount, stable_amount);
 }
 
 async function provide_liquidity_to_psi_stable_swap(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
@@ -702,35 +713,7 @@ async function provide_liquidity_to_psi_stable_swap(lcd_client: LCDClient, sende
         psi_token_addr: string,
     };
 
-    await execute_contract(lcd_client, sender, basset_config.psi_token_addr, {
-        increase_allowance: {
-            spender: basset_config.psi_stable_swap_contract_addr,
-            amount,
-        }
-    });
-
-    await execute_contract(lcd_client, sender, basset_config.psi_stable_swap_contract_addr, {
-        provide_liquidity: {
-            assets: [
-                {
-                    info: {
-                        token: {
-                            contract_addr: basset_config.psi_token_addr,
-                        }
-                    },
-                    amount,
-                },
-                {
-                    info: {
-                        native_token: {
-                            denom: "uusd"
-                        }
-                    },
-                    amount,
-                }
-            ]
-        }
-    }, [new Coin("uusd", amount)]);
+    await provide_liquidity_to_token_stable_swap(lcd_client, sender, basset_config.psi_stable_swap_contract_addr, basset_config.psi_token_addr, amount, amount);
 }
 
 async function setup_anchor(lcd_client: LCDClient, sender: Wallet, addresses: AddressesHolderConfig) {
