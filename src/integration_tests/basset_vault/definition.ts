@@ -454,7 +454,7 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
 
     await provide_liquidity_to_nasset_psi_swap(lcd_client, sender, addresses, "300000000");
 
-    await sleep(10000);
+    await sleep(1000);
 
     const borrower_info_before_honest_work: BorrowerInfoResponse = await lcd_client.wasm.contractQuery(addresses.anchor_market_addr, {
         borrower_info: {
@@ -548,8 +548,6 @@ export async function anchor_apr_calculation(lcd_client: LCDClient, sender: Wall
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const basset_vault_strategy_addr = await query_basset_vault_strategy_addr(lcd_client, addresses.basset_vault_for_bluna_addr);
-
-    await sleep(5000);
 
     await execute_contract(lcd_client, sender, addresses.anchor_overseer_addr, {
         execute_epoch_operations: {}
