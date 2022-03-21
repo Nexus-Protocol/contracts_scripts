@@ -19,12 +19,14 @@ async function run_program() {
 
     program
         .action(async () => {
-            const addresses_holder_addr = await deploy();
-            await run_recursive_repay_ok(addresses_holder_addr);
-            await run_simple_deposit(addresses_holder_addr);
-            await run_borrow_more_on_bluna_price_increasing(addresses_holder_addr);
-            await run_repay_on_bluna_price_decreasing(addresses_holder_addr);
-            await run_expired_basset_price_rebalance(addresses_holder_addr);
+            // await run_recursive_repay_ok(await deploy());
+            await run_simple_deposit(await deploy());
+            await run_borrow_more_on_bluna_price_increasing(await deploy());
+            await run_repay_on_bluna_price_decreasing(await deploy());
+            await run_expired_basset_price_rebalance(await deploy());
+            await run_anchor_apr_calculation(await deploy());
+            await run_withdraw_all_on_negative_profit(await deploy());
+            await run_bvault_deposit_and_withdraw_half(await deploy());
         });
 
     program
