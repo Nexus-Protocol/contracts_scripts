@@ -847,7 +847,7 @@ async function provide_liquidity_to_nasset_psi_swap(lcd_client: LCDClient, sende
         nasset_psi_swap_contract_addr: string,
     };
 
-    let nasset_amount = (await get_token_balance(lcd_client, sender.key.accAddress, basset_config.nasset_token_addr) - 50).toString();
+    let nasset_amount = (await get_token_balance(lcd_client, sender.key.accAddress, basset_config.nasset_token_addr)).toString();
 
     await execute_contract(lcd_client, sender, basset_config.psi_token_addr, {
         increase_allowance: {
