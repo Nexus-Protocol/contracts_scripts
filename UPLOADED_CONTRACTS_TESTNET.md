@@ -67,6 +67,20 @@ Psi-nETH pair contract instantiated
         address: terra15wlxslvcjtj5y083chl4kqespzugd28dwxdksn
         lp token address: terra1y2r544tw2q4cgpgjvts8uu6gekk9kwz047a9sl
 =======================
+basset_vault_strategy_for_savax instantiated
+        address: terra10l4exc0pskkgudy6ulfhf9xhm7rs56sxx078rc
+=======================
+basset_vault_for_savax instantiated
+        address: terra1kv0yen0mjy9uawr379d9aapy0ezwxj9gsujvra
+        nasset_token address: terra1yhfgahhzlgymfcnfchfcqykkdm43tx34l6g5yy
+        nasset_token_config_holder address: terra1kk6an7lvxrzml6d668kq5x9d9pl6xe9vdx306r
+        nasset_token_rewards address: terra1vrmf3uq5kmqphck9gap269sr4pyxm0p4lmsy2j
+        psi_distributor address: terra1pu8urtemmq6dp9dk436tcrattvsqe72hlg4tvv
+=======================
+Psi-nAVAX pair contract instantiated
+        address: terra14urary9td7czsuxlgjndjzv2h48vw9qawa7as5
+        lp token address: terra13udg8u7796dav4hs6de096a6au57y27xwlqswe
+=======================
 staking_contract uploaded
         code_id: 9335
 =======================
@@ -85,6 +99,7 @@ staking_contract instantiated (Astroport)
         Psi-UST staking address: terra1xeq2ej8s0t9z2ch08x5tc7009za43w8983elv0
         Psi-nLuna staking address: terra18vqwp39c4jcgaax2d6275ghdtywz3xazzhl4xx
         Psi-nETH staking address: terra1sxhfaud8svmazlvg2qffsgke96e7qguf057pc9
+        Psi-nAVAX staking address: terra15596eaa8d2xq6v90h80ddazj2d85qrpyahltn0
 =======================
 ======= POL ===========
 =======================

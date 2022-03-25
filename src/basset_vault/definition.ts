@@ -2,8 +2,10 @@ import {LCDClient, Wallet} from '@terra-money/terra.js';
 import {
 	BassetVaultConfigForbEth,
 	BassetVaultConfigForbLuna,
+	BassetVaultConfigForwasAvax,
 	BassetVaultStrategyConfigForbEth,
 	BassetVaultStrategyConfigForbLuna,
+	BassetVaultStrategyConfigForwasAvax,
 	CommunityPoolConfig,
 	Cw20CodeId,
 	GovernanceConfig,
@@ -195,6 +197,38 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		console.log(`basset_vault_for_beth instantiated\n\taddress: ${basset_vault_info_for_beth.addr}\n\tnasset_token address: ${basset_vault_info_for_beth.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_beth.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_beth.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_beth.psi_distributor_addr}\n\tneth_psi_swap_contract_addr: ${basset_vault_info_for_beth.nasset_psi_swap_contract_addr}`);
 		console.log(`=======================`);
 	}
+	// wasAvax
+	let basset_vault_info_for_wasavax;
+	{
+		// instantiate basset_vault_strategy for wasAvax
+		let basset_vault_strategy_config_for_wasavax = BassetVaultStrategyConfigForwasAvax(lcd_client, governance_contract_addr);
 
-	return [basset_vault_info_for_bluna, basset_vault_info_for_beth];
+		if (anchor_market_info != null && anchor_market_info !== undefined) {
+			basset_vault_strategy_config_for_wasavax.basset_token_addr = anchor_market_info.wasavax_token_addr;
+			basset_vault_strategy_config_for_wasavax.oracle_contract_addr = anchor_market_info.oracle_addr;
+		}
+
+		let basset_vault_strategy_contract_addr_for_wasavax = await instantiate_contract(lcd_client, sender, sender.key.accAddress, basset_vault_strategy_code_id, basset_vault_strategy_config_for_wasavax);
+		console.log(`basset_vault_strategy_for_wasavax instantiated\n\taddress: ${basset_vault_strategy_contract_addr_for_wasavax}`);
+		console.log(`=======================`);
+
+		// instantiate basset_vault for wasAvax
+		let basset_vault_config_for_wasavax = BassetVaultConfigForwasAvax(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_wasavax, astroport_factory_contract_addr);
+
+		if (anchor_market_info !== null && anchor_market_info !== undefined) {
+			basset_vault_config_for_wasavax.anchor_addr = anchor_market_info.anchor_token_addr;
+			basset_vault_config_for_wasavax.aterra_addr = anchor_market_info.aterra_token_addr;
+			basset_vault_config_for_wasavax.a_market_addr = anchor_market_info.contract_addr;
+			basset_vault_config_for_wasavax.a_overseer_addr = anchor_market_info.overseer_addr;
+			basset_vault_config_for_wasavax.anc_stable_swap_addr = anchor_market_info.anc_stable_swap_addr;
+			basset_vault_config_for_wasavax.basset_addr = anchor_market_info.wasavax_token_addr;
+			basset_vault_config_for_wasavax.a_custody_basset_addr = anchor_market_info.wasavax_custody_addr;
+		}
+
+		basset_vault_info_for_wasavax = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_wasavax);
+		console.log(`basset_vault_for_wasavax instantiated\n\taddress: ${basset_vault_info_for_wasavax.addr}\n\tnasset_token address: ${basset_vault_info_for_wasavax.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_wasavax.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_wasavax.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_wasavax.psi_distributor_addr}\n\tnavax_psi_swap_contract_addr: ${basset_vault_info_for_wasavax.nasset_psi_swap_contract_addr}`);
+		console.log(`=======================`);
+	}
+
+	return [basset_vault_info_for_bluna, basset_vault_info_for_beth, basset_vault_info_for_wasavax];
 }
