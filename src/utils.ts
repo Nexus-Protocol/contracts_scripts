@@ -20,6 +20,7 @@ import {BassetVaultConfig} from './config';
 import {SecretsManager} from 'aws-sdk';
 import * as prompt from 'prompt';
 import {isTxSuccess} from './transaction';
+import {is_prod} from './config';
 
 export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object, init_funds?: Coin[]): Promise<string> {
 	let code_id = await store_contract(lcd_client, sender, wasm_path);
@@ -280,20 +281,30 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, c
 export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[], tax?: Coin[]): Promise<BlockTxBroadcastResult | undefined> {
 	try {
 		let estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);
+
 		let estimation_failed = estimated_tx_fee === undefined;
-        if (estimation_failed) {
-			estimated_tx_fee = new StdFee(200000000_000_000/0.15, [new Coin("uusd", 200000000_101_000)]);
+		let debug = !is_prod(lcd_client);
+
+        if (debug && estimation_failed) {
+			estimated_tx_fee = new StdFee(200_000_000_000_000/0.15, [new Coin("uusd", 200_000_000_000_000)]);
         }
+
+		if (estimated_tx_fee === undefined) {
+			return undefined;
+		}
+
 		const signed_tx = await sender.createAndSignTx({
 			msgs: messages,
 			fee: estimated_tx_fee,
 		});
 
 		const tx_result = await lcd_client.tx.broadcast(signed_tx);
-		if (estimation_failed) {
-			console.log("FAILED TRANSACTION", tx_result);
+
+		if (debug && estimation_failed) {
+			console.error("FAILED TRANSACTION", tx_result);
 			return undefined;
 		}
+
 		return tx_result;
 	} catch (err) {
 		console.error(`calc_fee_and_send_tx return err: ${err}`)
