@@ -368,6 +368,8 @@ export interface AnchorMarketInfo {
     beth_token_addr: Addr,
     bluna_custody_addr: Addr,
     beth_custody_addr: Addr,
+    wasavax_token_addr: Addr,
+    wasavax_custody_addr: Addr
 }
 
 export function AnchorMarketInfo(
@@ -382,6 +384,8 @@ export function AnchorMarketInfo(
     beth_token_addr: Addr,
     bluna_custody_addr: Addr,
     beth_custody_addr: Addr,
+    wasavax_token_addr: Addr,
+    wasavax_custody_addr: Addr
 ): AnchorMarketInfo {
     return {
         contract_addr: contract_addr,
@@ -395,6 +399,8 @@ export function AnchorMarketInfo(
         beth_token_addr: beth_token_addr,
         bluna_custody_addr: bluna_custody_addr,
         beth_custody_addr: beth_custody_addr,
+	wasavax_token_addr: wasavax_token_addr,
+	wasavax_custody_addr: wasavax_custody_addr
     }
 }
 
