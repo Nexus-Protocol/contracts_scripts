@@ -117,6 +117,12 @@ export async function simple_deposit(lcd_client: LCDClient, sender: Wallet, addr
     let user_liability = Math.round(total_bluna_amount * bluna_price * 0.6 * 0.8);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
+    //max_borrow = locked_basset_amount * basset_price * basset_max_ltv(0,6)
+    //buffer_size = max_borrow * buffer_part(0,018) * borrow_ltv_max(0,85)
+    const expected_buffer_size = Math.floor(actual_collateral_amount * bluna_price * 0.6 * 0.018 * 0.85);
+    const actual_buffer_size = await query_stable_balance(lcd_client, basset_vault_for_bluna_addr);
+    assert_numbers_with_inaccuracy(expected_buffer_size, actual_buffer_size, 10);
+
     console.log(`basset_vault_for_bluna test: "simple_deposit" passed(rebalanced)!`);
 }
 
@@ -158,6 +164,10 @@ export async function borrow_more_on_bluna_price_increasing(lcd_client: LCDClien
     user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
 
+    const expected_buffer_size = Math.floor(collateral * bluna_price * 0.6 * 0.018 * 0.85);
+    const actual_buffer_size = await query_stable_balance(lcd_client, basset_vault_for_bluna_addr);
+    assert_numbers_with_inaccuracy(expected_buffer_size, actual_buffer_size, 10);
+
     console.log(`basset_vault_for_bluna test: "borrow_more_on_bluna_price_increasing" passed!`);
 }
 
@@ -198,6 +208,10 @@ export async function repay_on_bluna_price_decreasing(lcd_client: LCDClient, sen
 
     user_liability = Math.round(collateral * bluna_price * 0.6 * 0.8);
     await assert_loan(lcd_client, anchor_market_addr, basset_vault_for_bluna_addr, user_liability);
+
+    const expected_buffer_size = Math.round(collateral * bluna_price * 0.6 * 0.018 * 0.85);
+    const actual_buffer_size = await query_stable_balance(lcd_client, basset_vault_for_bluna_addr);
+    assert_numbers_with_inaccuracy(expected_buffer_size, actual_buffer_size, 10);
 
     console.log(`basset_vault_for_bluna test: "repay_on_bluna_price_decreasing" passed!`);
 }
@@ -273,7 +287,7 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
     const actual_loan_after_withdraw = +actual_borrower_info.loan_amount;
     const expected_loan_after_withdraw = Math.floor(loan_before_withdraw * (1 - part_to_withdraw));
     //See comment for assert_loan fn
-    assert_numbers_with_inaccuracy(expected_loan_after_withdraw, actual_loan_after_withdraw, 10);
+    assert_numbers_with_inaccuracy(expected_loan_after_withdraw, actual_loan_after_withdraw, 20);
 
     const actual_buffer_after_withdraw = await query_stable_balance(lcd_client, basset_vault_for_bluna_addr);
     const expected_buffer_after_withdraw = Math.floor(buffer_before_withdraw * (1 - part_to_withdraw));
@@ -292,7 +306,7 @@ export async function recursive_repay_ok(lcd_client: LCDClient, sender: Wallet, 
 
 //THIS TEST FAILS (bug fix needed)
 // According to basset_vault_config it's impossible to withdraw more bAsset than 18% of nAsset total supply.
-// if nasset to burn > 18% of nasset total supply and current ltv is low than max ltv(anchor market property), there is no tx fail and unexpected repay amount appears!
+// if nasset to burn > 18% of nasset total supply and current ltv is lower than max ltv(anchor market property), there is no tx fail and unexpected repay amount appears!
 // Repay iterations amount assert shows that its equal to max iterations amount.
 // Next 3 assets show that loan is not repayed as expected but basset withdrawn and nasset burned
 export async function recursive_repay_fail(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
