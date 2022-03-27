@@ -118,4 +118,17 @@ pol_contract uploaded
 pol_contract instantiated
         address: terra13sm4ykavhjcv72c74u9rf6yd72jzknl4kfasmj
 =======================
+=== AUTOCOMPOUNDER ====
+=======================
+	code_id: 57471
+	=== Luna === 
+	autocompounder address: terra1vgvm8rdkjzyhwlm6znt2jc0cufpw5t6kt26ne2
+	token address: terra1c7xq5705dztw85t3dx6jwxrsnxdd89laqv4lkg
+	=== ETH === 
+	autocompounder address: terra12d853sr5u39tjualmnw5jnh5e8gv9wa00h4dfl
+	token address: terra1fj4dvh96veaqppgg3r74k8twwc86vmy6jpdwr7
+	=== AVAX === 
+	autocompounder address: terra1hhhc3muvfuatdepwcu94gxcvkmqmpt990ks70e
+	token address: terra1rna9cvtes9lc7evdgaczxtr963p62rktkkv2q5
+=======================
 ```
