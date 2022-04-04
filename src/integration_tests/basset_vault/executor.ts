@@ -9,7 +9,7 @@ import {
     simple_deposit,
     recursive_repay_ok,
     repay_on_bluna_price_decreasing,
-    withdraw_all_on_negative_profit,
+    withdraw_all_on_negative_profit_and_deposit_to_anchor_back_when_profit_becomes_positive,
     recursive_repay_fail,
     bvault_deposit_and_withdraw_half,
 } from "./definition";
@@ -25,7 +25,7 @@ async function run_program() {
             await run_repay_on_bluna_price_decreasing(await deploy());
             await run_expired_basset_price_rebalance(await deploy());
             await run_anchor_apr_calculation(await deploy());
-            await run_withdraw_all_on_negative_profit(await deploy());
+            await run_withdraw_all_on_negative_profit_and_deposit_to_anchor_back_when_profit_becomes_positive(await deploy());
             await run_bvault_deposit_and_withdraw_half(await deploy());
         });
 
@@ -116,13 +116,13 @@ async function run_program() {
         });
 
     program
-        .command('withdraw_all_on_negative_profit')
+        .command('withdraw_all_on_negative_profit_and_deposit_to_anchor_back_when_profit_becomes_positive')
         .option('-A, --address <address>', 'addresses holder contract address')
         .action(async (options) => {
             if (options.address == undefined) {
                 options.address = await deploy();
             }
-            await run_withdraw_all_on_negative_profit(options.address);
+            await run_withdraw_all_on_negative_profit_and_deposit_to_anchor_back_when_profit_becomes_positive(options.address);
         });
 
     program
@@ -193,9 +193,9 @@ async function run_anchor_apr_calculation(addresses_holder_addr: string) {
     await anchor_apr_calculation(lcd_client, sender, addresses_holder_addr);
 }
 
-async function run_withdraw_all_on_negative_profit(addresses_holder_addr: string) {
+async function run_withdraw_all_on_negative_profit_and_deposit_to_anchor_back_when_profit_becomes_positive(addresses_holder_addr: string) {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
-    await withdraw_all_on_negative_profit(lcd_client, sender, addresses_holder_addr);
+    await withdraw_all_on_negative_profit_and_deposit_to_anchor_back_when_profit_becomes_positive(lcd_client, sender, addresses_holder_addr);
 }
 
 async function run_bvault_deposit_and_withdraw_half(addresses_holder_addr: string) {

@@ -423,8 +423,8 @@ export async function expired_basset_price_rebalance(lcd_client: LCDClient, send
     console.log(`basset_vault_for_bluna test: "expired_bluna_price" passed!`);
 }
 
-export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
-    console.log(`-= Start 'withdraw_all_on_negative_profit' test =-`);
+export async function withdraw_all_on_negative_profit_and_deposit_to_anchor_back_when_profit_becomes_positive(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
+    console.log(`-= Start 'withdraw_all_on_negative_profit_and_deposit_to_anchor_back_when_profit_becomes_positive' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
 
     const bluna_price = 1;
@@ -540,7 +540,7 @@ export async function withdraw_all_on_negative_profit(lcd_client: LCDClient, sen
         assert(vault_bassest_balance == 0);
     }
 
-    console.log("withdraw_all_on_negative_profit test passed!")
+    console.log("withdraw_all_on_negative_profit_and_deposit_to_anchor_back_when_profit_becomes_positive test passed!")
 }
 
 export async function anchor_apr_calculation(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
