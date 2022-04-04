@@ -327,20 +327,20 @@ export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr:
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
 		price_timeframe: 25,
-		anchor_market_addr: "todo",
-    	anchor_interest_model_addr: "todo",
-    	anchor_overseer_addr: "todo",
-    	anchor_token_addr: "todo",
-    	anc_ust_swap_addr: "todo",
-		staking_apr: "todo",
+		anchor_market_addr: "terra1sepfj7s0aeg5967uxnfk4thzlerrsktkpelm5s",
+    	anchor_interest_model_addr: "terra1kq8zzq5hufas9t0kjsjc62t2kucfnx8txf547n",
+    	anchor_overseer_addr: "terra1tmnqgvg567ypvsvk6rwsga3srp7e3lg6u0elp8",
+    	anchor_token_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
+    	anc_ust_swap_addr: "terra1qr2k6yjjd5p2kaewqvg93ag74k6gyjr7re37fs",
+		staking_apr: "0.0",
 	}
 }
 
-export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_addr: string, anchor_market_info: AnchorMarketInfo): BassetVaultStrategyConfig {
+export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_addr: string): BassetVaultStrategyConfig {
 	return {
 		governance_contract_addr: governance_contract_addr,
-		oracle_contract_addr: anchor_market_info.oracle_addr,
-		basset_token_addr: anchor_market_info.bluna_token_addr,
+		oracle_contract_addr: "terra1p4gg3p2ue6qy2qfuxtrmgv2ec3f4jmgqtazum8",
+		basset_token_addr: "terra1u0t35drzyy0mujj8rkdyzhe264uls4ug3wdp3x",
 		stable_denom: "uusd",
 		borrow_ltv_max: "0.85",
 		borrow_ltv_min: "0.75",
@@ -348,21 +348,20 @@ export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_ad
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
 		price_timeframe: 25,
-		anchor_market_addr: anchor_market_info.contract_addr,
-    	anchor_interest_model_addr: anchor_market_info.interest_model_addr,
-    	anchor_overseer_addr: anchor_market_info.overseer_addr,
-    	anchor_token_addr: anchor_market_info.anchor_token_addr,
-    	anc_ust_swap_addr: anchor_market_info.anc_stable_swap_addr,
+		anchor_market_addr: "terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal",
+    	anchor_interest_model_addr: "terra1m25aqupscdw2kw4tnq5ql6hexgr34mr76azh5x",
+    	anchor_overseer_addr: "terra1qljxd0y3j3gk97025qvl3lgq8ygup4gsksvaxv",
+    	anchor_token_addr: "terra1747mad58h0w4y589y3sk84r5efqdev9q4r02pc",
+    	anc_ust_swap_addr: "terra1wfvczps2865j0awnurk9m04u7wdmd6qv3fdnvz",
 		staking_apr: "0.0",
 	}
 }
 
-export function BassetVaultStrategyConfigForbLuna(lcd_client: LCDClient, governance_contract_addr: string, anchor_market_info?: AnchorMarketInfo): BassetVaultStrategyConfig {
+export function BassetVaultStrategyConfigForbLuna(lcd_client: LCDClient, governance_contract_addr: string): BassetVaultStrategyConfig {
 	if (is_prod(lcd_client)) {
 		return prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr);
 	} else {
-		assert(anchor_market_info != null && anchor_market_info !== undefined);
-		return testnet_BassetVaultStrategyConfigForbLuna(governance_contract_addr, anchor_market_info);
+		return testnet_BassetVaultStrategyConfigForbLuna(governance_contract_addr);
 	}
 }
 
@@ -378,16 +377,16 @@ export function prod_BassetVaultStrategyConfigForbEth(governance_contract_addr: 
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
 		price_timeframe: 25,
-		anchor_market_addr: "todo",
-    	anchor_interest_model_addr: "todo",
-    	anchor_overseer_addr: "todo",
-    	anchor_token_addr: "todo",
-    	anc_ust_swap_addr: "todo",
-		staking_apr: "todo",
+		anchor_market_addr: "terra1sepfj7s0aeg5967uxnfk4thzlerrsktkpelm5s",
+    	anchor_interest_model_addr: "terra1kq8zzq5hufas9t0kjsjc62t2kucfnx8txf547n",
+    	anchor_overseer_addr: "terra1tmnqgvg567ypvsvk6rwsga3srp7e3lg6u0elp8",
+    	anchor_token_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
+    	anc_ust_swap_addr: "terra1qr2k6yjjd5p2kaewqvg93ag74k6gyjr7re37fs",
+		staking_apr: "0.0",
 	}
 }
 
-export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_addr: string, anchor_market_info: AnchorMarketInfo): BassetVaultStrategyConfig {
+export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_addr: string): BassetVaultStrategyConfig {
 	return {
 		governance_contract_addr: governance_contract_addr,
 		oracle_contract_addr: "terra1p4gg3p2ue6qy2qfuxtrmgv2ec3f4jmgqtazum8",
@@ -399,21 +398,20 @@ export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_add
 		basset_max_ltv: "0.6",
 		buffer_part: "0.018",
 		price_timeframe: 25,
-		anchor_market_addr: anchor_market_info.contract_addr,
-    	anchor_interest_model_addr: anchor_market_info.interest_model_addr,
-    	anchor_overseer_addr: anchor_market_info.overseer_addr,
-    	anchor_token_addr: anchor_market_info.anchor_token_addr,
-    	anc_ust_swap_addr: anchor_market_info.anc_stable_swap_addr,
+		anchor_market_addr: "terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal",
+    	anchor_interest_model_addr: "terra1m25aqupscdw2kw4tnq5ql6hexgr34mr76azh5x",
+    	anchor_overseer_addr: "terra1qljxd0y3j3gk97025qvl3lgq8ygup4gsksvaxv",
+    	anchor_token_addr: "terra1747mad58h0w4y589y3sk84r5efqdev9q4r02pc",
+    	anc_ust_swap_addr: "terra1wfvczps2865j0awnurk9m04u7wdmd6qv3fdnvz",
 		staking_apr: "0.0",
 	}
 }
 
-export function BassetVaultStrategyConfigForbEth(lcd_client: LCDClient, governance_contract_addr: string, anchor_market_info?: AnchorMarketInfo): BassetVaultStrategyConfig {
+export function BassetVaultStrategyConfigForbEth(lcd_client: LCDClient, governance_contract_addr: string): BassetVaultStrategyConfig {
 	if (is_prod(lcd_client)) {
 		return prod_BassetVaultStrategyConfigForbEth(governance_contract_addr);
 	} else {
-		assert(anchor_market_info != null && anchor_market_info !== undefined);
-		return testnet_BassetVaultStrategyConfigForbEth(governance_contract_addr, anchor_market_info);
+		return testnet_BassetVaultStrategyConfigForbEth(governance_contract_addr);
 	}
 }
 // ================================================
@@ -509,7 +507,7 @@ export function prod_BassetVaultConfigForbLuna(
 		 fee_rate: "0.5",
 		 tax_rate: "0.25",
 		 ts_factory_addr: ts_factory_addr,
-		 a_basset_reward_addr: "todo",
+		 a_basset_reward_addr: "terra17yap3mhph35pcwvhza38c2lkj7gzywzy05h7l0",
 	 }
 }
 
@@ -524,7 +522,6 @@ export function testnet_BassetVaultConfigForbLuna(
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string,
 	ts_factory_addr: string,
-	anchor_basset_reward_addr: string,
 ): BassetVaultConfig {
 	return {
 		gov_addr: governance_contract_addr,
@@ -556,7 +553,7 @@ export function testnet_BassetVaultConfigForbLuna(
 		fee_rate: "0.5",
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
-		a_basset_reward_addr: anchor_basset_reward_addr,
+		a_basset_reward_addr: "terra1ac24j6pdxh53czqyrkr6ygphdeftg7u3958tl2",
 	}
 }
 
@@ -572,7 +569,6 @@ export function BassetVaultConfigForbLuna(
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string,
 	ts_factory_addr: string,
-	anchor_basset_reward_addr?: string,
 ): BassetVaultConfig {
 	if (is_prod(lcd_client)) {
 		return prod_BassetVaultConfigForbLuna(
@@ -588,7 +584,6 @@ export function BassetVaultConfigForbLuna(
 			ts_factory_addr
 		);
 	} else {
-		assert(anchor_basset_reward_addr != undefined);
 		return testnet_BassetVaultConfigForbLuna(
 			governance_contract_addr,
 			community_pool_contract_addr,
@@ -600,7 +595,6 @@ export function BassetVaultConfigForbLuna(
 			psi_stable_swap_contract_addr,
 			basset_vault_strategy_contract_addr,
 			ts_factory_addr,
-			anchor_basset_reward_addr,
 		);
 	}
 }
@@ -647,7 +641,7 @@ export function prod_BassetVaultConfigForbEth(
 		fee_rate: "0.5",
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
-		a_basset_reward_addr: "todo",
+		a_basset_reward_addr: "terra1939tzfn4hn960ychpcsjshu8jds3zdwlp8jed9",
 	}
 }
 
@@ -662,7 +656,6 @@ export function testnet_BassetVaultConfigForbEth(
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string,
 	ts_factory_addr: string,
-	anchor_basset_reward_addr: string,
 ): BassetVaultConfig {
 	return {
 		gov_addr: governance_contract_addr,
@@ -694,7 +687,7 @@ export function testnet_BassetVaultConfigForbEth(
 		fee_rate: "0.5",
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
-		a_basset_reward_addr: anchor_basset_reward_addr,
+		a_basset_reward_addr: "terra1ja3snkedk4t0zp7z3ljd064hcln8dsv5x004na",
 	}
 }
 
@@ -710,7 +703,6 @@ export function BassetVaultConfigForbEth(
 	psi_stable_swap_contract_addr: string,
 	basset_vault_strategy_contract_addr: string,
 	ts_factory_addr: string,
-	anchor_basset_reward_addr?: string,
 ): BassetVaultConfig {
 	if (is_prod(lcd_client)) {
 		return prod_BassetVaultConfigForbEth(
@@ -726,7 +718,6 @@ export function BassetVaultConfigForbEth(
 			ts_factory_addr
 		);
 	} else {
-		assert(anchor_basset_reward_addr != undefined);
 		return testnet_BassetVaultConfigForbEth(
 			governance_contract_addr,
 			community_pool_contract_addr,
@@ -738,7 +729,6 @@ export function BassetVaultConfigForbEth(
 			psi_stable_swap_contract_addr,
 			basset_vault_strategy_contract_addr,
 			ts_factory_addr,
-			anchor_basset_reward_addr
 		);
 	}
 }
