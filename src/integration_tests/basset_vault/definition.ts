@@ -483,7 +483,7 @@ export async function withdraw_all_on_negative_profit_and_deposit_to_anchor_back
     // Set negative apr to anchor
     await execute_contract(lcd_client, sender, addresses.anchor_interest_model_addr, {
         update_config: {
-            base_rate: '0.002259',
+            base_rate: '0.002255', // This is a magic constant that makes anchor apr negative
         }
     });
 
