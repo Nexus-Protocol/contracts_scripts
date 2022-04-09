@@ -120,7 +120,7 @@ pol_contract instantiated
 =======================
 === AUTOCOMPOUNDER ====
 =======================
-	code_id: 57471
+	code_id: 61609
 	=== Luna === 
 	autocompounder address: terra1vgvm8rdkjzyhwlm6znt2jc0cufpw5t6kt26ne2
 	token address: terra1c7xq5705dztw85t3dx6jwxrsnxdd89laqv4lkg
