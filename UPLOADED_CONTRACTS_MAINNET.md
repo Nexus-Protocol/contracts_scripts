@@ -21,8 +21,8 @@ vesting_contract instantiated
         address: terra15jggavtx37dsmfjy6sed7nnyccw2v5298xlt5g
 =======================
 Psi-UST pair contract instantiated
-        address: terra163pkeeuwxzr0yhndf8xd2jprm9hrtk59xf7nqf
-        lp token address: terra1q6r8hfdl203htfvpsmyh8x689lp2g0m7856fwd
+        address: terra1v5ct2tuhfqd0tf8z0wwengh4fg77kaczgf6gtx
+        lp token address: terra1cspx9menzglmn7xt3tcn8v8lg6gu9r50d7lnve
 =======================
 community_pool uploaded
         code_id: 541
