@@ -74,8 +74,8 @@ basset_vault_for_bluna instantiated
         psi_distributor address: terra1z6qyzj0t8ryrefhys43plpu8le7wlj8h59esxx
 =======================
 Psi-nLuna pair contract instantiated
-        address: terra1zvn8z6y8u2ndwvsjhtpsjsghk6pa6ugwzxp6vx
-        lp token address: terra1tuw46dwfvahpcwf3ulempzsn9a0vhazut87zec
+        address: terra10lv5wz84kpwxys7jeqkfxx299drs3vnw0lj8mz
+        lp token address: terra1t53c8p0zwvj5xx7sxh3qtse0fq5765dltjrg33
 =======================
 basset_vault_strategy_for_beth instantiated
         address: terra1h3y2mk0dwfy72fkwcm8h62y6uyy4k27m2m68kt
@@ -88,8 +88,8 @@ basset_vault_for_beth instantiated
         psi_distributor address: terra1f3nfuq7wj7mx3dlxqgtyh0w395g0cgxx9q44cx
 =======================
 Psi-nETH pair contract instantiated
-        address: terra14zhkur7l7ut7tx6kvj28fp5q982lrqns59mnp3
-        lp token address: terra1y8kxhfg22px5er32ctsgjvayaj8q36tr590qtp
+        address: terra18hjdxnnkv8ewqlaqj3zpn0vsfpzdt3d0y2ufdz
+        lp token address: terra1pjfqacx7k6dg63v2h5q96zjg7w5q25093wnkjc
 =======================
 basset_vault_strategy_for_wasavax instantiated
         address: terra103r2lfz8uhtlfy4c4f99zp5cts2lvy5de932l4
