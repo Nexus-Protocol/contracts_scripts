@@ -5,6 +5,8 @@ import {
 	BassetVaultConfigForwasAvax,
 	BassetVaultStrategyConfigForbEth,
 	BassetVaultStrategyConfigForbLuna,
+	BassetVaultConfigForbAtom,
+	BassetVaultStrategyConfigForbAtom,
 	BassetVaultStrategyConfigForwasAvax,
 	CommunityPoolConfig,
 	Cw20CodeId,
@@ -229,6 +231,38 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 		console.log(`basset_vault_for_wasavax instantiated\n\taddress: ${basset_vault_info_for_wasavax.addr}\n\tnasset_token address: ${basset_vault_info_for_wasavax.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_wasavax.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_wasavax.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_wasavax.psi_distributor_addr}\n\tnavax_psi_swap_contract_addr: ${basset_vault_info_for_wasavax.nasset_psi_swap_contract_addr}`);
 		console.log(`=======================`);
 	}
+	// bAtom
+	let basset_vault_info_for_batom;
+	{
+		// instantiate basset_vault_strategy for bAtom
+		let basset_vault_strategy_config_for_batom = BassetVaultStrategyConfigForbAtom(lcd_client, governance_contract_addr);
 
-	return [basset_vault_info_for_bluna, basset_vault_info_for_beth, basset_vault_info_for_wasavax];
+		if (anchor_market_info != null && anchor_market_info !== undefined) {
+			basset_vault_strategy_config_for_batom.basset_token_addr = anchor_market_info.batom_token_addr;
+			basset_vault_strategy_config_for_batom.oracle_contract_addr = anchor_market_info.oracle_addr;
+		}
+
+		let basset_vault_strategy_contract_addr_for_batom = await instantiate_contract(lcd_client, sender, sender.key.accAddress, basset_vault_strategy_code_id, basset_vault_strategy_config_for_batom);
+		console.log(`basset_vault_strategy_for_batom instantiated\n\taddress: ${basset_vault_strategy_contract_addr_for_batom}`);
+		console.log(`=======================`);
+
+		// instantiate basset_vault for bAtom
+		let basset_vault_config_for_batom = BassetVaultConfigForbAtom(lcd_client, governance_contract_addr, community_pool_contract_addr, nasset_token_code_id, nasset_token_config_holder_code_id, nasset_token_rewards_code_id, psi_distributor_code_id, psi_token_addr, psi_ust_pair_contract.pair_contract_addr, basset_vault_strategy_contract_addr_for_batom, astroport_factory_contract_addr);
+
+		if (anchor_market_info !== null && anchor_market_info !== undefined) {
+			basset_vault_config_for_batom.anchor_addr = anchor_market_info.anchor_token_addr;
+			basset_vault_config_for_batom.aterra_addr = anchor_market_info.aterra_token_addr;
+			basset_vault_config_for_batom.a_market_addr = anchor_market_info.contract_addr;
+			basset_vault_config_for_batom.a_overseer_addr = anchor_market_info.overseer_addr;
+			basset_vault_config_for_batom.anc_stable_swap_addr = anchor_market_info.anc_stable_swap_addr;
+			basset_vault_config_for_batom.basset_addr = anchor_market_info.batom_token_addr;
+			basset_vault_config_for_batom.a_custody_basset_addr = anchor_market_info.batom_custody_addr;
+		}
+
+		basset_vault_info_for_batom = await init_basset_vault(lcd_client, sender, basset_vault_code_id, basset_vault_config_for_batom);
+		console.log(`basset_vault_for_batom instantiated\n\taddress: ${basset_vault_info_for_batom.addr}\n\tnasset_token address: ${basset_vault_info_for_batom.nasset_token_addr}\n\tnasset_token_config_holder address: ${basset_vault_info_for_batom.nasset_token_config_holder_addr}\n\tnasset_token_rewards address: ${basset_vault_info_for_batom.nasset_token_rewards_addr}\n\tpsi_distributor address: ${basset_vault_info_for_batom.psi_distributor_addr}\n\tnatom_psi_swap_contract_addr: ${basset_vault_info_for_batom.nasset_psi_swap_contract_addr}`);
+		console.log(`=======================`);
+	}
+
+	return [basset_vault_info_for_bluna, basset_vault_info_for_beth, basset_vault_info_for_wasavax, basset_vault_info_for_batom];
 }

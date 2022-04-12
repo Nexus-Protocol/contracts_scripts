@@ -390,6 +390,36 @@ export function prod_BassetVaultStrategyConfigForwasAvax(governance_contract_add
 	}
 }
 
+export function testnet_BassetVaultStrategyConfigForbAtom(governance_contract_addr: string): BassetVaultStrategyConfig {
+	return {
+		governance_contract_addr: governance_contract_addr,
+		oracle_contract_addr: "terra1p4gg3p2ue6qy2qfuxtrmgv2ec3f4jmgqtazum8",
+		basset_token_addr: "???",
+		stable_denom: "uusd",
+		borrow_ltv_max: "0.85",
+		borrow_ltv_min: "0.75",
+		borrow_ltv_aim: "0.8",
+		basset_max_ltv: "0.6",
+		buffer_part: "0.018",
+		price_timeframe: 25,
+	}
+}
+
+export function prod_BassetVaultStrategyConfigForbAtom(governance_contract_addr: string): BassetVaultStrategyConfig {
+	 return {
+		governance_contract_addr: governance_contract_addr,
+		oracle_contract_addr: "terra1cgg6yef7qcdm070qftghfulaxmllgmvk77nc7t",
+		basset_token_addr: "terra18zqcnl83z98tf6lly37gghm7238k7lh79u4z9a",
+		stable_denom: "uusd",
+		borrow_ltv_max: "0.85",
+		borrow_ltv_min: "0.75",
+		borrow_ltv_aim: "0.8",
+		basset_max_ltv: "0.6",
+		buffer_part: "0.018",
+		price_timeframe: 25,
+	}
+}
+
 export function testnet_BassetVaultStrategyConfigForwasAvax(governance_contract_addr: string): BassetVaultStrategyConfig {
 	return {
 		governance_contract_addr: governance_contract_addr,
@@ -418,6 +448,14 @@ export function BassetVaultStrategyConfigForwasAvax(lcd_client: LCDClient, gover
 		return prod_BassetVaultStrategyConfigForwasAvax(governance_contract_addr);
 	} else {
 		return testnet_BassetVaultStrategyConfigForwasAvax(governance_contract_addr);
+	}
+}
+
+export function BassetVaultStrategyConfigForbAtom(lcd_client: LCDClient, governance_contract_addr: string): BassetVaultStrategyConfig {
+	if (is_prod(lcd_client)) {
+		return prod_BassetVaultStrategyConfigForbAtom(governance_contract_addr);
+	} else {
+		return testnet_BassetVaultStrategyConfigForbAtom(governance_contract_addr);
 	}
 }
 
@@ -863,6 +901,138 @@ export function testnet_BassetVaultConfigForwasAvax(
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
+		ts_factory_addr: ts_factory_addr
+	}
+}
+
+export function BassetVaultConfigForbAtom(
+	lcd_client: LCDClient,
+	governance_contract_addr: string,
+	community_pool_contract_addr: string,
+	nasset_token_code_id: number,
+	nasset_token_config_holder_code_id: number,
+	nasset_token_rewards_code_id: number,
+	psi_distributor_code_id: number,
+	psi_token_addr: string,
+	psi_stable_swap_contract_addr: string,
+	basset_vault_strategy_contract_addr: string,
+	ts_factory_addr: string
+): BassetVaultConfig {
+	if (is_prod(lcd_client)) {
+		return prod_BassetVaultConfigForbAtom(
+			governance_contract_addr,
+			community_pool_contract_addr,
+			nasset_token_code_id,
+			nasset_token_config_holder_code_id,
+			nasset_token_rewards_code_id,
+			psi_distributor_code_id,
+			psi_token_addr,
+			psi_stable_swap_contract_addr,
+			basset_vault_strategy_contract_addr,
+			ts_factory_addr
+		);
+	} else {
+		return testnet_BassetVaultConfigForbAtom(
+			governance_contract_addr,
+			community_pool_contract_addr,
+			nasset_token_code_id,
+			nasset_token_config_holder_code_id,
+			nasset_token_rewards_code_id,
+			psi_distributor_code_id,
+			psi_token_addr,
+			psi_stable_swap_contract_addr,
+			basset_vault_strategy_contract_addr,
+			ts_factory_addr
+		);
+	}
+}
+
+export function prod_BassetVaultConfigForbAtom(
+	governance_contract_addr: string,
+	community_pool_contract_addr: string,
+	nasset_token_code_id: number,
+	nasset_token_config_holder_code_id: number,
+	nasset_token_rewards_code_id: number,
+	psi_distributor_code_id: number,
+	psi_token_addr: string,
+	psi_stable_swap_contract_addr: string,
+	basset_vault_strategy_contract_addr: string,
+	ts_factory_addr: string
+): BassetVaultConfig {
+	 return {
+		gov_addr: governance_contract_addr,
+		community_addr: community_pool_contract_addr,
+		nasset_t_ci: nasset_token_code_id,
+		nasset_t_ch_ci: nasset_token_config_holder_code_id,
+		nasset_t_r_ci: nasset_token_rewards_code_id,
+		psi_distr_ci: psi_distributor_code_id,
+		collateral_ts: "ATOM",
+		basset_addr: "terra18zqcnl83z98tf6lly37gghm7238k7lh79u4z9a",
+		anchor_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
+		a_market_addr: "terra1sepfj7s0aeg5967uxnfk4thzlerrsktkpelm5s",
+		a_overseer_addr: "terra1tmnqgvg567ypvsvk6rwsga3srp7e3lg6u0elp8",
+		a_custody_basset_addr: "terra1zdxlrtyu74gf6pvjkg9t22hentflmfcs86llva",
+		anc_stable_swap_addr: "terra1qr2k6yjjd5p2kaewqvg93ag74k6gyjr7re37fs",
+		psi_stable_swap_addr: psi_stable_swap_contract_addr,
+		aterra_addr: "terra1hzh9vpxhsk8253se0vv5jj6etdvxu3nv8z07zu",
+		psi_addr: psi_token_addr,
+		basset_vs_addr: basset_vault_strategy_contract_addr,
+		stable_denom: "uusd",
+		claiming_rewards_delay: 120,
+		///UST value in balance should be more than loan
+		///on what portion.
+		///for example: 1.01 means 1% more than loan
+		over_loan_balance_value: "1.0001",
+		///mean ltv that user manage by himself (advise: 58%)
+		manual_ltv: "0.58",
+		///fees, need to calc how much send to governance and community pools
+		fee_rate: "0.5",
+		tax_rate: "0.0",
+		ts_factory_addr: ts_factory_addr
+	}
+}
+
+export function testnet_BassetVaultConfigForbAtom(
+	governance_contract_addr: string,
+	community_pool_contract_addr: string,
+	nasset_token_code_id: number,
+	nasset_token_config_holder_code_id: number,
+	nasset_token_rewards_code_id: number,
+	psi_distributor_code_id: number,
+	psi_token_addr: string,
+	psi_stable_swap_contract_addr: string,
+	basset_vault_strategy_contract_addr: string,
+	ts_factory_addr: string
+): BassetVaultConfig {
+	return {
+		gov_addr: governance_contract_addr,
+		community_addr: community_pool_contract_addr,
+		nasset_t_ci: nasset_token_code_id,
+		nasset_t_ch_ci: nasset_token_config_holder_code_id,
+		nasset_t_r_ci: nasset_token_rewards_code_id,
+		psi_distr_ci: psi_distributor_code_id,
+		collateral_ts: "ATOM",
+		basset_addr: "???",
+		anchor_addr: "terra1747mad58h0w4y589y3sk84r5efqdev9q4r02pc",
+		a_market_addr: "terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal",
+		a_overseer_addr: "terra1qljxd0y3j3gk97025qvl3lgq8ygup4gsksvaxv",
+		a_custody_basset_addr: "???",
+		anc_stable_swap_addr: "terra13r3vngakfw457dwhw9ef36mc8w6agggefe70d9",
+		psi_stable_swap_addr: psi_stable_swap_contract_addr,
+		aterra_addr: "terra1ajt556dpzvjwl0kl5tzku3fc3p3knkg9mkv8jl",
+		psi_addr: psi_token_addr,
+		basset_vs_addr: basset_vault_strategy_contract_addr,
+		stable_denom: "uusd",
+		claiming_rewards_delay: 120,
+		///UST value in balance should be more than loan
+		///on what portion.
+		///for example: 1.01 means 1% more than loan
+		over_loan_balance_value: "1.0001",
+		///mean ltv that user manage by himself (advise: 58%)
+		manual_ltv: "0.58",
+		///fees, need to calc how much send to governance and community pools
+		fee_rate: "0.5",
+		tax_rate: "0.0",
 		ts_factory_addr: ts_factory_addr
 	}
 }

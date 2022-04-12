@@ -369,7 +369,9 @@ export interface AnchorMarketInfo {
     bluna_custody_addr: Addr,
     beth_custody_addr: Addr,
     wasavax_token_addr: Addr,
-    wasavax_custody_addr: Addr
+    wasavax_custody_addr: Addr,
+    batom_token_addr: Addr,
+    batom_custody_addr: Addr
 }
 
 export function AnchorMarketInfo(
@@ -385,7 +387,9 @@ export function AnchorMarketInfo(
     bluna_custody_addr: Addr,
     beth_custody_addr: Addr,
     wasavax_token_addr: Addr,
-    wasavax_custody_addr: Addr
+    wasavax_custody_addr: Addr,
+    batom_token_addr: Addr,
+    batom_custody_addr: Addr
 ): AnchorMarketInfo {
     return {
         contract_addr: contract_addr,
@@ -400,7 +404,9 @@ export function AnchorMarketInfo(
         bluna_custody_addr: bluna_custody_addr,
         beth_custody_addr: beth_custody_addr,
 	wasavax_token_addr: wasavax_token_addr,
-	wasavax_custody_addr: wasavax_custody_addr
+	wasavax_custody_addr: wasavax_custody_addr,
+	batom_token_addr: batom_token_addr,
+	batom_custody_addr: batom_custody_addr
     }
 }
 
