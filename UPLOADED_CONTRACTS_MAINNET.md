@@ -91,6 +91,34 @@ Psi-nETH pair contract instantiated
         address: terra14zhkur7l7ut7tx6kvj28fp5q982lrqns59mnp3
         lp token address: terra1y8kxhfg22px5er32ctsgjvayaj8q36tr590qtp
 =======================
+basset_vault_strategy_for_wasavax instantiated
+        address: terra103r2lfz8uhtlfy4c4f99zp5cts2lvy5de932l4
+=======================
+basset_vault_for_wasavax instantiated
+        address: terra1hn9rzu66s422rl9kg0a7j2yxdjef0szkqvy7ws
+        nasset_token address: terra13k62n0285wj8ug0ngcgpf7dgnkzqeu279tz636
+        nasset_token_config_holder address: terra1rx2mgn02lxf0q2vwk05e4judmzv5xwxt2h7xv5
+        nasset_token_rewards address: terra1trwqvdw458fnen3k37wrc6ntvg6aw2u703htm8
+        psi_distributor address: terra15xz8xv9fl4u92l7yeejzntfpqrpf2hx0vss3d4
+=======================
+Psi-nAVAX pair contract instantiated
+        address: terra10usmg35qsa92fagh49np7phmhhr4ryhyl27749
+        lp token address: terra1p3zj8tkzufw9szmm97taj7x6kkd0cy7k2mpdws
+=======================
+basset_vault_strategy_for_batom instantiated
+        address: terra1vtpdqwp6t9cxvgu29zzv3yse7e2a2mmdsnv797
+=======================
+basset_vault_for_batom instantiated
+        address: terra1lh3h7l5vsul2pxlevraucwev42ar6kyx33u4c8
+        nasset_token address: terra1jtdc6zpf95tvh9peuaxwp3v0yqszcnwl8j5ade
+        nasset_token_config_holder address: terra1m0jku6nhlwg6rq95nmqkkv2ztd0ue5a3f8kx49
+        nasset_token_rewards address: terra1ahfzztd37zcdlret8xh80lf8sy5vcjtf7j2rwg
+        psi_distributor address: terra1zeu9hz6fd602cc6g2x68xea6p94vaf3ajv8mrk
+=======================
+Psi-nATOM pair contract instantiated
+        address: terra1spcf4486jjn8678hstwqzeeudu98yp7pyyltnl
+        lp token address: terra1pyavxxun3vuakqq0wyqft69l3zjns0q76wut7z
+=======================
 staking_contract instantiated (Astroport)
         Psi-UST staking address: terra1fmu29xhg5nk8jr0p603y5qugpk2r0ywcyxyv7k
         Psi-nLuna staking address: terra1sxzggeujnxrd7hsx7uf2l6axh2uuv4zz5jadyg
