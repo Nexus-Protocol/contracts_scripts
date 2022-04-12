@@ -123,4 +123,15 @@ staking_contract instantiated (Astroport)
         Psi-UST staking address: terra1fmu29xhg5nk8jr0p603y5qugpk2r0ywcyxyv7k
         Psi-nLuna staking address: terra1sxzggeujnxrd7hsx7uf2l6axh2uuv4zz5jadyg
         Psi-nETH staking address: terra13n2sqaj25ugkt79k3evhvua30ut9qt8q0268zc
+=======================
+=== AUTOCOMPOUNDER ====
+=======================
+	code_id: 4420
+	=== Luna ===
+	autocompounder address: terra1au4h305fn4w3zpka2ql59e0t70jnqzu4mj2txx
+	token address: terra1u553zk43jd4rwzc53qrdrq4jc2p8rextyq09dj
+	=== ETH ===
+	autocompounder address: terra1fupv3y5tcpy33w4pjjrrhqjtnla6f9y676hvaw
+	token address: terra1nagqpmyw55yjphea4rhntlfv87ugmeaj8ym756
+=======================
 ```
