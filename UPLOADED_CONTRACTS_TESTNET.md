@@ -81,6 +81,20 @@ Psi-nAVAX pair contract instantiated
         address: terra14urary9td7czsuxlgjndjzv2h48vw9qawa7as5
         lp token address: terra13udg8u7796dav4hs6de096a6au57y27xwlqswe
 =======================
+basset_vault_strategy_for_batom instantiated
+        address: terra1qs3kknhgylupne492zhlwy9mvv942mtuwvtdww
+=======================
+basset_vault_for_batom instantiated
+        address: terra1gglrthqrpexp8r68n2xyru559qadrudxxxmxdd
+        nasset_token address: terra1pnujv8lrau9n9dpcspp73xtdv7pcwn0p6j35ff
+        nasset_token_config_holder address: terra1rycc4z340pfmed0rnmgtp2qeuc6jwpvrad2py7
+        nasset_token_rewards address: terra1p62zr3965k956u8fspyydey2pn2gy5k2r736t3
+        psi_distributor address: terra1scah849dgfhn0q7xxtymdky00vcrahgzx7svpa
+=======================
+Psi-nATOM pair contract instantiated
+        address: terra1gcw8895qk3tw8s3dakulnf0ef3gsfst74q4wf0
+        lp token address: terra1u5esukk805vqgp732ugen5et49lnt55ztv83dx
+=======================
 staking_contract uploaded
         code_id: 9335
 =======================
