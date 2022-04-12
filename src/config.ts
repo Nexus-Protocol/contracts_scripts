@@ -855,8 +855,8 @@ export function prod_BassetVaultConfigForwasAvax(
 		manual_ltv: "0.58",
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
-		tax_rate: "0.25",
-		 ts_factory_addr: ts_factory_addr
+		tax_rate: "0.0",
+		ts_factory_addr: ts_factory_addr
 	}
 }
 
