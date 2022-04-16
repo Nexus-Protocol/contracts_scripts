@@ -20,7 +20,7 @@ import {BassetVaultConfig} from './config';
 import {SecretsManager} from 'aws-sdk';
 import * as prompt from 'prompt';
 import {isTxSuccess} from './transaction';
-import {is_prod} from './config';
+import {is_localterra} from './config';
 
 export async function create_contract(lcd_client: LCDClient, sender: Wallet, contract_name: string, wasm_path: string, init_msg: object, init_funds?: Coin[]): Promise<string> {
 	let code_id = await store_contract(lcd_client, sender, wasm_path);
@@ -283,9 +283,9 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 		let estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);
 
 		let estimation_failed = estimated_tx_fee === undefined;
-		let debug = !is_prod(lcd_client);
+		let is_local = !is_localterra(lcd_client);
 
-		if (debug && estimation_failed) {
+		if (is_local && estimation_failed) {
 			estimated_tx_fee = new StdFee(20_000_000/0.15, [new Coin("uusd", 20_000_000)]);
 		}
 
@@ -300,7 +300,7 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 
 		const tx_result = await lcd_client.tx.broadcast(signed_tx);
 
-		if (debug && estimation_failed) {
+		if (is_local && estimation_failed) {
 			console.error("FAILED TRANSACTION", tx_result);
 			return undefined;
 		}
@@ -316,7 +316,7 @@ async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[], ta
 	try {
 		let gasAdjustment;
 
-		if (is_prod(lcd_client)) {
+		if (is_localterra(lcd_client)) {
 			gasAdjustment = 1.2;
 		} else {
 			gasAdjustment = 2.0;

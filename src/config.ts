@@ -33,10 +33,14 @@ export function is_prod(lcd_client: LCDClient): boolean {
 	return lcd_client.config.chainID.startsWith("columbus");
 }
 
+export function is_localterra(lcd_client: LCDClient): boolean {
+	return lcd_client.config.chainID === "localterra";
+}
+
 // ================================================
 
 export async function init_terraswap_factory(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number): Promise<string> {
-	if (lcd_client.config.chainID === "localterra") {
+	if (is_localterra(lcd_client)) {
 		console.log(`in localterra, so storing our own terraswap contracts`);
 		let terraswap_factory_code_id = await store_contract(lcd_client, sender, terraswap_factory_wasm);
 		console.log(`terraswap_factory uploaded\n\tcode_id: ${terraswap_factory_code_id}`);
@@ -55,7 +59,7 @@ export async function init_terraswap_factory(lcd_client: LCDClient, sender: Wall
 }
 
 export async function init_astroport_factory(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number): Promise<string> {
-	if (lcd_client.config.chainID === "localterra") {
+	if (is_localterra(lcd_client)) {
 		console.log(`in localterra, so storing our own astroport contracts`);
 		let astroport_factory_code_id = await store_contract(lcd_client, sender, astroport_factory_wasm);
 		console.log(`astroport_factory uploaded\n\tcode_id: ${astroport_factory_code_id}`);
