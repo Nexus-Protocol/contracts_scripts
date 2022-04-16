@@ -283,7 +283,7 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 		let estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);
 
 		let estimation_failed = estimated_tx_fee === undefined;
-		let is_local = !is_localterra(lcd_client);
+		let is_local = is_localterra(lcd_client);
 
 		if (is_local && estimation_failed) {
 			estimated_tx_fee = new StdFee(20_000_000/0.15, [new Coin("uusd", 20_000_000)]);
