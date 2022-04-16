@@ -285,9 +285,9 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 		let estimation_failed = estimated_tx_fee === undefined;
 		let debug = !is_prod(lcd_client);
 
-        if (debug && estimation_failed) {
-			estimated_tx_fee = new StdFee(200_000_000_000_000/0.15, [new Coin("uusd", 200_000_000_000_000)]);
-        }
+		if (debug && estimation_failed) {
+			estimated_tx_fee = new StdFee(20_000_000/0.15, [new Coin("uusd", 20_000_000)]);
+		}
 
 		if (estimated_tx_fee === undefined) {
 			return undefined;
