@@ -126,7 +126,7 @@ staking_contract instantiated (Astroport)
 =======================
 === AUTOCOMPOUNDER ====
 =======================
-	code_id: 4420
+	code_id: 4602
 	=== Luna ===
 	autocompounder address: terra1au4h305fn4w3zpka2ql59e0t70jnqzu4mj2txx
 	token address: terra1u553zk43jd4rwzc53qrdrq4jc2p8rextyq09dj
