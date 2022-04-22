@@ -432,15 +432,10 @@ export async function withdraw_all_on_negative_profit_and_deposit_to_anchor_back
 
     await deposit_stable(lcd_client, sender, addresses.anchor_market_addr, 100_000_000);
 
-    {
-        const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
-        const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
-        const anchor_apr = borrow_apr + earn_apr;
-        assert(anchor_apr > 0);
-        console.log("Initial anchor apr", anchor_apr);    
-    }
-    
-    // Deposit with positive apr
+    const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
+    const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
+    const anchor_apr = borrow_apr + earn_apr;
+    assert(anchor_apr > 0); 
 
     await bond_luna(lcd_client, sender, addresses.bluna_hub_addr, 10_000_000);
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
@@ -477,23 +472,19 @@ export async function withdraw_all_on_negative_profit_and_deposit_to_anchor_back
     });
 
     assert(borrower_info_before_honest_work.pending_rewards > borrower_info_after_honest_work.pending_rewards, `Pending reward after honest work: ${borrower_info_after_honest_work.pending_rewards}, before: ${borrower_info_before_honest_work.pending_rewards}, transaction: ${JSON.stringify(honest_work)}`);
-    
-    await rebalance(lcd_client, sender, addresses.basset_vault_for_bluna_addr);
 
-    // Set negative apr to anchor
-    await execute_contract(lcd_client, sender, addresses.anchor_interest_model_addr, {
-        update_config: {
-            base_rate: '0.002255', // This is a magic constant that makes anchor apr negative
+    const basset_vault_strategy_addr = await query_basset_vault_strategy_addr(lcd_client, addresses.basset_vault_for_bluna_addr);
+
+    // Increase stacking apr to make bvault rebalance to holding
+    await execute_contract(lcd_client, sender, basset_vault_strategy_addr, {
+        governance: {
+            governance_msg: {
+                update_config: {
+                    staking_apr: (anchor_apr * 1.5).toFixed(8),
+                }
+            }
         }
     });
-
-    {
-        const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
-        const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
-        const anchor_apr = borrow_apr + earn_apr;
-        console.log("Negative anchor apr", anchor_apr);
-        assert(anchor_apr < 0);
-    }
 
     await rebalance(lcd_client, sender, addresses.basset_vault_for_bluna_addr);
 
@@ -512,21 +503,16 @@ export async function withdraw_all_on_negative_profit_and_deposit_to_anchor_back
         assert(collateral == 0);
     }
 
-    // Return apr to the state that was before contract,
-    // make it positive again
-    await execute_contract(lcd_client, sender, addresses.anchor_interest_model_addr, {
-        update_config: {
-            base_rate: '0.000000004076272770',
+    // Make stacking apr zero again to make bvault rebalance to anchor
+    await execute_contract(lcd_client, sender, basset_vault_strategy_addr, {
+        governance: {
+            governance_msg: {
+                update_config: {
+                    staking_apr: "0.0",
+                }
+            }
         }
     });
-
-    {
-        const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
-        const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
-        const anchor_apr = borrow_apr + earn_apr;
-        assert(anchor_apr > 0);
-        console.log("Again positive anchor apr", anchor_apr);
-    }
 
     await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, addresses.bluna_token_addr, bluna_price);
 

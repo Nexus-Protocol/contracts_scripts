@@ -50,6 +50,7 @@ const nasset_token_rewards_wasm = `${path_to_basset_vault_artifacts}/basset_vaul
 const psi_distributor_wasm = `${path_to_basset_vault_artifacts}/basset_vault_psi_distributor.wasm`;
 // ===================================================
 const basset_vault_integration_tests_wasm = `${path_to_basset_vault_integration_tests_artifacts}/basset_vault_basset_vault.wasm`;
+const basset_vault_strategy_integration_tests_wasm = `${path_to_basset_vault_integration_tests_artifacts}/basset_vault_basset_vault_strategy.wasm`;
 // ===================================================
 
 async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
@@ -132,7 +133,7 @@ export async function full_init(lcd_client: LCDClient, sender: Wallet, psi_token
 	console.log(`psi_distributor uploaded\n\tcode_id: ${psi_distributor_code_id}`);
 	console.log(`=======================`);
 
-	let basset_vault_strategy_code_id = await store_contract(lcd_client, sender, basset_vault_strategy_contract_wasm);
+	let basset_vault_strategy_code_id = await store_contract(lcd_client, sender, is_prod(lcd_client) ? basset_vault_strategy_contract_wasm : basset_vault_strategy_integration_tests_wasm);
 	console.log(`basset_vault_strategy uploaded\n\tcode_id: ${basset_vault_strategy_code_id}`);
 	let basset_vault_code_id = await store_contract(lcd_client, sender, is_prod(lcd_client) ? basset_vault_wasm : basset_vault_integration_tests_wasm);
 	console.log(`basset_vault uploaded\n\tcode_id: ${basset_vault_code_id}`);
