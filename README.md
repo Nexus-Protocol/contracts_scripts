@@ -38,6 +38,39 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 3. `docker pull terramoney/localterra-core:bombay`
 4. `docker-compose up`
 
+To speed up local terra, 
+
+Comment out this section
+```
+# # How long we wait for a proposal block before prevoting nil
+# timeout_propose = "3s"
+# # How much timeout_propose increases with each round
+# timeout_propose_delta = "500ms"
+# # How long we wait after receiving +2/3 prevotes for “anything” (ie. not a single block or nil)
+# timeout_prevote = "1s"
+# # How much the timeout_prevote increases with each round
+# timeout_prevote_delta = "500ms"
+# # How long we wait after receiving +2/3 precommits for “anything” (ie. not a single block or nil)
+# timeout_precommit = "1s"
+# # How much the timeout_precommit increases with each round
+# timeout_precommit_delta = "500ms"
+# # How long we wait after committing a block, before starting on the new
+# # height (this gives us a chance to receive some more precommits, even
+# # though we already have +2/3).
+# timeout_commit = "5s"
+```
+
+To this section
+```
+timeout_precommit = "200ms"
+timeout_propose = "200ms"
+timeout_propose_delta = "200ms"
+timeout_prevote = "200ms"
+timeout_prevote_delta = "200ms"
+timeout_precommit_delta = "200ms"
+timeout_commit = "200ms"
+```
+
 # Usage
 
 [start localterra](#start-localterra) before run scripts.
