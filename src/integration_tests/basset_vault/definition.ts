@@ -552,10 +552,10 @@ export async function anchor_apr_calculation(lcd_client: LCDClient, sender: Wall
     const borrow_apr = await query_anchor_borrow_net_apr(lcd_client, addresses);
 
     let queried_borrow_apr = anchor_apr.borrow.distribution_apr - anchor_apr.borrow.interest_apr;
-    assert_numbers_with_inaccuracy(borrow_apr, queried_borrow_apr, 0.0001); // inaccuracy is less than 0,01 %
+    assert_numbers_with_inaccuracy(borrow_apr, queried_borrow_apr, 0.01); // inaccuracy is less than 1 %
 
     const earn_apr = await query_anchor_earn_apr(lcd_client, addresses);
-    assert_numbers_with_inaccuracy(earn_apr, anchor_apr.earn, 0.0001); // inaccuracy is less than 0,01 %
+    assert_numbers_with_inaccuracy(earn_apr, anchor_apr.earn, 0.01); // inaccuracy is less than 1 %
 
     console.log(`Apr calculation test passed:\n\tEarn apr. Expected: ${earn_apr}, calculated: ${anchor_apr.earn}\n\tBorrow apr. Expected: ${borrow_apr}, calculated: ${queried_borrow_apr}`);
 }
