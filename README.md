@@ -121,3 +121,7 @@ timeout_commit = "200ms"
 
 - `npm run psi-distr-integration-tests`  - run psi distribution integration tests
 - `npm run bvault-integration-tests`  - run basset vault integration tests
+
+### Basset vault integration tests
+
+`borrow_more_on_bluna_price_increasing` may fail because of anchor inaccuracy on low localterra timeouts, so that for this test use localterra configuration with default timeouts
