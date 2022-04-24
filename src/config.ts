@@ -339,7 +339,7 @@ export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr:
     	anchor_token_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
     	anc_ust_swap_addr: "terra1qr2k6yjjd5p2kaewqvg93ag74k6gyjr7re37fs",
 		staking_apr: "0.0",
-		holding_window: "1.0"
+		holding_window: "0.02",
 	}
 }
 
@@ -361,7 +361,7 @@ export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_ad
     	anchor_token_addr: "terra1747mad58h0w4y589y3sk84r5efqdev9q4r02pc",
     	anc_ust_swap_addr: "terra1wfvczps2865j0awnurk9m04u7wdmd6qv3fdnvz",
 		staking_apr: "0.0",
-		holding_window: "1.0"
+		holding_window: "0.02",
 	}
 }
 
@@ -391,7 +391,7 @@ export function prod_BassetVaultStrategyConfigForbEth(governance_contract_addr: 
     	anchor_token_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
     	anc_ust_swap_addr: "terra1qr2k6yjjd5p2kaewqvg93ag74k6gyjr7re37fs",
 		staking_apr: "0.0",
-		holding_window: "1.0"
+		holding_window: "0.02",
 	}
 }
 
@@ -413,7 +413,7 @@ export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_add
     	anchor_token_addr: "terra1747mad58h0w4y589y3sk84r5efqdev9q4r02pc",
     	anc_ust_swap_addr: "terra1wfvczps2865j0awnurk9m04u7wdmd6qv3fdnvz",
 		staking_apr: "0.0",
-		holding_window: "1.0"
+		holding_window: "0.02",
 	}
 }
 
