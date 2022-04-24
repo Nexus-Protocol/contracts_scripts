@@ -318,6 +318,7 @@ export interface BassetVaultStrategyConfig {
     anchor_token_addr: string,
     anc_ust_swap_addr: string,
 	staking_apr: string,
+	holding_window: string,
 }
 
 export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr: string): BassetVaultStrategyConfig {
@@ -338,6 +339,7 @@ export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr:
     	anchor_token_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
     	anc_ust_swap_addr: "terra1qr2k6yjjd5p2kaewqvg93ag74k6gyjr7re37fs",
 		staking_apr: "0.0",
+		holding_window: "1.0"
 	}
 }
 
@@ -359,6 +361,7 @@ export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_ad
     	anchor_token_addr: "terra1747mad58h0w4y589y3sk84r5efqdev9q4r02pc",
     	anc_ust_swap_addr: "terra1wfvczps2865j0awnurk9m04u7wdmd6qv3fdnvz",
 		staking_apr: "0.0",
+		holding_window: "1.0"
 	}
 }
 
@@ -388,6 +391,7 @@ export function prod_BassetVaultStrategyConfigForbEth(governance_contract_addr: 
     	anchor_token_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
     	anc_ust_swap_addr: "terra1qr2k6yjjd5p2kaewqvg93ag74k6gyjr7re37fs",
 		staking_apr: "0.0",
+		holding_window: "1.0"
 	}
 }
 
@@ -409,6 +413,7 @@ export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_add
     	anchor_token_addr: "terra1747mad58h0w4y589y3sk84r5efqdev9q4r02pc",
     	anc_ust_swap_addr: "terra1wfvczps2865j0awnurk9m04u7wdmd6qv3fdnvz",
 		staking_apr: "0.0",
+		holding_window: "1.0"
 	}
 }
 
@@ -468,7 +473,7 @@ export interface BassetVaultConfig {
 	tax_rate: string,
 	ts_factory_addr: string
 	a_basset_reward_addr: string,
-	holding_window: Decimal
+	holding_window: string
 }
 
 export function prod_BassetVaultConfigForbLuna(
@@ -514,7 +519,7 @@ export function prod_BassetVaultConfigForbLuna(
 		 tax_rate: "0.25",
 		 ts_factory_addr: ts_factory_addr,
 		 a_basset_reward_addr: "terra17yap3mhph35pcwvhza38c2lkj7gzywzy05h7l0",
-		 holding_window: new Decimal(1)
+		 holding_window: "1.0"
 	 }
 }
 
@@ -561,7 +566,7 @@ export function testnet_BassetVaultConfigForbLuna(
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
 		a_basset_reward_addr: "terra1ac24j6pdxh53czqyrkr6ygphdeftg7u3958tl2",
-		holding_window: new Decimal(1)
+		holding_window: "1.0"
 	}
 }
 
@@ -650,7 +655,7 @@ export function prod_BassetVaultConfigForbEth(
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
 		a_basset_reward_addr: "terra1939tzfn4hn960ychpcsjshu8jds3zdwlp8jed9",
-		holding_window: new Decimal(1),
+		holding_window: "1.0",
 	}
 }
 
@@ -697,7 +702,7 @@ export function testnet_BassetVaultConfigForbEth(
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
 		a_basset_reward_addr: "terra1ja3snkedk4t0zp7z3ljd064hcln8dsv5x004na",
-		holding_window: new Decimal(1),
+		holding_window: "1.0"
 	}
 }
 
