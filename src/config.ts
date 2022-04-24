@@ -1,6 +1,4 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
-import * as assert from "assert";
-import Decimal from 'decimal.js';
 import {
 	astroport_factory_wasm,
 	astroport_pair_wasm,
@@ -8,7 +6,6 @@ import {
 	terraswap_factory_wasm,
 	terraswap_pair_wasm
 } from "./basset_vault/definition"
-import { AnchorMarketInfo } from './integration_tests/deploy_anchor/config';
 import {instantiate_contract, store_contract} from './utils';
 
 // ================================================
