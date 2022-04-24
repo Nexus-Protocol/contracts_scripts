@@ -1,5 +1,6 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
 import * as assert from "assert";
+import Decimal from 'decimal.js';
 import {
 	astroport_factory_wasm,
 	astroport_pair_wasm,
@@ -467,6 +468,7 @@ export interface BassetVaultConfig {
 	tax_rate: string,
 	ts_factory_addr: string
 	a_basset_reward_addr: string,
+	holding_window: Decimal
 }
 
 export function prod_BassetVaultConfigForbLuna(
@@ -512,6 +514,7 @@ export function prod_BassetVaultConfigForbLuna(
 		 tax_rate: "0.25",
 		 ts_factory_addr: ts_factory_addr,
 		 a_basset_reward_addr: "terra17yap3mhph35pcwvhza38c2lkj7gzywzy05h7l0",
+		 holding_window: new Decimal(1)
 	 }
 }
 
@@ -558,6 +561,7 @@ export function testnet_BassetVaultConfigForbLuna(
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
 		a_basset_reward_addr: "terra1ac24j6pdxh53czqyrkr6ygphdeftg7u3958tl2",
+		holding_window: new Decimal(1)
 	}
 }
 
@@ -585,7 +589,7 @@ export function BassetVaultConfigForbLuna(
 			psi_token_addr,
 			psi_stable_swap_contract_addr,
 			basset_vault_strategy_contract_addr,
-			ts_factory_addr
+			ts_factory_addr,
 		);
 	} else {
 		return testnet_BassetVaultConfigForbLuna(
@@ -646,6 +650,7 @@ export function prod_BassetVaultConfigForbEth(
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
 		a_basset_reward_addr: "terra1939tzfn4hn960ychpcsjshu8jds3zdwlp8jed9",
+		holding_window: new Decimal(1),
 	}
 }
 
@@ -692,6 +697,7 @@ export function testnet_BassetVaultConfigForbEth(
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
 		a_basset_reward_addr: "terra1ja3snkedk4t0zp7z3ljd064hcln8dsv5x004na",
+		holding_window: new Decimal(1),
 	}
 }
 
