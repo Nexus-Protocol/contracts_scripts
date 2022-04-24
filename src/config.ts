@@ -1,5 +1,4 @@
 import {LCDClient, Wallet} from '@terra-money/terra.js';
-import * as assert from "assert";
 import {
 	astroport_factory_wasm,
 	astroport_pair_wasm,
@@ -7,7 +6,6 @@ import {
 	terraswap_factory_wasm,
 	terraswap_pair_wasm
 } from "./basset_vault/definition"
-import { AnchorMarketInfo } from './integration_tests/deploy_anchor/config';
 import {instantiate_contract, store_contract} from './utils';
 
 // ================================================
@@ -317,6 +315,7 @@ export interface BassetVaultStrategyConfig {
     anchor_token_addr: string,
     anc_ust_swap_addr: string,
 	staking_apr: string,
+	holding_window: string,
 }
 
 export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr: string): BassetVaultStrategyConfig {
@@ -337,6 +336,7 @@ export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr:
     	anchor_token_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
     	anc_ust_swap_addr: "terra1qr2k6yjjd5p2kaewqvg93ag74k6gyjr7re37fs",
 		staking_apr: "0.0",
+		holding_window: "0.02",
 	}
 }
 
@@ -358,6 +358,7 @@ export function testnet_BassetVaultStrategyConfigForbLuna(governance_contract_ad
     	anchor_token_addr: "terra1747mad58h0w4y589y3sk84r5efqdev9q4r02pc",
     	anc_ust_swap_addr: "terra1wfvczps2865j0awnurk9m04u7wdmd6qv3fdnvz",
 		staking_apr: "0.0",
+		holding_window: "0.02",
 	}
 }
 
@@ -387,6 +388,7 @@ export function prod_BassetVaultStrategyConfigForbEth(governance_contract_addr: 
     	anchor_token_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
     	anc_ust_swap_addr: "terra1qr2k6yjjd5p2kaewqvg93ag74k6gyjr7re37fs",
 		staking_apr: "0.0",
+		holding_window: "0.02",
 	}
 }
 
@@ -408,6 +410,7 @@ export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_add
     	anchor_token_addr: "terra1747mad58h0w4y589y3sk84r5efqdev9q4r02pc",
     	anc_ust_swap_addr: "terra1wfvczps2865j0awnurk9m04u7wdmd6qv3fdnvz",
 		staking_apr: "0.0",
+		holding_window: "0.02",
 	}
 }
 
@@ -465,7 +468,7 @@ export interface BassetVaultConfig {
 	///fees, need to calc how much send to governance and community pools
 	fee_rate: string,
 	tax_rate: string,
-	ts_factory_addr: string
+	ts_factory_addr: string,
 	a_basset_reward_addr: string,
 }
 
@@ -585,7 +588,7 @@ export function BassetVaultConfigForbLuna(
 			psi_token_addr,
 			psi_stable_swap_contract_addr,
 			basset_vault_strategy_contract_addr,
-			ts_factory_addr
+			ts_factory_addr,
 		);
 	} else {
 		return testnet_BassetVaultConfigForbLuna(
