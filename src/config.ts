@@ -471,9 +471,8 @@ export interface BassetVaultConfig {
 	///fees, need to calc how much send to governance and community pools
 	fee_rate: string,
 	tax_rate: string,
-	ts_factory_addr: string
+	ts_factory_addr: string,
 	a_basset_reward_addr: string,
-	holding_window: string
 }
 
 export function prod_BassetVaultConfigForbLuna(
@@ -519,7 +518,6 @@ export function prod_BassetVaultConfigForbLuna(
 		 tax_rate: "0.25",
 		 ts_factory_addr: ts_factory_addr,
 		 a_basset_reward_addr: "terra17yap3mhph35pcwvhza38c2lkj7gzywzy05h7l0",
-		 holding_window: "1.0"
 	 }
 }
 
@@ -566,7 +564,6 @@ export function testnet_BassetVaultConfigForbLuna(
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
 		a_basset_reward_addr: "terra1ac24j6pdxh53czqyrkr6ygphdeftg7u3958tl2",
-		holding_window: "1.0"
 	}
 }
 
@@ -655,7 +652,6 @@ export function prod_BassetVaultConfigForbEth(
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
 		a_basset_reward_addr: "terra1939tzfn4hn960ychpcsjshu8jds3zdwlp8jed9",
-		holding_window: "1.0",
 	}
 }
 
@@ -702,7 +698,6 @@ export function testnet_BassetVaultConfigForbEth(
 		tax_rate: "0.25",
 		ts_factory_addr: ts_factory_addr,
 		a_basset_reward_addr: "terra1ja3snkedk4t0zp7z3ljd064hcln8dsv5x004na",
-		holding_window: "1.0"
 	}
 }
 
