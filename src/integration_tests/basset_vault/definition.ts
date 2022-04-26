@@ -563,6 +563,7 @@ export async function anchor_apr_calculation(lcd_client: LCDClient, sender: Wall
 export async function bvault_deposit_and_withdraw_half(lcd_client: LCDClient, sender: Wallet, addresses_holder_addr: string) {
     console.log(`-= Start 'bvault_deposit_and_withdraw_half' test =-`);
     const addresses = await get_addresses(lcd_client, addresses_holder_addr);
+    assert(true, "hello")
 
     const bluna_price = 1;
     await feed_price(lcd_client, sender, addresses.anchor_oracle_addr, addresses.bluna_token_addr, bluna_price);
@@ -574,15 +575,34 @@ export async function bvault_deposit_and_withdraw_half(lcd_client: LCDClient, se
     const bluna_to_deposit = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
     console.log("Bluna to deposit", bluna_to_deposit);
 
-    await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+    const deposit_res = await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
+    console.log("STEVENDEBUG deposit_res ", deposit_res);
+
+    const new_bluna_bal = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+    console.log("STEVENDEBUG new_bluna_bal ", new_bluna_bal);
 
     const bluna_to_withdraw = Math.floor(bluna_to_deposit / 2);
+    console.log("STEVENDEBUG bluna_to_withdraw ", bluna_to_withdraw);
 
-    await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_withdraw);
+    console.log("STEVENDEBUG addresses.nluna_token_addr ", addresses.nluna_token_addr);
+    
+    for (let i = 0; i < 10; i++) {
+        const check_bal = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+        console.log("STEVENDEBUG check_bal ", check_bal);
+        
+        if (check_bal > 0) { 
+            break; 
+        }
+
+        const withdraw_res = await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_withdraw);
+        console.log("STEVENDEBUG withdraw_res ", withdraw_res);
+    }
 
     let bluna_balance = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+    console.log("STEVENDEBUG bluna_balance ", bluna_balance);
     let collateral = await get_collateral_amount(lcd_client, addresses.anchor_overseer_addr, addresses.basset_vault_for_bluna_addr);
-    
+    console.log("STEVENDEBUG collateral ", collateral);
+
     assert(bluna_balance === bluna_to_withdraw, `expected balance: ${bluna_to_withdraw}, actual balance: ${bluna_balance}`);
     assert(collateral === (bluna_to_deposit - bluna_to_withdraw), `collateral expected: ${bluna_to_deposit - bluna_to_withdraw}, collateral actual: ${collateral}`);
     

@@ -124,7 +124,7 @@ timeout_commit = "200ms"
 
 ### Basset vault integration tests
 
-`borrow_more_on_bluna_price_increasing` may fail because of anchor inaccuracy on low localterra timeouts, so that for this test use localterra configuration with default timeouts:
+`npm run bvault-integration-tests -- borrow_more_on_bluna_price_increasing` may fail because of anchor inaccuracy on low localterra timeouts, so that for this test use localterra configuration with default timeouts:
 
 ```toml
 timeout_propose = "3s"
@@ -136,7 +136,7 @@ timeout_precommit_delta = "500ms"
 timeout_commit = "5s"
 ```
 
-`bvault_deposit_and_withdraw_half` needs to be runned with low localterra timeouts:
+`npm run bvault-integration-tests -- bvault_deposit_and_withdraw_half` needs to be runned with low localterra timeouts:
 
 ```toml
 timeout_precommit = "200ms"
