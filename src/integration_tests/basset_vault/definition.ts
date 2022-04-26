@@ -576,8 +576,6 @@ export async function bvault_deposit_and_withdraw_half(lcd_client: LCDClient, se
 
     await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
 
-    await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
-
     const bluna_to_withdraw = Math.floor(bluna_to_deposit / 2);
     
     for (let i = 0; i < 10; i++) {
