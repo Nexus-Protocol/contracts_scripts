@@ -139,13 +139,17 @@ export CONTRACTS_SCRIPTS_PATH=/Users/stevenli/Documents/github/contracts_scripts
 Make sure you ran everything in `### Integration tests setup`
 
 Clone the NexPrism repos into your local computer:
-```
+```bash
 git clone https://github.com/Nexus-Protocol/nex-prism-convex
 ```
 
 Generate the .wasm files for the integration tests
-
-```
+```bash
 cd nex-prism-convex
 ./integration_tests_build.sh
+```
+
+Go back to `contract_scripts` run
+```bash
+npm run nex-prism-integration-tests
 ```
