@@ -146,7 +146,7 @@ git clone https://github.com/Nexus-Protocol/nex-prism-convex
 Generate the .wasm files for the integration tests
 ```bash
 cd nex-prism-convex
-./integration_tests_build.sh
+./integration_tests_build.sh # alternatively: sh integration_tests_build.sh
 ```
 
 Go back to `contract_scripts` run
