@@ -577,12 +577,19 @@ export async function bvault_deposit_and_withdraw_half(lcd_client: LCDClient, se
     await deposit_bluna(lcd_client, sender, addresses.bluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_deposit);
 
     const bluna_to_withdraw = Math.floor(bluna_to_deposit / 2);
+    
+    for (let i = 0; i < 10; i++) {
+        const check_bal = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
+        if (check_bal > 0) { 
+            break; 
+        }
 
-    await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_withdraw);
+        await withdraw_bluna(lcd_client, sender, addresses.nluna_token_addr, addresses.basset_vault_for_bluna_addr, bluna_to_withdraw);
+    }
 
     let bluna_balance = await get_token_balance(lcd_client, sender.key.accAddress, addresses.bluna_token_addr);
     let collateral = await get_collateral_amount(lcd_client, addresses.anchor_overseer_addr, addresses.basset_vault_for_bluna_addr);
-    
+
     assert(bluna_balance === bluna_to_withdraw, `expected balance: ${bluna_to_withdraw}, actual balance: ${bluna_balance}`);
     assert(collateral === (bluna_to_deposit - bluna_to_withdraw), `collateral expected: ${bluna_to_deposit - bluna_to_withdraw}, collateral actual: ${collateral}`);
     
