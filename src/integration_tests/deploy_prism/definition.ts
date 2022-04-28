@@ -64,10 +64,10 @@ async function prism_init_verbose(
 
     var xprism_token_addr = ''
 	let contract_events = getContractEvents(init_contract_res);
-	for (let contract_event of contract_events) {
-        let xprism_token_addr = contract_event["xprism_token_addr"];
-		if (xprism_token_addr !== undefined) {
-			xprism_token_addr = xprism_token_addr;
+	for (let contract_event of contract_events) {		
+        let xprism_token_addr_from_contract = contract_event["xprism_token_addr"];
+		if (xprism_token_addr_from_contract !== undefined) {
+			xprism_token_addr = xprism_token_addr_from_contract;
 		}
     }
 
