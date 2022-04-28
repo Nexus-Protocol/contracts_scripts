@@ -36,7 +36,39 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 2. `cd LocalTerra`
 3. `git fetch --tags`, `git checkout tags/v0.5.0`
 3. `docker pull terramoney/localterra-core:bombay`
-4. `docker-compose up`
+4. go to `config/config.toml` in localterra, comment out this entire section:
+
+```
+# # How long we wait for a proposal block before prevoting nil
+# timeout_propose = "3s"
+# # How much timeout_propose increases with each round
+# timeout_propose_delta = "500ms"
+# # How long we wait after receiving +2/3 prevotes for “anything” (ie. not a single block or nil)
+# timeout_prevote = "1s"
+# # How much the timeout_prevote increases with each round
+# timeout_prevote_delta = "500ms"
+# # How long we wait after receiving +2/3 precommits for “anything” (ie. not a single block or nil)
+# timeout_precommit = "1s"
+# # How much the timeout_precommit increases with each round
+# timeout_precommit_delta = "500ms"
+# # How long we wait after committing a block, before starting on the new
+# # height (this gives us a chance to receive some more precommits, even
+# # though we already have +2/3).
+# timeout_commit = "5s"
+```
+
+and replace it with
+```yml
+timeout_precommit = "200ms"
+timeout_propose = "200ms"
+timeout_propose_delta = "200ms"
+timeout_prevote = "200ms"
+timeout_prevote_delta = "200ms"
+timeout_precommit_delta = "200ms"
+timeout_commit = "200ms"
+```
+
+5. `docker-compose up`
 
 # Usage
 
@@ -84,7 +116,40 @@ Now change paths to artifacts [here](src/basset_vault/definition.ts)
 
 # Integration tests
 
+### Integration tests setup 
 [start localterra](#start-localterra) before run scripts.
 
+Add `CONTRACT_SCRIPTS_PATH` env variable to your `.bash_profile` or `.zshrc`
+
+```bash 
+export CONTRACTS_SCRIPTS_PATH=<path-to-your-cloned-repo>/contracts_scripts
+```
+
+example:
+```bash
+export CONTRACTS_SCRIPTS_PATH=/Users/stevenli/Documents/github/contracts_scripts
+```
+
+# Bvault and Psi integration tests
 - `npm run psi-distr-integration-tests`  - run psi distribution integration tests
 - `npm run bvault-integration-tests`  - run basset vault integration tests
+
+### NexPrism integration test
+
+Make sure you ran everything in `### Integration tests setup`
+
+Clone the NexPrism repos into your local computer:
+```bash
+git clone https://github.com/Nexus-Protocol/nex-prism-convex
+```
+
+Generate the .wasm files for the integration tests
+```bash
+cd nex-prism-convex
+./integration_tests_build.sh # alternatively: sh integration_tests_build.sh
+```
+
+Go back to `contract_scripts` run
+```bash
+npm run nex-prism-integration-tests
+```
