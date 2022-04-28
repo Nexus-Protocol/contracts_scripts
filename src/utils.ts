@@ -16,7 +16,7 @@ import {
 	StdFee,
 	Wallet
 } from '@terra-money/terra.js';
-import {BassetVaultConfig} from './config';
+import {BassetVaultConfig, is_localterra} from './config';
 import {SecretsManager} from 'aws-sdk';
 import * as prompt from 'prompt';
 import {isTxSuccess} from './transaction';
@@ -66,7 +66,7 @@ export async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wa
 	}
 }
 
-export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds?: Coin[]): Promise<string> {
+export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds?: Coin[]): Promise<string> {	
 	let result = await instantiate_contract_raw(lcd_client, sender, admin, code_id, init_msg, init_funds);
 	return getContractAddress(result)
 }
@@ -279,7 +279,15 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, c
 // ============================================================
 export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[], tax?: Coin[]): Promise<BlockTxBroadcastResult | undefined> {
 	try {
-		const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);
+		let estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);
+
+		let estimation_failed = estimated_tx_fee === undefined;
+		let is_local = is_localterra(lcd_client);
+
+		if (is_local && estimation_failed) {
+			estimated_tx_fee = new StdFee(20_000_000/0.15, [new Coin("uusd", 20_000_000)]);
+		}
+				
 		if (estimated_tx_fee === undefined) {
 			return undefined;
 		}
@@ -290,6 +298,12 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 		});
 
 		const tx_result = await lcd_client.tx.broadcast(signed_tx);
+
+		if (is_local && estimation_failed) {
+			console.error("FAILED TRANSACTION", tx_result);
+			return undefined;
+		}
+
 		return tx_result;
 	} catch (err) {
 		console.error(`calc_fee_and_send_tx return err: ${err}`)
@@ -299,9 +313,17 @@ export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet
 
 async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[], tax?: Coin[]): Promise<StdFee | undefined> {
 	try {
+		let gasAdjustment;
+
+		if (is_localterra(lcd_client)) {
+			gasAdjustment = 2.0
+		} else {
+			gasAdjustment = 1.2
+		}
+
 		const estimated_fee_res = await lcd_client.tx.estimateFee(sender.key.accAddress, msgs, {
 			gasPrices: new Coins([new Coin("uusd", 0.15)]),
-			gasAdjustment: 1.2,
+			gasAdjustment,
 			feeDenoms: ["uusd"],
 		});
 

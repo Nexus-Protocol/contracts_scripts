@@ -1,0 +1,1 @@
+These `.wasm` files were generated from `https://github.com/prism-finance/prism-contracts`
