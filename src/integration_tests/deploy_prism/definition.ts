@@ -1,11 +1,9 @@
 import { LCDClient, Wallet } from "@terra-money/terra.js";
 import { Cw20CodeId, TokenConfig } from '../../config';
-import { create_contract, instantiate_contract, instantiate_contract_raw, store_contract } from '../../utils';
-import { AddressesHolderConfig } from "../nex_prism/config";
+import { instantiate_contract, store_contract } from '../../utils';
 import { PrismDeploymentResult, PrismGovConfig, PrismMarketInfo } from "./config";
 
 // ===================================================
-const addresses_holder_wasm = "wasm_artifacts/utils/addr_holder.wasm";
 const artifacts_path = "wasm_artifacts";
 const path_to_prism_artifacts = `${artifacts_path}/prism`;
 const prism_gov_wasm = `${path_to_prism_artifacts}/prism_gov.wasm`;
@@ -33,7 +31,8 @@ async function prism_init_verbose(
     let cw20_code_id = await Cw20CodeId(lcd_client, sender);
     console.log(`=======================`);
 
-    // source: https://finder.terra.money/mainnet/address/terra1dh9478k2qvqhqeajhn75a2a7dsnf74y5ukregw
+    // source: 
+    // https://finder.terra.money/mainnet/address/terra1dh9478k2qvqhqeajhn75a2a7dsnf74y5ukregw
     let prism_token_config = {
 		name: "Prism governance token",
 		symbol: "PRISM",
@@ -59,15 +58,10 @@ async function prism_init_verbose(
 		sender.key.accAddress,
 		prism_gov_code_id,
 		prism_gov_config,
-		// [new Coin("uusd", 1_000_000)],
 	);
 
     console.log(`prism_gov instantiated\n\taddress: ${prism_gov_deployment_addr}`);
 	console.log(`=======================`);
-
-    // let prism_gov_config = PrismGovConfig(sender, prism_token_addr);
-	// let prism_gov_addr = await create_contract(lcd_client, sender, "prism_gov", prism_gov_wasm, prism_gov_config);
-	// console.log(`=======================`);
 
     return PrismMarketInfo(
         prism_token_addr,
