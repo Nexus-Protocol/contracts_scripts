@@ -16,10 +16,11 @@ export async function init_token(lcd_client: LCDClient, sender: Wallet, code_id:
 	return contract_addr;
 }
 
-export async function prism_init(lcd_client: LCDClient, sender: Wallet) {
+export async function prism_init(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number) {
 	const result = await prism_init_verbose(
 		lcd_client,
-		sender
+		sender,
+        cw20_code_id
 	);
 	return result;
 }
@@ -27,10 +28,8 @@ export async function prism_init(lcd_client: LCDClient, sender: Wallet) {
 async function prism_init_verbose(
     lcd_client: LCDClient,
 	sender: Wallet,
+    cw20_code_id: number
 ): Promise<PrismMarketInfo> {
-    let cw20_code_id = await Cw20CodeId(lcd_client, sender);
-    console.log(`=======================`);
-
     // source: 
     // https://finder.terra.money/mainnet/address/terra1dh9478k2qvqhqeajhn75a2a7dsnf74y5ukregw
     let prism_token_config = {

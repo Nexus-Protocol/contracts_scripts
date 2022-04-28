@@ -34,18 +34,22 @@ export interface StakingConfig {
 }
 
 export function StakingConfig(
-    sender: string
+    sender: string,
+    xprism_token_addr: string,
+    psi_token_addr: string,
 ): StakingConfig {
     return {
         owner: sender,
-        staking_token: "", // xprism
+        staking_token: xprism_token_addr, // xprism
         rewarder: "",
-        reward_token: "",
+        reward_token: psi_token_addr,
         staker_reward_pair: [],
         governance: "",
     }
 }
 
+// source:
+// https://finder.terra.money/testnet/address/terra139w6neqzdk9uqvn6v7sjcr7vpexh3pe0ty7w3m
 // pub struct InstantiateMsg {
 //     pub owner: String,
 //     pub governance: String,
@@ -99,14 +103,17 @@ export interface VaultConfig {
 }
 
 export function VaultConfig(
-    sender: string
+    sender: string,
+    psi_token_addr: string,
+    cw20_code_id: number,
+    staking_code_id: number
 ): VaultConfig {
     return {
         owner: sender,
-        governance: "",
-        psi_token: "",
-        cw20_token_code_id: 0,
-        staking_code_id: 0,
+        governance: sender,
+        psi_token: psi_token_addr,
+        cw20_token_code_id: cw20_code_id,
+        staking_code_id: staking_code_id,
         astroport_factory: "",
         xprism_nexprism_amp_coef: 0,
         xprism_token: "",
