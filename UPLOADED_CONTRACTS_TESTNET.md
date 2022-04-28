@@ -145,4 +145,16 @@ pol_contract instantiated
 	autocompounder address: terra1hhhc3muvfuatdepwcu94gxcvkmqmpt990ks70e
 	token address: terra1rna9cvtes9lc7evdgaczxtr963p62rktkkv2q5
 =======================
+====== NEXPRISM =======
+=======================
+	staking code_id: 67946
+	vault code_id: 67982
+	autocompounder code_id: 67948
+	===
+	vault addr: terra139w6neqzdk9uqvn6v7sjcr7vpexh3pe0ty7w3m
+	nyluna token addr: terra1u2amvzp0s0ywsndw9el5yhxafd59fr68gs5xre
+	nexprism token addr: terra1e2zcnfqduhuafs9cwf357wkrhnwncr8z6pepjz
+	nexprism-xprism pair addr: terra1w6362ywvujtv06msggaraml84ex58hs94sr0eq
+	psi staking addr: terra1l37hcmnqpa5hkxr6ncr0mt0rxk0fmepswnwn8s
+	yluna staking addr: terra1reyshrs9n3acvhhf62wqcutat90mekfpp5xewe
 ```
