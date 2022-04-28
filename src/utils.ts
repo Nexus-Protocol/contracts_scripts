@@ -316,9 +316,9 @@ async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[], ta
 		let gasAdjustment;
 
 		if (is_localterra(lcd_client)) {
-			gasAdjustment = 1.2;
+			gasAdjustment = 2.0
 		} else {
-			gasAdjustment = 2.0;
+			gasAdjustment = 1.2
 		}
 
 		const estimated_fee_res = await lcd_client.tx.estimateFee(sender.key.accAddress, msgs, {

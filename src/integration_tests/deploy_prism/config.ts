@@ -41,7 +41,6 @@ export function PrismGovConfig(
     prism_token_addr: Addr,
     token_code_id: number,
 ): PrismGovConfig {
-    // TODO: add prod vs test
     return {
         prism_token: prism_token_addr,
         quorum: "0.4",

@@ -9,7 +9,7 @@ async function run_program() {
         .action(async () => {
             const addresses_holder_addr = await deploy();
             
-            // TODO:
+            // TODO sample:
             // await run_recursive_repay_ok(addresses_holder_addr);
             // await run_simple_deposit(addresses_holder_addr);
             // await run_borrow_more_on_bluna_price_increasing(addresses_holder_addr);
