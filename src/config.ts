@@ -18,6 +18,10 @@ export function PSiTokensOwner(lcd_client: LCDClient, sender: Wallet, multisig_a
 	}
 }
 
+export function is_localterra(lcd_client: LCDClient): boolean {
+	return lcd_client.config.chainID === "localterra";
+}
+
 // ================================================
 
 export async function Cw20CodeId(lcd_client: LCDClient, sender: Wallet): Promise<number> {

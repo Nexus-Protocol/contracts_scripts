@@ -1,4 +1,4 @@
-import {Command} from 'commander';
+import { Command } from 'commander';
 import { prism_nexprism_full_init } from '../deploy_prism/definition';
 import { get_lcd_config_with_wallet_for_integration_tests_only } from '../utils';
 
@@ -8,7 +8,7 @@ async function run_program() {
     program
         .action(async () => {
             const addresses_holder_addr = await deploy();
-
+            
             // TODO:
             // await run_recursive_repay_ok(addresses_holder_addr);
             // await run_simple_deposit(addresses_holder_addr);
@@ -20,12 +20,14 @@ async function run_program() {
             // TODO: xprism deposit/lock 3 month and withdraw
             // TODO: xprism deposit/lock and withdraw within 7 days
         });
-    
+
     program
         .command('deploy')
         .action(async () => {
             await deploy();
         });
+
+    await program.parseAsync(process.argv);
 
 }
 
@@ -38,9 +40,8 @@ run_program()
         console.log(err);
     });
 
-    async function deploy() {
-        const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
-        const addresses_holder_addr = await prism_nexprism_full_init(lcd_client, sender);
-        return addresses_holder_addr;
-    }
-    
+async function deploy() {
+    const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
+    const addresses_holder_addr = await prism_nexprism_full_init(lcd_client, sender);
+    return addresses_holder_addr;
+}

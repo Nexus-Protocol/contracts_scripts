@@ -66,7 +66,7 @@ export async function instantiate_contract_raw(lcd_client: LCDClient, sender: Wa
 	}
 }
 
-export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds?: Coin[]): Promise<string> {
+export async function instantiate_contract(lcd_client: LCDClient, sender: Wallet, admin: string, code_id: number, init_msg: object, init_funds?: Coin[]): Promise<string> {	
 	let result = await instantiate_contract_raw(lcd_client, sender, admin, code_id, init_msg, init_funds);
 	return getContractAddress(result)
 }
