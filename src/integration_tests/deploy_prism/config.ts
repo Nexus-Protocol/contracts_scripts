@@ -5,18 +5,21 @@ export type Addr = string;
 export interface PrismMarketInfo {
     prism_token_addr: Addr,
     prism_gov_addr: Addr,
-    prism_gov_config: PrismGovConfig
+    prism_gov_config: PrismGovConfig,
+    xprism_token_addr: Addr
 }
 
 export function PrismMarketInfo(
     prism_token_addr: Addr,
     prism_gov_addr: Addr,
-    prism_gov_config: PrismGovConfig
+    prism_gov_config: PrismGovConfig,
+    xprism_token_addr: Addr
 ): PrismMarketInfo {
     return {
         prism_token_addr,
         prism_gov_addr,
-        prism_gov_config
+        prism_gov_config,
+        xprism_token_addr
     }
 }
 

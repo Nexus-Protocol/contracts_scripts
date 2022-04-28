@@ -1,6 +1,6 @@
 import { Command } from 'commander';
-import { prism_nexprism_full_init } from '../deploy_prism/definition';
 import { get_lcd_config_with_wallet_for_integration_tests_only } from '../utils';
+import { prism_nexprism_full_init } from './definition';
 
 async function run_program() {
     const program = new Command();
