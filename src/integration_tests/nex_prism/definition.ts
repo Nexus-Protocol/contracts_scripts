@@ -18,7 +18,7 @@ async function full_nex_prism_init(
     psi_token_addr: string,
     cw20_code_id: number,
     governance_contract_addr: string
-) {    
+) {
     let staking_code_id = await store_contract(lcd_client, sender, nexus_prism_staking)
     console.log(`nexus_prism_staking uploaded\n\tcode_id: ${staking_code_id}`);
 
@@ -62,12 +62,12 @@ async function full_nex_prism_init(
     // TODO:
     // const autocompounder_config = AutocompounderGovConfig(sender.key.accAddress, xprism_token_addr);
     // let autocompounder_deployment_addr = await instantiate_contract(
-	// 	lcd_client,
-	// 	sender,
-	// 	sender.key.accAddress,
-	// 	autocompounder_code_id,
-	// 	autocompounder_config,
-	// );
+    // 	lcd_client,
+    // 	sender,
+    // 	sender.key.accAddress,
+    // 	autocompounder_code_id,
+    // 	autocompounder_config,
+    // );
 }
 
 export async function prism_nexprism_full_init(
@@ -75,26 +75,26 @@ export async function prism_nexprism_full_init(
     sender: Wallet,
 ) {
     // get cw20_code_id
-	let cw20_code_id = await Cw20CodeId(lcd_client, sender);
-	console.log(`=======================`);
+    let cw20_code_id = await Cw20CodeId(lcd_client, sender);
+    console.log(`=======================`);
 
     // instantiate governance contract_addr
-	let governance_config = GovernanceConfig(lcd_client);
-	let governance_contract_addr = await init_governance_contract(lcd_client, sender, governance_config);
-	console.log(`=======================`);
+    let governance_config = GovernanceConfig(lcd_client);
+    let governance_contract_addr = await init_governance_contract(lcd_client, sender, governance_config);
+    console.log(`=======================`);
 
     // instantiate psi_token
-	let token_config = TokenConfig(lcd_client, governance_contract_addr, PSiTokensOwner(lcd_client, sender, sender.key.accAddress));
-	let psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, token_config);
-	console.log(`=======================`);
+    let token_config = TokenConfig(lcd_client, governance_contract_addr, PSiTokensOwner(lcd_client, sender, sender.key.accAddress));
+    let psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, token_config);
+    console.log(`=======================`);
 
     // instantiate prism contracts
     const prism_market_info = await prism_init(lcd_client, sender, cw20_code_id);
 
     // instantiate nexprism contracts
     const nex_prism_info = await full_nex_prism_init(
-        lcd_client, 
-        sender, 
+        lcd_client,
+        sender,
         prism_market_info.xprism_token_addr,
         psi_token_addr,
         cw20_code_id,
@@ -104,7 +104,7 @@ export async function prism_nexprism_full_init(
     // TODO: remove log and compile into result
     console.log("prism_market_info: ", prism_market_info);
     console.log("nex_prism_info: ", nex_prism_info);
-    
+
     // sample
     // let [basset_vault_info_for_bluna, basset_vault_info_for_beth] = await full_basset_vault_init(lcd_client, sender, psi_token_initial_owner, anchor_market_info);
 
