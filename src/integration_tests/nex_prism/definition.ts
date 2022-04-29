@@ -17,16 +17,16 @@ async function full_nex_prism_init(
     xprism_token_addr: string,
     psi_token_addr: string,
     cw20_code_id: number,
-) {
-    return "";
-    
+    governance_contract_addr: string
+) {    
     let staking_code_id = await store_contract(lcd_client, sender, nexus_prism_staking)
     console.log(`nexus_prism_staking uploaded\n\tcode_id: ${staking_code_id}`);
 
     const staking_config = StakingConfig(
         sender.key.accAddress,
         xprism_token_addr,
-        psi_token_addr
+        psi_token_addr,
+        governance_contract_addr,
     )
     let staking_deployment_addr = await instantiate_contract(
         lcd_client,
@@ -97,7 +97,8 @@ export async function prism_nexprism_full_init(
         sender, 
         prism_market_info.xprism_token_addr,
         psi_token_addr,
-        cw20_code_id
+        cw20_code_id,
+        governance_contract_addr
     )
 
     // TODO: remove log and compile into result

@@ -1,5 +1,4 @@
 import { PrismMarketInfo } from "../deploy_prism/config";
-
 export interface AddressesHolderConfig {
     prism_token_addr: string,
     prism_gov_addr: string,
@@ -37,6 +36,7 @@ export function StakingConfig(
     sender: string,
     xprism_token_addr: string,
     psi_token_addr: string,
+    governance: string
 ): StakingConfig {
     return {
         owner: sender,
@@ -44,7 +44,7 @@ export function StakingConfig(
         rewarder: "",
         reward_token: psi_token_addr,
         staker_reward_pair: [],
-        governance: "",
+        governance: governance,
     }
 }
 
