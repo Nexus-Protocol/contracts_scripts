@@ -111,6 +111,7 @@ export function VaultConfig(
   astroport_factory_contract_addr: string,
   prism_token_addr: string,
   governance_addr: string,
+  yluna_addr: string,
 ): VaultConfig {
   return {
     owner: sender,
@@ -120,7 +121,7 @@ export function VaultConfig(
     staking_code_id: staking_code_id,
     astroport_factory: astroport_factory_contract_addr,
     xprism_token: xprism_token_addr,
-    yluna_token: "",
+    yluna_token: yluna_addr,
     prism_token: prism_token_addr,
     prism_launch_pool: "",
     prism_xprism_boost: "",

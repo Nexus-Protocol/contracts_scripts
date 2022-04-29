@@ -19,30 +19,15 @@ async function full_nex_prism_init(
     cw20_code_id: number,
     governance_contract_addr: string,
     astroport_factory_contract_addr: string,
-    prism_token_addr: string
+    prism_token_addr: string,
+    yluna_addr: string
 ) {
     let staking_code_id = await store_contract(lcd_client, sender, nexus_prism_staking)
     console.log(`nexus_prism_staking uploaded\n\tcode_id: ${staking_code_id}`);
 
-    // TODO: might not be needed anymore, test if generated from vault and if so, remove this section
-    // const staking_config = StakingConfig(
-    //     sender.key.accAddress,
-    //     xprism_token_addr,
-    //     psi_token_addr,
-    //     governance_contract_addr,
-    // )
-    // let staking_deployment_addr = await instantiate_contract(
-    //     lcd_client,
-    //     sender,
-    //     sender.key.accAddress,
-    //     staking_code_id,
-    //     staking_config,
-    // )
-    // console.log(`nexus_prism_staking instantiated\n\taddress: ${staking_deployment_addr}`);
-    // console.log(`=======================`);
-
     let vault_code_id = await store_contract(lcd_client, sender, nexus_prism_vault)
     console.log(`nexus_prism_vault uploaded\n\tcode_id: ${vault_code_id}`);
+
     const vault_config = VaultConfig(
         sender.key.accAddress,
         psi_token_addr,
@@ -52,6 +37,7 @@ async function full_nex_prism_init(
         astroport_factory_contract_addr,
         prism_token_addr,
         governance_contract_addr,
+        yluna_addr
     )
     let vault_deployment_addr = await instantiate_contract(
         lcd_client,
@@ -95,7 +81,7 @@ export async function prism_nexprism_full_init(
     let psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, token_config);
     console.log(`=======================`);
 
-    // instantiate prism contracts
+    // prism: instantiate prism contracts
     const prism_market_info = await prism_init(lcd_client, sender, cw20_code_id);
 
     // astroport
@@ -111,6 +97,7 @@ export async function prism_nexprism_full_init(
         governance_contract_addr,
         astroport_factory_contract_addr,
         prism_market_info.prism_token_addr,
+        prism_market_info.yluna_token_addr
     )
 
     // TODO: remove log and compile into result
