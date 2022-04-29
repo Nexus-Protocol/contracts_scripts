@@ -115,7 +115,63 @@ export function PrismLaunchPoolConfig(
     }
 }
 
+// source: https://finder.terra.money/testnet/address/terra1ysc9ktgwldm7fcw4ry6e7t9yhkm7p4u4ltw4ex
+// {
+//     "vault": "terra1knak0taqkas4y07mupvxpr89kvtew5dx9jystw",
+//     "owner": "terra1ht2hlaz2fk20jskwz084xdltu3spkjcu9veyhj",
+//     "gov": "terra1teddvnlz7jh00nvn67ezksheastm3saqec0um9",
+//     "collector": "terra196fgs75ephnxc7xmfac2ra4ymcr7fx65yykq6x",
+//     "reward_denom": "uluna",
+//     "protocol_fee": "0.1",
+//     "cluna_token": "terra108kj35ef46tptcw69a0x5r9qkfu8h7vmjp6w39",
+//     "yluna_token": "terra1utwws3p0qzqrw7jslsuvt6drd7jsjhpu0rxauj",
+//     "pluna_token": "terra1sev4e0u23l75g5spzsquw6n7c8g5efl6hg0zl6",
+//     "prism_token": "terra1cwle4remlf03mucutzhxfayvmdqsulx8xaahvy",
+//     "xprism_token": "terra1tz4lxls6gp05m20tgx4t9ljhtvqnmcpujaadc2"
+// }
+interface PrismYassetStakingConfig {
+    vault: Addr,
+    owner: Addr,
+    gov: Addr,
+    collector: Addr,
+    reward_denom: string,
+    protocol_fee: string,
+    cluna_token: Addr,
+    yluna_token: Addr,
+    pluna_token: Addr,
+    prism_token: Addr,
+    xprism_token: Addr,
+}
 
+export function PrismYassetStakingConfig(
+    owner_addr: Addr,
+    prism_gov_addr: Addr,
+    yluna_token: Addr,
+    prism_token: Addr,
+    xprism_token: Addr,
+): PrismYassetStakingConfig {
+    return {
+        // TODO: set up prism vault
+        // https://github.com/prism-finance/prism-contracts/blob/main/contracts/prism-vault/src/contract.rs
+        vault: "terra1knak0taqkas4y07mupvxpr89kvtew5dx9jystw",
+        owner: owner_addr,
+        gov: prism_gov_addr,
+
+        // TODO: set up prism collector
+        collector: "terra196fgs75ephnxc7xmfac2ra4ymcr7fx65yykq6x",
+        reward_denom: "uluna",
+        protocol_fee: "0.1",
+
+        // TODO: set up cluna and pluna contracts
+        cluna_token: "terra108kj35ef46tptcw69a0x5r9qkfu8h7vmjp6w39",
+        pluna_token: "terra1sev4e0u23l75g5spzsquw6n7c8g5efl6hg0zl6",
+        
+        yluna_token: yluna_token,
+
+        prism_token: prism_token,
+        xprism_token: xprism_token
+    }
+}
 interface PrismDeploymentResult {
     prism_gov_addr: Addr,
     prism_gov_config: PrismGovConfig

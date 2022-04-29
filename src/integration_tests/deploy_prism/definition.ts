@@ -1,13 +1,14 @@
 import { getContractAddress, getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { Cw20CodeId, TokenConfig } from '../../config';
 import { instantiate_contract, instantiate_contract_raw, store_contract } from '../../utils';
-import { Addr, PrismGovConfig, PrismGovernanceInfo, PrismLaunchPoolConfig, PrismMarketInfo } from "./config";
+import { Addr, PrismGovConfig, PrismGovernanceInfo, PrismLaunchPoolConfig, PrismMarketInfo, PrismYassetStakingConfig } from "./config";
 
 // ===================================================
 const artifacts_path = "wasm_artifacts";
 const path_to_prism_contracts_artifacts = `${artifacts_path}/prism/prism_contracts`;
 const prism_gov_wasm = `${path_to_prism_contracts_artifacts}/prism_gov.wasm`;
 const prism_launch_pool_wasm = `${path_to_prism_contracts_artifacts}/prism_launch_pool.wasm`;
+const prism_yasset_staking_wasm = `${path_to_prism_contracts_artifacts}/prism_yasset_staking.wasm`;
 
 // ===================================================
 
@@ -107,6 +108,28 @@ async function init_prism_launch_pool(
 	}
 }
 
+async function init_prism_yasset_staking(
+	lcd_client: LCDClient, 
+	sender: Wallet,
+	prism_gov_addr: Addr,
+	yluna_token_addr: Addr,
+	prism_token_addr: Addr,
+	xprism_token_addr: Addr,
+) {
+	// source: https://finder.terra.money/testnet/address/terra1ysc9ktgwldm7fcw4ry6e7t9yhkm7p4u4ltw4ex
+
+	let prism_yasset_staking_code_id = await store_contract(lcd_client, sender, prism_yasset_staking_wasm)
+	let prism_yasset_staking_config = await PrismYassetStakingConfig(
+		sender.key.accAddress,
+		prism_gov_addr,
+		yluna_token_addr,
+		prism_token_addr,
+		xprism_token_addr
+	)
+
+	return {}
+}
+
 export async function prism_init(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number) {
 	const result = await prism_init_verbose(
 		lcd_client,
@@ -137,6 +160,16 @@ async function prism_init_verbose(
 	let yluna_token_addr = await init_yluna(lcd_client, sender, cw20_code_id, prism_token_addr);
 	console.log(`yluna_token instantiated\n\taddress: ${yluna_token_addr}`);
 	console.log(`=======================`);
+
+	// instantiate staking and yluna staking
+	let prism_yasset_staking_info = await init_prism_yasset_staking(
+		lcd_client,
+		sender,
+		prism_governance_info.prism_gov_deployment_addr,
+		yluna_token_addr,
+		prism_token_addr,
+		prism_governance_info.xprism_token_addr
+	);
 
 	// instantiate prism launch pool
 	let prism_launch_pool_info = await init_prism_launch_pool(
