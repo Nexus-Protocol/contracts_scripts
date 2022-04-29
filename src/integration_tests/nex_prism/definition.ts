@@ -1,6 +1,6 @@
 import { LCDClient, Wallet } from "@terra-money/terra.js";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
-import { Cw20CodeId, GovernanceConfig, PSiTokensOwner, TokenConfig } from "../../config";
+import { Cw20CodeId, GovernanceConfig, init_astroport_factory, PSiTokensOwner, TokenConfig } from "../../config";
 import { instantiate_contract, store_contract } from "../../utils";
 import { prism_init } from "../deploy_prism/definition";
 import { StakingConfig, VaultConfig } from "./config";
@@ -17,26 +17,29 @@ async function full_nex_prism_init(
     xprism_token_addr: string,
     psi_token_addr: string,
     cw20_code_id: number,
-    governance_contract_addr: string
+    governance_contract_addr: string,
+    astroport_factory_contract_addr: string,
+    prism_token_addr: string
 ) {
     let staking_code_id = await store_contract(lcd_client, sender, nexus_prism_staking)
     console.log(`nexus_prism_staking uploaded\n\tcode_id: ${staking_code_id}`);
 
-    const staking_config = StakingConfig(
-        sender.key.accAddress,
-        xprism_token_addr,
-        psi_token_addr,
-        governance_contract_addr,
-    )
-    let staking_deployment_addr = await instantiate_contract(
-        lcd_client,
-        sender,
-        sender.key.accAddress,
-        staking_code_id,
-        staking_config,
-    )
-    console.log(`nexus_prism_staking instantiated\n\taddress: ${staking_deployment_addr}`);
-    console.log(`=======================`);
+    // TODO: might not be needed anymore, test if generated from vault and if so, remove this section
+    // const staking_config = StakingConfig(
+    //     sender.key.accAddress,
+    //     xprism_token_addr,
+    //     psi_token_addr,
+    //     governance_contract_addr,
+    // )
+    // let staking_deployment_addr = await instantiate_contract(
+    //     lcd_client,
+    //     sender,
+    //     sender.key.accAddress,
+    //     staking_code_id,
+    //     staking_config,
+    // )
+    // console.log(`nexus_prism_staking instantiated\n\taddress: ${staking_deployment_addr}`);
+    // console.log(`=======================`);
 
     let vault_code_id = await store_contract(lcd_client, sender, nexus_prism_vault)
     console.log(`nexus_prism_vault uploaded\n\tcode_id: ${vault_code_id}`);
@@ -45,6 +48,10 @@ async function full_nex_prism_init(
         psi_token_addr,
         cw20_code_id,
         staking_code_id,
+        xprism_token_addr,
+        astroport_factory_contract_addr,
+        prism_token_addr,
+        governance_contract_addr,
     )
     let vault_deployment_addr = await instantiate_contract(
         lcd_client,
@@ -91,6 +98,9 @@ export async function prism_nexprism_full_init(
     // instantiate prism contracts
     const prism_market_info = await prism_init(lcd_client, sender, cw20_code_id);
 
+    // astroport
+    let astroport_factory_contract_addr = await init_astroport_factory(lcd_client, sender, cw20_code_id);
+
     // instantiate nexprism contracts
     const nex_prism_info = await full_nex_prism_init(
         lcd_client,
@@ -98,7 +108,9 @@ export async function prism_nexprism_full_init(
         prism_market_info.xprism_token_addr,
         psi_token_addr,
         cw20_code_id,
-        governance_contract_addr
+        governance_contract_addr,
+        astroport_factory_contract_addr,
+        prism_market_info.prism_token_addr,
     )
 
     // TODO: remove log and compile into result
