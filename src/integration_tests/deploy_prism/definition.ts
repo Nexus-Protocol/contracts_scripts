@@ -5,7 +5,7 @@ import { PrismGovConfig, PrismMarketInfo } from "./config";
 
 // ===================================================
 const artifacts_path = "wasm_artifacts";
-const path_to_prism_artifacts = `${artifacts_path}/prism`;
+const path_to_prism_artifacts = `${artifacts_path}/prism/prism_contracts`;
 const prism_gov_wasm = `${path_to_prism_artifacts}/prism_gov.wasm`;
 
 // ===================================================
