@@ -112,6 +112,10 @@ export function VaultConfig(
   prism_token_addr: string,
   governance_addr: string,
   yluna_addr: string,
+  xprism_prism_pair: string,
+  prism_launch_pool: string,
+  prism_xprism_boost_addr: string,
+  yluna_prism_pair: string
 ): VaultConfig {
   return {
     owner: sender,
@@ -125,10 +129,10 @@ export function VaultConfig(
     prism_token: prism_token_addr,
 
     // TODO:
-    prism_launch_pool: "terra1rmctd835vmx46mtgxt8mpq9ek0h2e6xm4rff4y",
-    prism_xprism_boost: "terra1rmctd835vmx46mtgxt8mpq9ek0h2e6xm4rff4y",
-    xprism_prism_pair: "terra1rmctd835vmx46mtgxt8mpq9ek0h2e6xm4rff4y",
-    yluna_prism_pair: "terra1rmctd835vmx46mtgxt8mpq9ek0h2e6xm4rff4y",
+    prism_launch_pool: prism_launch_pool,
+    prism_xprism_boost: prism_xprism_boost_addr,
+    xprism_prism_pair: xprism_prism_pair,
+    yluna_prism_pair: yluna_prism_pair,
     
     rewards_distribution_update_period: 1,
     rewards_distribution_update_step: "1.05",

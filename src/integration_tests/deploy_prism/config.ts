@@ -12,7 +12,9 @@ export interface PrismMarketInfo {
     prism_gov_addr: Addr,
     prism_gov_config: PrismGovConfig,
     xprism_token_addr: Addr,
-    yluna_token_addr: Addr
+    yluna_token_addr: Addr,
+    prism_launch_pool_addr: Addr,
+    prism_xprism_boost_addr: Addr,
 }
 
 export function PrismMarketInfo(
@@ -20,14 +22,18 @@ export function PrismMarketInfo(
     prism_gov_addr: Addr,
     prism_gov_config: PrismGovConfig,
     xprism_token_addr: Addr,
-    yluna_token_addr: Addr
+    yluna_token_addr: Addr,
+    prism_launch_pool_addr: Addr,
+    prism_xprism_boost_addr: Addr,
 ): PrismMarketInfo {
     return {
         prism_token_addr,
         prism_gov_addr,
         prism_gov_config,
         xprism_token_addr,
-        yluna_token_addr
+        yluna_token_addr,
+        prism_launch_pool_addr,
+        prism_xprism_boost_addr
     }
 }
 
@@ -170,6 +176,32 @@ export function PrismYassetStakingConfig(
 
         prism_token: prism_token,
         xprism_token: xprism_token
+    }
+}
+
+// source: https://finder.terra.money/testnet/address/terra1vxejeqv8rjyvycy7gfm3sh0z58xwez6d7jdk42
+// {
+//     "owner": "terra1ht2hlaz2fk20jskwz084xdltu3spkjcu9veyhj",
+//     "xprism_token": "terra1tz4lxls6gp05m20tgx4t9ljhtvqnmcpujaadc2",
+//     "boost_per_hour": "0.014",
+//     "max_boost_per_xprism": "1"
+// }
+interface PrismXprismBoostConfig {
+    owner: Addr,
+    xprism_token: Addr,
+    boost_per_hour: string,
+    max_boost_per_xprism: string,
+}
+
+export function PrismXprismBoostConfig(
+    owner: Addr,
+    xprism_token: Addr,
+): PrismXprismBoostConfig {
+    return {
+        owner: owner,
+        xprism_token: xprism_token,
+        boost_per_hour: "0.014",
+        max_boost_per_xprism: "1"
     }
 }
 interface PrismDeploymentResult {

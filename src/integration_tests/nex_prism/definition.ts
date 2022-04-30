@@ -1,7 +1,7 @@
 import { LCDClient, Wallet } from "@terra-money/terra.js";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, PSiTokensOwner, TokenConfig } from "../../config";
-import { instantiate_contract, store_contract } from "../../utils";
+import { create_token_to_token_astroport_pair, instantiate_contract, store_contract } from "../../utils";
 import { prism_init } from "../deploy_prism/definition";
 import { StakingConfig, VaultConfig } from "./config";
 
@@ -20,7 +20,11 @@ async function full_nex_prism_init(
     governance_contract_addr: string,
     astroport_factory_contract_addr: string,
     prism_token_addr: string,
-    yluna_addr: string
+    yluna_addr: string,
+    xprism_prism_pair: string,
+    prism_launch_pool: string,
+    prism_xprism_boost_addr: string,
+    yluna_prism_pair: string
 ) {
     let staking_code_id = await store_contract(lcd_client, sender, nexus_prism_staking)
     console.log(`nexus_prism_staking uploaded\n\tcode_id: ${staking_code_id}`);
@@ -37,7 +41,11 @@ async function full_nex_prism_init(
         astroport_factory_contract_addr,
         prism_token_addr,
         governance_contract_addr,
-        yluna_addr
+        yluna_addr,
+        xprism_prism_pair,
+        prism_launch_pool,
+        prism_xprism_boost_addr,
+        yluna_prism_pair
     )
 
     console.log("STEVENDEBUG vault_config ", vault_config);
@@ -92,7 +100,23 @@ export async function prism_nexprism_full_init(
 
     // astroport
     let astroport_factory_contract_addr = await init_astroport_factory(lcd_client, sender, cw20_code_id);
+    let xprism_prism_pair = await create_token_to_token_astroport_pair(
+        lcd_client,
+        sender,
+        astroport_factory_contract_addr,
+        prism_market_info.prism_token_addr,
+        prism_market_info.xprism_token_addr
+    )
+    let yluna_prism_pair = await create_token_to_token_astroport_pair(
+        lcd_client,
+        sender,
+        astroport_factory_contract_addr,
+        prism_market_info.prism_token_addr,
+        prism_market_info.yluna_token_addr
+    )
 
+    console.log("STEVENDEBUG xprism_prism_pair ", xprism_prism_pair.pair_contract_addr);
+    
     // instantiate nexprism contracts
     const nex_prism_info = await full_nex_prism_init(
         lcd_client,
@@ -103,7 +127,11 @@ export async function prism_nexprism_full_init(
         governance_contract_addr,
         astroport_factory_contract_addr,
         prism_market_info.prism_token_addr,
-        prism_market_info.yluna_token_addr
+        prism_market_info.yluna_token_addr,
+        xprism_prism_pair.pair_contract_addr,
+        prism_market_info.prism_launch_pool_addr,
+        prism_market_info.prism_xprism_boost_addr,
+        yluna_prism_pair.pair_contract_addr
     )
 
     return
