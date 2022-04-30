@@ -83,7 +83,6 @@ export interface VaultConfig {
   cw20_token_code_id: number,
   staking_code_id: number,
   astroport_factory: string,
-  xprism_nexprism_amp_coef: number,
   xprism_token: string,
   yluna_token: string,
   prism_token: string,
@@ -92,14 +91,15 @@ export interface VaultConfig {
   xprism_prism_pair: string,
   yluna_prism_pair: string,
   rewards_distribution_update_period: number,
-  rewards_distribution_update_step: number,
-  nexprism_stakers_reward_ratio: number,
-  yluna_depositors_reward_ratio: number,
-  psi_stakers_reward_ratio: number,
-  min_nexprism_stakers_reward_ratio: number,
-  max_nexprism_stakers_reward_ratio: number,
-  min_yluna_depositors_reward_ratio: number,
-  max_yluna_depositors_reward_ratio: number,
+  rewards_distribution_update_step: string,
+  nexprism_stakers_reward_ratio: string,
+  yluna_depositors_reward_ratio: string,
+  psi_stakers_reward_ratio: string,
+  min_nexprism_stakers_reward_ratio: string,
+  max_nexprism_stakers_reward_ratio: string,
+  min_yluna_depositors_reward_ratio: string,
+  max_yluna_depositors_reward_ratio: string,
+  xprism_nexprism_amp_coef: number,
 }
 
 export function VaultConfig(
@@ -123,19 +123,22 @@ export function VaultConfig(
     xprism_token: xprism_token_addr,
     yluna_token: yluna_addr,
     prism_token: prism_token_addr,
+
+    // TODO:
     prism_launch_pool: "terra1rmctd835vmx46mtgxt8mpq9ek0h2e6xm4rff4y",
     prism_xprism_boost: "terra1rmctd835vmx46mtgxt8mpq9ek0h2e6xm4rff4y",
     xprism_prism_pair: "terra1rmctd835vmx46mtgxt8mpq9ek0h2e6xm4rff4y",
     yluna_prism_pair: "terra1rmctd835vmx46mtgxt8mpq9ek0h2e6xm4rff4y",
+    
     rewards_distribution_update_period: 1,
-    rewards_distribution_update_step: 1.05,
-    nexprism_stakers_reward_ratio: 0.6,
-    yluna_depositors_reward_ratio: 0.35,
-    psi_stakers_reward_ratio: 0.05,
-    min_nexprism_stakers_reward_ratio: 0.1,
-    max_nexprism_stakers_reward_ratio: 0.9,
-    min_yluna_depositors_reward_ratio: 0.1,
-    max_yluna_depositors_reward_ratio: 0.9,
+    rewards_distribution_update_step: "1.05",
+    nexprism_stakers_reward_ratio: "0.6",
+    yluna_depositors_reward_ratio: "0.35",
+    psi_stakers_reward_ratio: "0.05",
+    min_nexprism_stakers_reward_ratio: "0.1",
+    max_nexprism_stakers_reward_ratio: "0.9",
+    min_yluna_depositors_reward_ratio: "0.1",
+    max_yluna_depositors_reward_ratio: "0.9",
     xprism_nexprism_amp_coef: 5
   }
 }
