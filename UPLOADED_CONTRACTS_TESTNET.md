@@ -150,7 +150,7 @@ pol_contract instantiated
 	staking code_id: 67946
 	vault code_id: 67982
 	autocompounder code_id: 67948
-	lockdrop code_id: 68520
+	lockdrop code_id: 68521
 	===
 	vault addr: terra139w6neqzdk9uqvn6v7sjcr7vpexh3pe0ty7w3m
 	nyluna token addr: terra1u2amvzp0s0ywsndw9el5yhxafd59fr68gs5xre
