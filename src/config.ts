@@ -85,6 +85,35 @@ export async function init_astroport_factory(lcd_client: LCDClient, sender: Wall
 	}
 }
 
+export async function init_astroport_factory_stable(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number): Promise<string> {
+	if (lcd_client.config.chainID === "localterra") {
+		console.log(`in localterra, so storing our own astroport contracts`);
+		let astroport_factory_code_id = await store_contract(lcd_client, sender, astroport_factory_wasm);
+		console.log(`astroport_factory uploaded\n\tcode_id: ${astroport_factory_code_id}`);
+		let astroport_pair_code_id = await store_contract(lcd_client, sender, astroport_pair_wasm);
+		console.log(`astroport_pair uploaded\n\tcode_id: ${astroport_pair_code_id}`);
+		let astroport_factory_init_msg = {
+			owner: sender.key.accAddress,
+			pair_configs: [
+				{
+					code_id: astroport_pair_code_id,
+					pair_type: {
+						stable: {}
+					},
+					total_fee_bps: 0,
+					maker_fee_bps: 0
+				},
+			],
+			token_code_id: cw20_code_id
+		}
+		let astroport_factory_contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, astroport_factory_code_id, astroport_factory_init_msg);
+		console.log(`astroport_factory instantiated\n\taddress: ${astroport_factory_contract_addr}`);
+		return astroport_factory_contract_addr;
+	} else {
+		return astroport_factory_contract_addr(lcd_client);
+	}
+}
+
 // ================================================
 
 export interface Cw20Coin {

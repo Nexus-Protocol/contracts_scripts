@@ -1,6 +1,6 @@
 import { LCDClient, Wallet } from "@terra-money/terra.js";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
-import { Cw20CodeId, GovernanceConfig, init_astroport_factory, PSiTokensOwner, TokenConfig } from "../../config";
+import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stable, PSiTokensOwner, TokenConfig } from "../../config";
 import { create_token_to_token_astroport_pair, instantiate_contract, store_contract } from "../../utils";
 import { prism_init } from "../deploy_prism/definition";
 import { StakingConfig, VaultConfig } from "./config";
@@ -99,7 +99,7 @@ export async function prism_nexprism_full_init(
     const prism_market_info = await prism_init(lcd_client, sender, cw20_code_id);
 
     // astroport
-    let astroport_factory_contract_addr = await init_astroport_factory(lcd_client, sender, cw20_code_id);
+    let astroport_factory_contract_addr = await init_astroport_factory_stable(lcd_client, sender, cw20_code_id);
     let xprism_prism_pair = await create_token_to_token_astroport_pair(
         lcd_client,
         sender,
