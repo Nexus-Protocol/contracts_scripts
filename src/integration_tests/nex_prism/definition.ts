@@ -114,8 +114,6 @@ export async function prism_nexprism_full_init(
         prism_market_info.prism_token_addr,
         prism_market_info.yluna_token_addr
     )
-
-    console.log("STEVENDEBUG xprism_prism_pair ", xprism_prism_pair.pair_contract_addr);
     
     // instantiate nexprism contracts
     const nex_prism_info = await full_nex_prism_init(
