@@ -1,6 +1,6 @@
 import { LCDClient, Wallet } from "@terra-money/terra.js";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
-import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stable, PSiTokensOwner, TokenConfig } from "../../config";
+import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
 import { create_token_to_token_astroport_pair, instantiate_contract, store_contract } from "../../utils";
 import { prism_init } from "../deploy_prism/definition";
 import { StakingConfig, VaultConfig } from "./config";
@@ -100,23 +100,27 @@ export async function prism_nexprism_full_init(
 
     // astroport
     // source: https://docs.astroport.fi/astroport/smart-contracts/astroport-factory#3.-pool-creation-and-querying-walkthrough
-    let astroport_factory_contract_addr = await init_astroport_factory_stable(lcd_client, sender, cw20_code_id);
-    let astroport_factory_contract_nonstable_addr = await init_astroport_factory(lcd_client, sender, cw20_code_id);
-    let xprism_prism_pair = await create_token_to_token_astroport_pair(
-        lcd_client,
-        sender,
-        astroport_factory_contract_addr,
-        prism_market_info.prism_token_addr,
-        prism_market_info.xprism_token_addr
-    )
-    let yluna_prism_pair = await create_token_to_token_astroport_pair(
-        lcd_client,
-        sender,
-        astroport_factory_contract_nonstable_addr,
-        prism_market_info.prism_token_addr,
-        prism_market_info.yluna_token_addr
-    )
+    // let astroport_stableswap_factory_contract_addr = await init_astroport_factory_stableswap(lcd_client, sender, cw20_code_id);
+    // let astroport_constant_prod_factory_contract_addr = await init_astroport_factory(lcd_client, sender, cw20_code_id);
     
+    // let yluna_prism_pair = await create_token_to_token_astroport_pair(
+    //     lcd_client,
+    //     sender,
+    //     astroport_constant_prod_factory_contract_addr,
+    //     prism_market_info.prism_token_addr,
+    //     prism_market_info.yluna_token_addr
+    // )
+    
+    // return 
+
+    // let xprism_prism_pair = await create_token_to_token_astroport_pair(
+    //     lcd_client,
+    //     sender,
+    //     astroport_stableswap_factory_contract_addr,
+    //     prism_market_info.prism_token_addr,
+    //     prism_market_info.xprism_token_addr
+    // )
+
     // instantiate nexprism contracts
     const nex_prism_info = await full_nex_prism_init(
         lcd_client,
@@ -125,13 +129,13 @@ export async function prism_nexprism_full_init(
         psi_token_addr,
         cw20_code_id,
         governance_contract_addr,
-        astroport_factory_contract_addr,
+        prism_market_info.prismswap_info.prismswap_factory_address,
         prism_market_info.prism_token_addr,
         prism_market_info.yluna_token_addr,
-        xprism_prism_pair.pair_contract_addr,
+        prism_market_info.xprism_prism_pair_addr,
         prism_market_info.prism_launch_pool_addr,
         prism_market_info.prism_xprism_boost_addr,
-        yluna_prism_pair.pair_contract_addr
+        prism_market_info.yluna_prism_pair_addr
     )
 
     return

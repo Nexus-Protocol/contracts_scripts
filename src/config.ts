@@ -85,7 +85,7 @@ export async function init_astroport_factory(lcd_client: LCDClient, sender: Wall
 	}
 }
 
-export async function init_astroport_factory_stable(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number): Promise<string> {
+export async function init_astroport_factory_stableswap(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number): Promise<string> {
 	if (lcd_client.config.chainID === "localterra") {
 		console.log(`in localterra, so storing our own astroport contracts`);
 		let astroport_factory_code_id = await store_contract(lcd_client, sender, astroport_factory_wasm);
