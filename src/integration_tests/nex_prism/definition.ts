@@ -95,11 +95,13 @@ export async function prism_nexprism_full_init(
     let psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, token_config);
     console.log(`=======================`);
 
-    // prism: instantiate prism contracts
+    // instantiate prism contracts
     const prism_market_info = await prism_init(lcd_client, sender, cw20_code_id);
 
     // astroport
+    // source: https://docs.astroport.fi/astroport/smart-contracts/astroport-factory#3.-pool-creation-and-querying-walkthrough
     let astroport_factory_contract_addr = await init_astroport_factory_stable(lcd_client, sender, cw20_code_id);
+    let astroport_factory_contract_nonstable_addr = await init_astroport_factory(lcd_client, sender, cw20_code_id);
     let xprism_prism_pair = await create_token_to_token_astroport_pair(
         lcd_client,
         sender,
@@ -110,7 +112,7 @@ export async function prism_nexprism_full_init(
     let yluna_prism_pair = await create_token_to_token_astroport_pair(
         lcd_client,
         sender,
-        astroport_factory_contract_addr,
+        astroport_factory_contract_nonstable_addr,
         prism_market_info.prism_token_addr,
         prism_market_info.yluna_token_addr
     )
