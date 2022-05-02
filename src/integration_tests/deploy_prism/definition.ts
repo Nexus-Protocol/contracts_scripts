@@ -1,7 +1,6 @@
 import { getContractAddress, getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
-import { isTxSuccess } from "../../transaction";
 import { TokenConfig } from '../../config';
-import { execute_contract, instantiate_contract, instantiate_contract_raw, sleep, store_contract } from '../../utils';
+import { instantiate_contract, instantiate_contract_raw, sleep, store_contract } from '../../utils';
 import { Addr, PrismGovConfig, PrismGovernanceInfo, PrismLaunchPoolConfig, PrismMarketInfo, PrismswapFactoryConfig, PrismSwapInfo, PrismXprismBoostConfig, PrismYassetStakingConfig } from "./config";
 
 // ===================================================
@@ -91,8 +90,8 @@ async function init_prism_governance(
 }
 
 async function init_prism_launch_pool(
-	lcd_client: LCDClient, 
-	sender: Wallet, 
+	lcd_client: LCDClient,
+	sender: Wallet,
 	prism_token_addr: Addr,
 	yluna_token_addr: Addr,
 	xprism_token_addr: Addr,
@@ -116,7 +115,7 @@ async function init_prism_launch_pool(
 
 // TODO: may not be needed so leaving to the end for the nex-prism-convex work
 async function init_prism_yasset_staking(
-	lcd_client: LCDClient, 
+	lcd_client: LCDClient,
 	sender: Wallet,
 	prism_gov_addr: Addr,
 	yluna_token_addr: Addr,
@@ -153,11 +152,11 @@ async function init_prism_xprism_boost(
 }
 
 export async function create_token_to_token_prismswap_pair(
-	lcd_client: LCDClient, 
-	sender: Wallet, 
-	prismswap_factory_contract_addr: string, 
-	token_1_addr: string, 
-	token_2_addr: string, 
+	lcd_client: LCDClient,
+	sender: Wallet,
+	prismswap_factory_contract_addr: string,
+	token_1_addr: string,
+	token_2_addr: string,
 	token_code_id: number,
 	prismswap_pair_code_id: number
 ) {
@@ -166,12 +165,12 @@ export async function create_token_to_token_prismswap_pair(
 	const msg = {
 		asset_infos: [
 			{
-			  cw20: token_1_addr
+				cw20: token_1_addr
 			},
 			{
-			  cw20: token_2_addr
+				cw20: token_2_addr
 			}
-		  ],
+		],
 		token_code_id: token_code_id,
 		factory: prismswap_factory_contract_addr
 	}
@@ -248,8 +247,8 @@ async function prism_init_verbose(
 
 	// instantiate prism launch pool
 	let prism_launch_pool_addr = await init_prism_launch_pool(
-		lcd_client, 
-		sender, 
+		lcd_client,
+		sender,
 		prism_token_addr,
 		yluna_token_addr,
 		prism_governance_info.xprism_token_addr,
