@@ -1,6 +1,6 @@
 import { LCDClient, Wallet } from "@terra-money/terra.js";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
-import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stable, PSiTokensOwner, TokenConfig } from "../../config";
+import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
 import { create_token_to_token_astroport_pair, instantiate_contract, store_contract } from "../../utils";
 import { prism_init } from "../deploy_prism/definition";
 import { StakingConfig, VaultConfig } from "./config";
@@ -32,6 +32,9 @@ async function full_nex_prism_init(
     let vault_code_id = await store_contract(lcd_client, sender, nexus_prism_vault)
     console.log(`nexus_prism_vault uploaded\n\tcode_id: ${vault_code_id}`);
 
+    let autocompounder_code_id = await store_contract(lcd_client, sender, nexus_prism_autocompounder)
+    console.log(`nexus_prism_autocompounder uploaded\n\tcode_id: ${autocompounder_code_id}`);
+
     const vault_config = VaultConfig(
         sender.key.accAddress,
         psi_token_addr,
@@ -45,11 +48,12 @@ async function full_nex_prism_init(
         xprism_prism_pair,
         prism_launch_pool,
         prism_xprism_boost_addr,
-        yluna_prism_pair
+        yluna_prism_pair,
+        autocompounder_code_id
     )
 
     console.log("STEVENDEBUG vault_config ", vault_config);
-    console.log("STEVENDEBUG sender.key.accAddress ", sender.key.accAddress);
+
 
     let vault_deployment_addr = await instantiate_contract(
         lcd_client,
@@ -58,13 +62,10 @@ async function full_nex_prism_init(
         vault_code_id,
         vault_config,
     )
-    return
 
     console.log(`nexus_prism_vault instantiated\n\taddress: ${vault_deployment_addr}`);
     console.log(`=======================`);
 
-    let autocompounder_code_id = await store_contract(lcd_client, sender, nexus_prism_autocompounder)
-    console.log(`nexus_prism_autocompounder uploaded\n\tcode_id: ${autocompounder_code_id}`);
 
     // TODO:
     // const autocompounder_config = AutocompounderGovConfig(sender.key.accAddress, xprism_token_addr);
@@ -75,6 +76,14 @@ async function full_nex_prism_init(
     // 	autocompounder_code_id,
     // 	autocompounder_config,
     // );
+
+    return {
+        staking_code_id,
+        vault_code_id,
+        autocompounder_code_id,
+        vault_config,
+        vault_deployment_addr,
+    }
 }
 
 export async function prism_nexprism_full_init(
@@ -100,23 +109,8 @@ export async function prism_nexprism_full_init(
 
     // astroport
     // source: https://docs.astroport.fi/astroport/smart-contracts/astroport-factory#3.-pool-creation-and-querying-walkthrough
-    let astroport_factory_contract_addr = await init_astroport_factory_stable(lcd_client, sender, cw20_code_id);
-    let astroport_factory_contract_nonstable_addr = await init_astroport_factory(lcd_client, sender, cw20_code_id);
-    let xprism_prism_pair = await create_token_to_token_astroport_pair(
-        lcd_client,
-        sender,
-        astroport_factory_contract_addr,
-        prism_market_info.prism_token_addr,
-        prism_market_info.xprism_token_addr
-    )
-    let yluna_prism_pair = await create_token_to_token_astroport_pair(
-        lcd_client,
-        sender,
-        astroport_factory_contract_nonstable_addr,
-        prism_market_info.prism_token_addr,
-        prism_market_info.yluna_token_addr
-    )
-    
+    let astroport_stableswap_factory_contract_addr = await init_astroport_factory_stableswap(lcd_client, sender, cw20_code_id);
+
     // instantiate nexprism contracts
     const nex_prism_info = await full_nex_prism_init(
         lcd_client,
@@ -125,36 +119,18 @@ export async function prism_nexprism_full_init(
         psi_token_addr,
         cw20_code_id,
         governance_contract_addr,
-        astroport_factory_contract_addr,
+        astroport_stableswap_factory_contract_addr,
         prism_market_info.prism_token_addr,
         prism_market_info.yluna_token_addr,
-        xprism_prism_pair.pair_contract_addr,
+        prism_market_info.xprism_prism_pair_addr,
         prism_market_info.prism_launch_pool_addr,
         prism_market_info.prism_xprism_boost_addr,
-        yluna_prism_pair.pair_contract_addr
+        prism_market_info.yluna_prism_pair_addr
     )
-
-    return
 
     // TODO: remove log and compile into result
     console.log("prism_market_info: ", prism_market_info);
     console.log("nex_prism_info: ", nex_prism_info);
-
-    // sample
-    // let [basset_vault_info_for_bluna, basset_vault_info_for_beth] = await full_basset_vault_init(lcd_client, sender, psi_token_initial_owner, anchor_market_info);
-
-    // const oracle_addr = anchor_market_info.oracle_addr;
-    // const bluna_token_addr = anchor_market_info.bluna_token_addr;
-    // const beth_token_addr = anchor_market_info.beth_token_addr;
-
-    // await register_basset_price_feeder(lcd_client, sender, oracle_addr, bluna_token_addr);
-    // await register_basset_price_feeder(lcd_client, sender, oracle_addr, beth_token_addr);
-
-    // await feed_price(lcd_client, sender, oracle_addr, bluna_token_addr, bluna_init_price);
-    // await feed_price(lcd_client, sender, oracle_addr, beth_token_addr, beth_init_price);
-
-    // const addresses_holder_config = AddressesHolderConfig(prism_market_info);
-    // const addresses_holder_addr = await create_contract(lcd_client, sender, "addrs_holder", addresses_holder_wasm, addresses_holder_config);
 
     return {}
 }

@@ -48,58 +48,74 @@ export function StakingConfig(
   }
 }
 
-// source:
-// https://finder.terra.money/testnet/address/terra139w6neqzdk9uqvn6v7sjcr7vpexh3pe0ty7w3m
-// {
-//   "owner": "terra1m6w200dw3gwfp2drrmj7amdwm47lg5w82ne6we",
-//   "governance": "terra1u7tnl4326ge86mzqeqnzxxjg7xkgj8nfg65a2h",
-//   "psi_token": "terra18nle009rtynpjgleh2975rleu5zts0zdtqryte",
-//   "cw20_token_code_id": 9324,
-//   "staking_code_id": 67946,
-//   "astroport_factory": "terra15jsahkaf9p0qu8ye873p0u5z6g07wdad0tdq43",
-//   "xprism_token": "terra1tz4lxls6gp05m20tgx4t9ljhtvqnmcpujaadc2",
-//   "yluna_token": "terra1utwws3p0qzqrw7jslsuvt6drd7jsjhpu0rxauj",
-//   "prism_token": "terra1cwle4remlf03mucutzhxfayvmdqsulx8xaahvy",
-//   "prism_launch_pool": "terra1rmctd835vmx46mtgxt8mpq9ek0h2e6xm4rff4y",
-//   "prism_xprism_boost": "terra1vxejeqv8rjyvycy7gfm3sh0z58xwez6d7jdk42",
-//   "xprism_prism_pair": "terra1ez9ad3ms373pv7j373qc2clsp7x5y9lws8lwln",
-//   "yluna_prism_pair": "terra1xp77h4dl8nhv6s5q9qaynefg772l4p449cwmum",
-//   "rewards_distribution_update_period": 1,
-//   "rewards_distribution_update_step": "1.05",
-//   "nexprism_stakers_reward_ratio": "0.6",
-//   "yluna_depositors_reward_ratio": "0.35",
-//   "psi_stakers_reward_ratio": "0.05",
-//   "min_nexprism_stakers_reward_ratio": "0.1",
-//   "max_nexprism_stakers_reward_ratio": "0.9",
-//   "min_yluna_depositors_reward_ratio": "0.1",
-//   "max_yluna_depositors_reward_ratio": "0.9",
-//   "xprism_nexprism_amp_coef": 5
-// }
+// source: https://github.com/Nexus-Protocol/nex-prism-convex/blob/master/packages/nexus-prism-protocol/src/vault.rs#L7
+// pub owner: String,
+// pub governance: String,
 
+// pub cw20_token_code_id: u64,
+// pub staking_code_id: u64,
+// pub autocompounder_code_id: u64,
+
+// pub astroport_factory: String,
+// pub nexprism_xprism_amp_coef: u64,
+
+// pub psi_token: String,
+// pub prism_token: String,
+// pub xprism_token: String,
+// pub yluna_token: String,
+
+// pub prism_launch_pool: String,
+// pub prism_xprism_boost: String,
+
+// pub prism_xprism_pair: String,
+// pub prism_yluna_pair: String,
+
+// pub rewards_distribution_update_period_secs: Option<u64>,
+// pub rewards_distribution_update_step: Decimal,
+
+// pub nexprism_stakers_reward_ratio: Decimal,
+// pub min_nexprism_stakers_reward_ratio: Decimal,
+// pub max_nexprism_stakers_reward_ratio: Decimal,
+
+// pub nyluna_stakers_reward_ratio: Decimal,
+// pub min_nyluna_stakers_reward_ratio: Decimal,
+// pub max_nyluna_stakers_reward_ratio: Decimal,
+
+// pub psi_stakers_reward_ratio: Decimal,
 export interface VaultConfig {
   owner: string,
   governance: string,
-  psi_token: string,
+
   cw20_token_code_id: number,
   staking_code_id: number,
+  autocompounder_code_id: number,
+
   astroport_factory: string,
+  nexprism_xprism_amp_coef: number,
+
+  psi_token: string,
+  prism_token: string,
   xprism_token: string,
   yluna_token: string,
-  prism_token: string,
+
   prism_launch_pool: string,
   prism_xprism_boost: string,
-  xprism_prism_pair: string,
-  yluna_prism_pair: string,
-  rewards_distribution_update_period: number,
+
+  prism_xprism_pair: string,
+  prism_yluna_pair: string,
+
+  rewards_distribution_update_period_secs: number,
   rewards_distribution_update_step: string,
+
   nexprism_stakers_reward_ratio: string,
-  yluna_depositors_reward_ratio: string,
-  psi_stakers_reward_ratio: string,
   min_nexprism_stakers_reward_ratio: string,
   max_nexprism_stakers_reward_ratio: string,
-  min_yluna_depositors_reward_ratio: string,
-  max_yluna_depositors_reward_ratio: string,
-  xprism_nexprism_amp_coef: number,
+
+  nyluna_stakers_reward_ratio: string,
+  min_nyluna_stakers_reward_ratio: string,
+  max_nyluna_stakers_reward_ratio: string,
+
+  psi_stakers_reward_ratio: string,
 }
 
 export function VaultConfig(
@@ -115,34 +131,40 @@ export function VaultConfig(
   xprism_prism_pair: string,
   prism_launch_pool: string,
   prism_xprism_boost_addr: string,
-  yluna_prism_pair: string
+  yluna_prism_pair: string,
+  autocompounder_code_id: number,
 ): VaultConfig {
   return {
     owner: sender,
     governance: governance_addr,
-    psi_token: psi_token_addr,
+
     cw20_token_code_id: cw20_code_id,
     staking_code_id: staking_code_id,
+    autocompounder_code_id: autocompounder_code_id,
+
     astroport_factory: astroport_factory_contract_addr,
+    nexprism_xprism_amp_coef: 5,
+
+    psi_token: psi_token_addr,
+    prism_token: prism_token_addr,
     xprism_token: xprism_token_addr,
     yluna_token: yluna_addr,
-    prism_token: prism_token_addr,
 
     // TODO:
     prism_launch_pool: prism_launch_pool,
     prism_xprism_boost: prism_xprism_boost_addr,
-    xprism_prism_pair: xprism_prism_pair,
-    yluna_prism_pair: yluna_prism_pair,
-    
-    rewards_distribution_update_period: 1,
+    prism_xprism_pair: xprism_prism_pair,
+    prism_yluna_pair: yluna_prism_pair,
+
+    rewards_distribution_update_period_secs: 60,
+
     rewards_distribution_update_step: "1.05",
     nexprism_stakers_reward_ratio: "0.6",
-    yluna_depositors_reward_ratio: "0.35",
     psi_stakers_reward_ratio: "0.05",
     min_nexprism_stakers_reward_ratio: "0.1",
     max_nexprism_stakers_reward_ratio: "0.9",
-    min_yluna_depositors_reward_ratio: "0.1",
-    max_yluna_depositors_reward_ratio: "0.9",
-    xprism_nexprism_amp_coef: 5
+    nyluna_stakers_reward_ratio: "0.9",
+    min_nyluna_stakers_reward_ratio: "0.1",
+    max_nyluna_stakers_reward_ratio: "0.9",
   }
 }

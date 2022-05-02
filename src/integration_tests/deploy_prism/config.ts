@@ -15,6 +15,9 @@ export interface PrismMarketInfo {
     yluna_token_addr: Addr,
     prism_launch_pool_addr: Addr,
     prism_xprism_boost_addr: Addr,
+    prismswap_info: PrismSwapInfo,
+    xprism_prism_pair_addr: Addr,
+    yluna_prism_pair_addr: Addr,
 }
 
 export function PrismMarketInfo(
@@ -25,6 +28,9 @@ export function PrismMarketInfo(
     yluna_token_addr: Addr,
     prism_launch_pool_addr: Addr,
     prism_xprism_boost_addr: Addr,
+    prismswap_info: PrismSwapInfo,
+    xprism_prism_pair_addr: Addr,
+    yluna_prism_pair_addr: Addr,
 ): PrismMarketInfo {
     return {
         prism_token_addr,
@@ -33,8 +39,16 @@ export function PrismMarketInfo(
         xprism_token_addr,
         yluna_token_addr,
         prism_launch_pool_addr,
-        prism_xprism_boost_addr
+        prism_xprism_boost_addr,
+        prismswap_info,
+        xprism_prism_pair_addr,
+        yluna_prism_pair_addr
     }
+}
+
+export interface PrismSwapInfo {
+    prismswap_factory_address: Addr,
+    prismswap_factory_config: PrismswapFactoryConfig,
 }
 
 // source: 
@@ -202,6 +216,37 @@ export function PrismXprismBoostConfig(
         xprism_token: xprism_token,
         boost_per_hour: "0.014",
         max_boost_per_xprism: "1"
+    }
+}
+
+// source: https://finder.terra.money/testnet/address/terra1g6x8r77h7sywyxc8zgfdyh39y770nvdm0vnl0r
+// source: https://finder.terra.money/testnet/address/terra1xp77h4dl8nhv6s5q9qaynefg772l4p449cwmum
+// {
+//     "token_code_id": 40155,
+//     "pair_code_id": 40156,
+//     "collector": "terra1ht2hlaz2fk20jskwz084xdltu3spkjcu9veyhj",
+//     "owner": "terra1ht2hlaz2fk20jskwz084xdltu3spkjcu9veyhj"
+//   }
+interface PrismswapFactoryConfig {
+    token_code_id: number,
+    pair_code_id: number,
+    collector: Addr,
+    owner: Addr,
+    pairs_admin: Addr,
+}
+
+export function PrismswapFactoryConfig(
+    owner: Addr,
+    collector: Addr,
+    token_code_id: number,
+    pair_code_id: number,
+): PrismswapFactoryConfig {
+    return {
+        token_code_id,
+        pair_code_id,
+        collector,
+        owner,
+        pairs_admin: owner
     }
 }
 interface PrismDeploymentResult {
