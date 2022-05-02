@@ -3,7 +3,7 @@ import { init_governance_contract, init_psi_token } from "../../basset_vault/def
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
 import { create_token_to_token_astroport_pair, instantiate_contract, store_contract } from "../../utils";
 import { prism_init } from "../deploy_prism/definition";
-import { StakingConfig, VaultConfig } from "./config";
+import { NexPrismAddrsAndInfo, StakingConfig, VaultConfig } from "./config";
 
 const artifacts_path = "wasm_artifacts";
 const path_to_nexprism_artifacts = `${artifacts_path}/nexus/nexprism`;
@@ -66,17 +66,6 @@ async function full_nex_prism_init(
     console.log(`nexus_prism_vault instantiated\n\taddress: ${vault_deployment_addr}`);
     console.log(`=======================`);
 
-
-    // TODO:
-    // const autocompounder_config = AutocompounderGovConfig(sender.key.accAddress, xprism_token_addr);
-    // let autocompounder_deployment_addr = await instantiate_contract(
-    // 	lcd_client,
-    // 	sender,
-    // 	sender.key.accAddress,
-    // 	autocompounder_code_id,
-    // 	autocompounder_config,
-    // );
-
     return {
         staking_code_id,
         vault_code_id,
@@ -89,7 +78,7 @@ async function full_nex_prism_init(
 export async function prism_nexprism_full_init(
     lcd_client: LCDClient,
     sender: Wallet,
-) {
+): Promise<NexPrismAddrsAndInfo> {
     // get cw20_code_id
     let cw20_code_id = await Cw20CodeId(lcd_client, sender);
     console.log(`=======================`);
@@ -128,9 +117,20 @@ export async function prism_nexprism_full_init(
         prism_market_info.yluna_prism_pair_addr
     )
 
-    // TODO: remove log and compile into result
-    console.log("prism_market_info: ", prism_market_info);
-    console.log("nex_prism_info: ", nex_prism_info);
+    return {
+        cw20_code_id,
+        governance_config,
+        governance_contract_addr,
+        psi_token_addr,
+        prism_market_info,
+        nex_prism_info
+    }
+}
 
-    return {}
+export async function simple_deposit(
+    _lcd_client: LCDClient,
+    _sender: Wallet,
+    _nex_prism_addrs_and_info: NexPrismAddrsAndInfo
+) {
+    // deposit to vault
 }

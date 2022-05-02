@@ -1,3 +1,4 @@
+import { GovernanceConfig } from "../../config";
 import { PrismMarketInfo } from "../deploy_prism/config";
 export interface AddressesHolderConfig {
   prism_token_addr: string,
@@ -49,39 +50,6 @@ export function StakingConfig(
 }
 
 // source: https://github.com/Nexus-Protocol/nex-prism-convex/blob/master/packages/nexus-prism-protocol/src/vault.rs#L7
-// pub owner: String,
-// pub governance: String,
-
-// pub cw20_token_code_id: u64,
-// pub staking_code_id: u64,
-// pub autocompounder_code_id: u64,
-
-// pub astroport_factory: String,
-// pub nexprism_xprism_amp_coef: u64,
-
-// pub psi_token: String,
-// pub prism_token: String,
-// pub xprism_token: String,
-// pub yluna_token: String,
-
-// pub prism_launch_pool: String,
-// pub prism_xprism_boost: String,
-
-// pub prism_xprism_pair: String,
-// pub prism_yluna_pair: String,
-
-// pub rewards_distribution_update_period_secs: Option<u64>,
-// pub rewards_distribution_update_step: Decimal,
-
-// pub nexprism_stakers_reward_ratio: Decimal,
-// pub min_nexprism_stakers_reward_ratio: Decimal,
-// pub max_nexprism_stakers_reward_ratio: Decimal,
-
-// pub nyluna_stakers_reward_ratio: Decimal,
-// pub min_nyluna_stakers_reward_ratio: Decimal,
-// pub max_nyluna_stakers_reward_ratio: Decimal,
-
-// pub psi_stakers_reward_ratio: Decimal,
 export interface VaultConfig {
   owner: string,
   governance: string,
@@ -169,4 +137,13 @@ export function VaultConfig(
     min_nyluna_stakers_reward_ratio: "0.1",
     max_nyluna_stakers_reward_ratio: "0.9",
   }
+}
+
+export interface NexPrismAddrsAndInfo {
+  cw20_code_id: number,
+  governance_config: GovernanceConfig,
+  governance_contract_addr: string,
+  psi_token_addr: string,
+  prism_market_info: PrismMarketInfo,
+  nex_prism_info: any,
 }
