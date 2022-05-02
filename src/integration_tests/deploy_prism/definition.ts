@@ -215,22 +215,24 @@ export async function prism_init(lcd_client: LCDClient, sender: Wallet, cw20_cod
 async function prism_init_verbose(
 	lcd_client: LCDClient,
 	sender: Wallet,
-	cw20_code_id: number
+	_cw20_code_id: number
 ): Promise<PrismMarketInfo> {
+	let prismswap_token_code_id = await store_contract(lcd_client, sender, prismswap_token_wasm)
+
 	// instantiate prism token
-	let prism_token_addr = await init_prism(lcd_client, sender, cw20_code_id);
+	let prism_token_addr = await init_prism(lcd_client, sender, prismswap_token_code_id);
 	console.log(`prism_token instantiated\n\taddress: ${prism_token_addr}`);
 	console.log(`=======================`);
 
 	// instantiate prism governance contract (prism -> xprism)
-	let prism_governance_info = await init_prism_governance(lcd_client, sender, cw20_code_id, prism_token_addr);
+	let prism_governance_info = await init_prism_governance(lcd_client, sender, prismswap_token_code_id, prism_token_addr);
 	console.log(`prism_gov instantiated\n\taddress: ${prism_governance_info.prism_gov_deployment_addr}`);
 	console.log(`=======================`);
 
 	// instantiate yLuna token
 	// TODO: figure out which contract is the minter
 	// source: https://finder.terra.money/testnet/address/terra1knak0taqkas4y07mupvxpr89kvtew5dx9jystw
-	let yluna_token_addr = await init_yluna(lcd_client, sender, cw20_code_id, prism_token_addr);
+	let yluna_token_addr = await init_yluna(lcd_client, sender, prismswap_token_code_id, prism_token_addr);
 	console.log(`yluna_token instantiated\n\taddress: ${yluna_token_addr}`);
 	console.log(`=======================`);
 
@@ -266,7 +268,7 @@ async function prism_init_verbose(
 	console.log(`=======================`);
 
 	// xprism-prism pairs + yluna-prism using prismswap factory
-	let prismswap_token_code_id = await store_contract(lcd_client, sender, prismswap_token_wasm)
+
 	let prismswap_pair_code_id = await store_contract(lcd_client, sender, prismswap_pair_wasm)
 	const prismswap_info = await init_prismswap_factory(
 		lcd_client,
@@ -280,22 +282,26 @@ async function prism_init_verbose(
 	const xprism_prism_pair_addr = await create_token_to_token_prismswap_pair(
 		lcd_client,
 		sender,
+		prismswap_info.prismswap_factory_address,
 		prism_token_addr,
 		prism_governance_info.xprism_token_addr,
-		prismswap_info.prismswap_factory_address,
 		prismswap_token_code_id, // TODO: double check this vs. prismswap_token later
 		prismswap_pair_code_id
 	)
+	console.log(`xprism_prism pair instantiated\n\taddress: ${xprism_prism_pair_addr}`);
+	console.log(`=======================`);
 
 	const yluna_prism_pair_addr = await create_token_to_token_prismswap_pair(
 		lcd_client,
 		sender,
+		prismswap_info.prismswap_factory_address,
 		prism_token_addr,
 		yluna_token_addr,
-		prismswap_info.prismswap_factory_address,
 		prismswap_token_code_id,
 		prismswap_pair_code_id
 	)
+	console.log(`yluna_prism pair instantiated\n\taddress: ${yluna_prism_pair_addr}`);
+	console.log(`=======================`);
 
 	return PrismMarketInfo(
 		prism_token_addr,
@@ -306,8 +312,8 @@ async function prism_init_verbose(
 		prism_launch_pool_addr,
 		prism_xprism_boost_addr,
 		prismswap_info,
-		"",
-		""
+		xprism_prism_pair_addr,
+		yluna_prism_pair_addr
 	)
 }
 

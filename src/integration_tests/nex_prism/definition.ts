@@ -48,9 +48,6 @@ async function full_nex_prism_init(
         yluna_prism_pair
     )
 
-    console.log("STEVENDEBUG vault_config ", vault_config);
-    console.log("STEVENDEBUG sender.key.accAddress ", sender.key.accAddress);
-
     let vault_deployment_addr = await instantiate_contract(
         lcd_client,
         sender,
@@ -58,7 +55,6 @@ async function full_nex_prism_init(
         vault_code_id,
         vault_config,
     )
-    return
 
     console.log(`nexus_prism_vault instantiated\n\taddress: ${vault_deployment_addr}`);
     console.log(`=======================`);
@@ -137,8 +133,6 @@ export async function prism_nexprism_full_init(
         prism_market_info.prism_xprism_boost_addr,
         prism_market_info.yluna_prism_pair_addr
     )
-
-    return
 
     // TODO: remove log and compile into result
     console.log("prism_market_info: ", prism_market_info);
