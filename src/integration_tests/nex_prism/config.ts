@@ -159,11 +159,13 @@ export function VaultConfig(
     rewards_distribution_update_period_secs: 60,
 
     rewards_distribution_update_step: "1.05",
+
     nexprism_stakers_reward_ratio: "0.6",
-    psi_stakers_reward_ratio: "0.05",
+    psi_stakers_reward_ratio: "0.1",
+    nyluna_stakers_reward_ratio: "0.3",
+
     min_nexprism_stakers_reward_ratio: "0.1",
     max_nexprism_stakers_reward_ratio: "0.9",
-    nyluna_stakers_reward_ratio: "0.9",
     min_nyluna_stakers_reward_ratio: "0.1",
     max_nyluna_stakers_reward_ratio: "0.9",
   }
