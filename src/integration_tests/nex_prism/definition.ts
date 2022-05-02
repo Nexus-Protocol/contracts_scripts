@@ -51,10 +51,6 @@ async function full_nex_prism_init(
         yluna_prism_pair,
         autocompounder_code_id
     )
-
-    console.log("STEVENDEBUG vault_config ", vault_config);
-
-
     let vault_deployment_addr = await instantiate_contract(
         lcd_client,
         sender,
@@ -62,7 +58,6 @@ async function full_nex_prism_init(
         vault_code_id,
         vault_config,
     )
-
     console.log(`nexus_prism_vault instantiated\n\taddress: ${vault_deployment_addr}`);
     console.log(`=======================`);
 
