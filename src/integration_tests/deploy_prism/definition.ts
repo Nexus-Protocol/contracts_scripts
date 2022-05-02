@@ -236,6 +236,7 @@ async function prism_init_verbose(
 	console.log(`=======================`);
 
 	// instantiate staking and yluna staking
+	// TODO: not needed for nex-prism-vault so not added to return, add later
 	let prism_yasset_staking_info = await init_prism_yasset_staking(
 		lcd_client,
 		sender,
