@@ -4,7 +4,7 @@ import { init_governance_contract, init_psi_token } from "../../basset_vault/def
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
 import { create_token_to_token_astroport_pair, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract } from "../../utils";
 import { prism_init } from "../deploy_prism/definition";
-import { NexPrismAddrsAndInfo, StakingConfig, VaultConfig } from "./config";
+import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakingConfig, VaultConfig } from "./config";
 
 const artifacts_path = "wasm_artifacts";
 const path_to_nexprism_artifacts = `${artifacts_path}/nexus/nexprism`;
@@ -26,7 +26,7 @@ async function full_nex_prism_init(
     prism_launch_pool: string,
     prism_xprism_boost_addr: string,
     yluna_prism_pair: string
-) {
+): Promise<NexPrismDeploymentInfo> {
     let staking_code_id = await store_contract(lcd_client, sender, nexus_prism_staking)
     console.log(`nexus_prism_staking uploaded\n\tcode_id: ${staking_code_id}`);
 
@@ -123,7 +123,7 @@ export async function prism_nexprism_full_init(
     }
 }
 
-async function deposit_xprism(lcd_client: LCDClient, sender: Wallet, xprism_token_addr: string, recipient_addr: string, amount: number) {
+async function deposit_xprism_to_nexprism_vault(lcd_client: LCDClient, sender: Wallet, xprism_token_addr: string, recipient_addr: string, amount: number) {
     const deposit_msg = {deposit: {}};
 
     const send_result = await execute_contract(lcd_client, sender, xprism_token_addr, {
@@ -177,7 +177,7 @@ export async function simple_deposit(
     console.log("prism balance: ", prism_bal);
 
     // stake some prism for xprism
-    const res = await stake_prism_for_xprism(
+    await stake_prism_for_xprism(
         lcd_client,
         sender,
         nex_prism_addrs_and_info.prism_market_info.prism_token_addr,
@@ -189,21 +189,24 @@ export async function simple_deposit(
         sender.key.accAddress,
         nex_prism_addrs_and_info.prism_market_info.xprism_token_addr
     )
-    console.log("stake prism for xprism: ", res);
+    assert(xprism_bal > 0)
     console.log("xprism balance: ", xprism_bal);
 
     // deposit xprism to vault
-    // const sample_amount = 100;
-    // await deposit_xprism(
-    //     lcd_client,
-    //     sender,
-    //     nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
-    //     nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr,
-    //     sample_amount
-    // )
-
-
-    // assert the above
+    await deposit_xprism_to_nexprism_vault(
+        lcd_client,
+        sender,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+        nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr,
+        xprism_bal / 2
+    )
+    const xprism_bal_after_dep = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr
+    )
+    assert(xprism_bal > xprism_bal_after_dep)
+    console.log("xprism balance after deposit: ", xprism_bal_after_dep);
 
     // assert recieve correct amount of nexprism back
 }

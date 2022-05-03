@@ -86,6 +86,8 @@ export interface VaultConfig {
   psi_stakers_reward_ratio: string,
 }
 
+
+
 export function VaultConfig(
   sender: string,
   psi_token_addr: string,
@@ -139,11 +141,24 @@ export function VaultConfig(
   }
 }
 
+// staking_code_id,
+// vault_code_id,
+// autocompounder_code_id,
+// vault_config,
+// vault_deployment_addr,
+
+export interface NexPrismDeploymentInfo {
+  staking_code_id: number,
+  vault_code_id: number,
+  autocompounder_code_id: number,
+  vault_config: VaultConfig,
+  vault_deployment_addr: string, 
+}
 export interface NexPrismAddrsAndInfo {
   cw20_code_id: number,
   governance_config: GovernanceConfig,
   governance_contract_addr: string,
   psi_token_addr: string,
   prism_market_info: PrismMarketInfo,
-  nex_prism_info: any,
+  nex_prism_info: NexPrismDeploymentInfo,
 }
