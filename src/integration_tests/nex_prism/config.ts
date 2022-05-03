@@ -142,7 +142,6 @@ export interface NexPrismDeploymentInfo {
   vault_deployment_addr: string, 
   nexprism_token_addr: string,
 }
-
 export interface NexPrismAddrsAndInfo {
   cw20_code_id: number,
   governance_config: GovernanceConfig,
