@@ -143,6 +143,10 @@ export interface InstantiateMarketingInfo {
     logo?: Logo,
 }
 
+export interface BalanceResponse {
+    balance: string
+}
+
 export interface TokenConfig {
 	name: string,
 	symbol: string,

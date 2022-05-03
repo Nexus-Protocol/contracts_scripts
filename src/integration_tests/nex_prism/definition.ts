@@ -1,7 +1,8 @@
 import { LCDClient, Wallet } from "@terra-money/terra.js";
+import { assert } from "console";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
-import { create_token_to_token_astroport_pair, instantiate_contract, store_contract } from "../../utils";
+import { create_token_to_token_astroport_pair, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract } from "../../utils";
 import { prism_init } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, StakingConfig, VaultConfig } from "./config";
 
@@ -122,10 +123,87 @@ export async function prism_nexprism_full_init(
     }
 }
 
+async function deposit_xprism(lcd_client: LCDClient, sender: Wallet, xprism_token_addr: string, recipient_addr: string, amount: number) {
+    const deposit_msg = {deposit: {}};
+
+    const send_result = await execute_contract(lcd_client, sender, xprism_token_addr, {
+        send: {
+            contract: recipient_addr,
+            amount: amount.toString(),
+            msg: Buffer.from(JSON.stringify(deposit_msg)).toString('base64'),
+        }
+    });
+
+    return send_result;
+}
+
+async function stake_prism_for_xprism(lcd_client: LCDClient, sender: Wallet, prism_token_addr: string, prism_gov_addr: string, amount: number) {
+    // https://stackabuse.com/encoding-and-decoding-base64-strings-in-node-js/
+    // {
+    //     "send": {
+    //       "msg": "eyJtaW50X3hwcmlzbSI6e319",
+    //       "amount": "18474802",
+    //       "contract": "terra1h4al753uvwmhxwhn2dlvm9gfk0jkf52xqasmq2"
+    //     }
+    //   }
+    
+    const msg = {mint_xprism: {}};
+    const recipient_addr = prism_gov_addr;
+
+    const send_result = await execute_contract(lcd_client, sender, prism_token_addr, {
+        send: {
+            contract: recipient_addr,
+            amount: amount.toString(),
+            msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
+        }
+    });
+
+    return send_result;
+}
+
+
 export async function simple_deposit(
-    _lcd_client: LCDClient,
-    _sender: Wallet,
-    _nex_prism_addrs_and_info: NexPrismAddrsAndInfo
+    lcd_client: LCDClient,
+    sender: Wallet,
+    nex_prism_addrs_and_info: NexPrismAddrsAndInfo
 ) {
-    // deposit to vault
+    // check xprism balance
+    const prism_bal = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.prism_token_addr
+    )
+    assert(prism_bal > 0)
+    console.log("prism balance: ", prism_bal);
+
+    // stake some prism for xprism
+    const res = await stake_prism_for_xprism(
+        lcd_client,
+        sender,
+        nex_prism_addrs_and_info.prism_market_info.prism_token_addr,
+        nex_prism_addrs_and_info.prism_market_info.prism_gov_addr,
+        prism_bal / 2
+    )
+    const xprism_bal = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr
+    )
+    console.log("stake prism for xprism: ", res);
+    console.log("xprism balance: ", xprism_bal);
+
+    // deposit xprism to vault
+    // const sample_amount = 100;
+    // await deposit_xprism(
+    //     lcd_client,
+    //     sender,
+    //     nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+    //     nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr,
+    //     sample_amount
+    // )
+
+
+    // assert the above
+
+    // assert recieve correct amount of nexprism back
 }

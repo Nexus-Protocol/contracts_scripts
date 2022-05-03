@@ -49,7 +49,12 @@ async function init_prism(lcd_client: LCDClient, sender: Wallet, cw20_code_id: n
 		name: "Prism governance token",
 		symbol: "PRISM",
 		decimals: 6,
-		initial_balances: [],
+		initial_balances: [
+			{
+				address: sender.key.accAddress,
+				amount: "10000000000000000"
+			}
+		],
 		mint: {
 			minter: sender.key.accAddress,
 		},
