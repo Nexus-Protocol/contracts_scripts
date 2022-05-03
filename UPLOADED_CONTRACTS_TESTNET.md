@@ -150,7 +150,7 @@ pol_contract instantiated
 	staking code_id: 67946
 	vault code_id: 67982
 	autocompounder code_id: 67948
-	lockdrop code_id: 68983
+	lockdrop code_id: 69288
 	===
 	vault addr: terra139w6neqzdk9uqvn6v7sjcr7vpexh3pe0ty7w3m
 	nyluna token addr: terra1u2amvzp0s0ywsndw9el5yhxafd59fr68gs5xre
@@ -159,5 +159,5 @@ pol_contract instantiated
 	nexprism-xprism lp token: terra1249j6hy86sjsltq82q08cuk8gtgy6ut9y95pn7
 	psi staking addr: terra1l37hcmnqpa5hkxr6ncr0mt0rxk0fmepswnwn8s
 	yluna staking addr: terra1reyshrs9n3acvhhf62wqcutat90mekfpp5xewe
-	lockdrop addr: terra1vknku5w0h5w6pevf92jx4yw6e5v4wd7eqyc4lm
+	lockdrop addr: terra1ue49w62curgpxz6a7et5c36tmux6k60u5j6qrg
 ```
