@@ -1,24 +1,16 @@
 import { Command } from 'commander';
-import { prism_nexprism_full_init } from '../deploy_prism/definition';
 import { get_lcd_config_with_wallet_for_integration_tests_only } from '../utils';
+import { NexPrismAddrsAndInfo } from './config';
+import { prism_nexprism_full_init, simple_deposit } from './definition';
 
 async function run_program() {
     const program = new Command();
 
     program
         .action(async () => {
-            const addresses_holder_addr = await deploy();
+            const nex_prism_addrs_and_info = await deploy();
             
-            // TODO sample:
-            // await run_recursive_repay_ok(addresses_holder_addr);
-            // await run_simple_deposit(addresses_holder_addr);
-            // await run_borrow_more_on_bluna_price_increasing(addresses_holder_addr);
-            // await run_repay_on_bluna_price_decreasing(addresses_holder_addr);
-            // await run_expired_basset_price_rebalance(addresses_holder_addr);
-
-            // TODO: xprism deposit/lock 1 month and withdraw (also check nexprism conversion)
-            // TODO: xprism deposit/lock 3 month and withdraw
-            // TODO: xprism deposit/lock and withdraw within 7 days
+            await run_simple_deposit(nex_prism_addrs_and_info)
         });
 
     program
@@ -42,6 +34,11 @@ run_program()
 
 async function deploy() {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
-    const addresses_holder_addr = await prism_nexprism_full_init(lcd_client, sender);
-    return addresses_holder_addr;
+    const nex_prism_addrs_and_info = await prism_nexprism_full_init(lcd_client, sender);
+    return nex_prism_addrs_and_info;
+}
+
+async function run_simple_deposit(nex_prism_addrs_and_info: NexPrismAddrsAndInfo) {
+    const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
+    await simple_deposit(lcd_client, sender, nex_prism_addrs_and_info);
 }

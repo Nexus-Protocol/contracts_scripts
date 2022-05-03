@@ -16,7 +16,7 @@ import {
 	StdFee,
 	Wallet
 } from '@terra-money/terra.js';
-import {BassetVaultConfig, is_localterra} from './config';
+import {BalanceResponse, BassetVaultConfig, is_localterra} from './config';
 import {SecretsManager} from 'aws-sdk';
 import * as prompt from 'prompt';
 import {isTxSuccess} from './transaction';
@@ -27,6 +27,15 @@ export async function create_contract(lcd_client: LCDClient, sender: Wallet, con
 	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg, init_funds);
 	console.log(`${contract_name} instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
+}
+
+export async function get_token_balance(lcd_client: LCDClient, token_holder_addr: string, token_addr: string) {
+    const result: BalanceResponse = await lcd_client.wasm.contractQuery(token_addr, {
+        balance: {
+            address: token_holder_addr
+        }
+    });
+    return +result.balance;
 }
 
 // ============================================================

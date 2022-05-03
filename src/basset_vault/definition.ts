@@ -52,13 +52,13 @@ const nasset_token_rewards_wasm = `${path_to_basset_vault_artifacts}/basset_vaul
 const psi_distributor_wasm = `${path_to_basset_vault_artifacts}/basset_vault_psi_distributor.wasm`;
 // ===================================================
 
-async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
+export async function init_psi_token(lcd_client: LCDClient, sender: Wallet, code_id: number, init_msg: TokenConfig): Promise<string> {
 	let contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, code_id, init_msg);
 	console.log(`psi_token instantiated\n\taddress: ${contract_addr}`);
 	return contract_addr;
 }
 
-async function init_governance_contract(lcd_client: LCDClient, sender: Wallet, init_msg: GovernanceConfig): Promise<string> {
+export async function init_governance_contract(lcd_client: LCDClient, sender: Wallet, init_msg: GovernanceConfig): Promise<string> {
 	let contract_addr = await create_contract(lcd_client, sender, "governance_contract", governance_contract_wasm, init_msg);
 	return contract_addr;
 }

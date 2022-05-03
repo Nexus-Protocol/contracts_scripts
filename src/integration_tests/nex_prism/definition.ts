@@ -1,0 +1,237 @@
+import { getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
+import { assert } from "console";
+import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
+import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
+import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract } from "../../utils";
+import { prism_init } from "../deploy_prism/definition";
+import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakingConfig, VaultConfig } from "./config";
+
+const artifacts_path = "wasm_artifacts";
+const path_to_nexprism_artifacts = `${artifacts_path}/nexus/nexprism`;
+const nexus_prism_autocompounder = `${path_to_nexprism_artifacts}/nexus_prism_autocompounder.wasm`;
+const nexus_prism_staking = `${path_to_nexprism_artifacts}/nexus_prism_staking.wasm`;
+const nexus_prism_vault = `${path_to_nexprism_artifacts}/nexus_prism_vault.wasm`;
+
+async function full_nex_prism_init(
+    lcd_client: LCDClient,
+    sender: Wallet,
+    xprism_token_addr: string,
+    psi_token_addr: string,
+    cw20_code_id: number,
+    governance_contract_addr: string,
+    astroport_factory_contract_addr: string,
+    prism_token_addr: string,
+    yluna_addr: string,
+    xprism_prism_pair: string,
+    prism_launch_pool: string,
+    prism_xprism_boost_addr: string,
+    yluna_prism_pair: string
+): Promise<NexPrismDeploymentInfo> {
+    let staking_code_id = await store_contract(lcd_client, sender, nexus_prism_staking)
+    console.log(`nexus_prism_staking uploaded\n\tcode_id: ${staking_code_id}`);
+
+    let vault_code_id = await store_contract(lcd_client, sender, nexus_prism_vault)
+    console.log(`nexus_prism_vault uploaded\n\tcode_id: ${vault_code_id}`);
+
+    let autocompounder_code_id = await store_contract(lcd_client, sender, nexus_prism_autocompounder)
+    console.log(`nexus_prism_autocompounder uploaded\n\tcode_id: ${autocompounder_code_id}`);
+
+    const vault_config = VaultConfig(
+        sender.key.accAddress,
+        psi_token_addr,
+        cw20_code_id,
+        staking_code_id,
+        xprism_token_addr,
+        astroport_factory_contract_addr,
+        prism_token_addr,
+        governance_contract_addr,
+        yluna_addr,
+        xprism_prism_pair,
+        prism_launch_pool,
+        prism_xprism_boost_addr,
+        yluna_prism_pair,
+        autocompounder_code_id
+    )
+    let vault_deploy_res = await instantiate_contract_raw(
+        lcd_client,
+        sender,
+        sender.key.accAddress,
+        vault_code_id,
+        vault_config,
+    )
+
+    let vault_deployment_addr = ""
+    let nexprism_token_addr = ""
+    let contract_events = vault_deploy_res ? getContractEvents(vault_deploy_res) : [];
+	for (let contract_event of contract_events) {
+        let nexprism_token = contract_event["nexprism_token"];
+        if (nexprism_token) {
+            nexprism_token_addr = nexprism_token;
+        }
+        
+        let vault_addr = contract_event["contract_address"];
+        if (vault_addr) {
+            vault_deployment_addr = vault_addr;
+        }
+	}
+    
+    console.log(`nexus_prism_vault instantiated\n\taddress: ${vault_deployment_addr}`);
+    console.log(`=======================`);
+
+    return {
+        staking_code_id,
+        vault_code_id,
+        autocompounder_code_id,
+        vault_config,
+        vault_deployment_addr,
+        nexprism_token_addr
+    }
+}
+
+export async function prism_nexprism_full_init(
+    lcd_client: LCDClient,
+    sender: Wallet,
+): Promise<NexPrismAddrsAndInfo> {
+    // get cw20_code_id
+    let cw20_code_id = await Cw20CodeId(lcd_client, sender);
+    console.log(`=======================`);
+
+    // instantiate governance contract_addr
+    let governance_config = GovernanceConfig(lcd_client);
+    let governance_contract_addr = await init_governance_contract(lcd_client, sender, governance_config);
+    console.log(`=======================`);
+
+    // instantiate psi_token
+    let token_config = TokenConfig(lcd_client, governance_contract_addr, PSiTokensOwner(lcd_client, sender, sender.key.accAddress));
+    let psi_token_addr = await init_psi_token(lcd_client, sender, cw20_code_id, token_config);
+    console.log(`=======================`);
+
+    // instantiate prism contracts
+    const prism_market_info = await prism_init(lcd_client, sender, cw20_code_id);
+
+    // astroport
+    // source: https://docs.astroport.fi/astroport/smart-contracts/astroport-factory#3.-pool-creation-and-querying-walkthrough
+    let astroport_stableswap_factory_contract_addr = await init_astroport_factory_stableswap(lcd_client, sender, cw20_code_id);
+
+    // instantiate nexprism contracts
+    const nex_prism_info = await full_nex_prism_init(
+        lcd_client,
+        sender,
+        prism_market_info.xprism_token_addr,
+        psi_token_addr,
+        cw20_code_id,
+        governance_contract_addr,
+        astroport_stableswap_factory_contract_addr,
+        prism_market_info.prism_token_addr,
+        prism_market_info.yluna_token_addr,
+        prism_market_info.xprism_prism_pair_addr,
+        prism_market_info.prism_launch_pool_addr,
+        prism_market_info.prism_xprism_boost_addr,
+        prism_market_info.yluna_prism_pair_addr
+    )
+
+    return {
+        cw20_code_id,
+        governance_config,
+        governance_contract_addr,
+        psi_token_addr,
+        prism_market_info,
+        nex_prism_info
+    }
+}
+
+async function deposit_xprism_to_nexprism_vault(lcd_client: LCDClient, sender: Wallet, xprism_token_addr: string, recipient_addr: string, amount: number) {
+    const deposit_msg = {deposit: {}};
+
+    const send_result = await execute_contract(lcd_client, sender, xprism_token_addr, {
+        send: {
+            contract: recipient_addr,
+            amount: amount.toString(),
+            msg: Buffer.from(JSON.stringify(deposit_msg)).toString('base64'),
+        }
+    });
+
+    return send_result;
+}
+
+async function stake_prism_for_xprism(lcd_client: LCDClient, sender: Wallet, prism_token_addr: string, prism_gov_addr: string, amount: number) {
+    // https://stackabuse.com/encoding-and-decoding-base64-strings-in-node-js/
+    // {
+    //     "send": {
+    //       "msg": "eyJtaW50X3hwcmlzbSI6e319",
+    //       "amount": "18474802",
+    //       "contract": "terra1h4al753uvwmhxwhn2dlvm9gfk0jkf52xqasmq2"
+    //     }
+    //   }
+    
+    const msg = {mint_xprism: {}};
+    const recipient_addr = prism_gov_addr;
+
+    const send_result = await execute_contract(lcd_client, sender, prism_token_addr, {
+        send: {
+            contract: recipient_addr,
+            amount: amount.toString(),
+            msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
+        }
+    });
+
+    return send_result;
+}
+
+
+export async function simple_deposit(
+    lcd_client: LCDClient,
+    sender: Wallet,
+    nex_prism_addrs_and_info: NexPrismAddrsAndInfo
+) {
+    // check xprism balance
+    const prism_bal = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.prism_token_addr
+    )
+    assert(prism_bal > 0)
+    console.log("prism balance: ", prism_bal);
+
+    // stake some prism for xprism
+    await stake_prism_for_xprism(
+        lcd_client,
+        sender,
+        nex_prism_addrs_and_info.prism_market_info.prism_token_addr,
+        nex_prism_addrs_and_info.prism_market_info.prism_gov_addr,
+        prism_bal / 2
+    )
+    const xprism_bal = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr
+    )
+    assert(xprism_bal > 0)
+    console.log("xprism balance: ", xprism_bal);
+
+    // deposit xprism to vault
+    await deposit_xprism_to_nexprism_vault(
+        lcd_client,
+        sender,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+        nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr,
+        xprism_bal / 2
+    )
+    const xprism_bal_after_dep = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr
+    )
+    assert(xprism_bal > xprism_bal_after_dep)
+    console.log("xprism balance after deposit: ", xprism_bal_after_dep);
+
+    // assert recieve correct amount of nexprism back
+    const nexprism_bal = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr
+    )
+    assert(nexprism_bal > 0)
+    console.log("nexprism balance after deposit: ", nexprism_bal);
+
+}
