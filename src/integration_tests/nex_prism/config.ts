@@ -5,15 +5,6 @@ export interface AddressesHolderConfig {
   prism_gov_addr: string,
 }
 
-export function AddressesHolderConfig(
-  prism_market_info: PrismMarketInfo,
-): AddressesHolderConfig {
-  return {
-    prism_token_addr: prism_market_info.prism_token_addr,
-    prism_gov_addr: "",
-  }
-}
-
 // source:
 // https://github.com/Nexus-Protocol/nex-prism-convex/blob/master/packages/nexus-prism-protocol/src/staking.rs
 // pub struct InstantiateMsg {
@@ -153,6 +144,7 @@ export interface NexPrismDeploymentInfo {
   autocompounder_code_id: number,
   vault_config: VaultConfig,
   vault_deployment_addr: string, 
+  nexprism_token_addr: string,
 }
 export interface NexPrismAddrsAndInfo {
   cw20_code_id: number,

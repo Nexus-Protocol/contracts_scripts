@@ -1,8 +1,8 @@
-import { LCDClient, Wallet } from "@terra-money/terra.js";
+import { getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { assert } from "console";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
-import { create_token_to_token_astroport_pair, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract } from "../../utils";
+import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract } from "../../utils";
 import { prism_init } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakingConfig, VaultConfig } from "./config";
 
@@ -52,13 +52,29 @@ async function full_nex_prism_init(
         yluna_prism_pair,
         autocompounder_code_id
     )
-    let vault_deployment_addr = await instantiate_contract(
+    let vault_deploy_res = await instantiate_contract_raw(
         lcd_client,
         sender,
         sender.key.accAddress,
         vault_code_id,
         vault_config,
     )
+
+    let vault_deployment_addr = ""
+    let nexprism_token_addr = ""
+    let contract_events = vault_deploy_res ? getContractEvents(vault_deploy_res) : [];
+	for (let contract_event of contract_events) {
+        let nexprism_token = contract_event["nexprism_token"];
+        if (nexprism_token) {
+            nexprism_token_addr = nexprism_token;
+        }
+        
+        let vault_addr = contract_event["contract_address"];
+        if (vault_addr) {
+            vault_deployment_addr = vault_addr;
+        }
+	}
+    
     console.log(`nexus_prism_vault instantiated\n\taddress: ${vault_deployment_addr}`);
     console.log(`=======================`);
 
@@ -68,6 +84,7 @@ async function full_nex_prism_init(
         autocompounder_code_id,
         vault_config,
         vault_deployment_addr,
+        nexprism_token_addr
     }
 }
 
@@ -209,4 +226,12 @@ export async function simple_deposit(
     console.log("xprism balance after deposit: ", xprism_bal_after_dep);
 
     // assert recieve correct amount of nexprism back
+    const nexprism_bal = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr
+    )
+    assert(nexprism_bal > 0)
+    console.log("nexprism balance after deposit: ", nexprism_bal);
+
 }
