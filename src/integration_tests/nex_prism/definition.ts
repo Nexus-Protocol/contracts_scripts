@@ -2,7 +2,7 @@ import { getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { assert } from "console";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
-import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance } from "../../utils";
+import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract } from "../../utils";
 import { PrismMarketInfo } from "../deploy_prism/config";
 import { prism_init, stake_prism_for_xprism } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakingConfig, VaultConfig } from "./config";
@@ -55,8 +55,6 @@ async function full_nex_prism_init(
         autocompounder_code_id,
         prism_governance_addr,
     )
-    console.log("STEVENDEBUG vault_config ", vault_config);
-    
     let vault_deploy_res = await instantiate_contract_raw(
         lcd_client,
         sender,
@@ -250,14 +248,7 @@ async function deposit_xprism_to_nexprism_vault(lcd_client: LCDClient, sender: W
 
 // TODO:
 async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string, amount: number) {
-    console.log("STEVENDEBUG nexprism_staking_addr " + nexprism_staking_addr);
-    
-    const allowance = await increase_token_allowance(lcd_client, sender, nexprism_token_addr, nexprism_staking_addr, amount);
-
-    console.log("STEVENDEBUG allowance " + allowance);
-
-    // https://github.com/Nexus-Protocol/nex-prism-convex/blob/20c0cce51e8e6810107c981e0189cd4c41701e1d/contracts/nexus_prism_staking/src/commands.rs#L42
-    const msg = { bond: {} };
+    const msg = { mint_xprism: {} };
     const recipient_addr = nexprism_staking_addr;
 
     const send_result = await execute_contract(lcd_client, sender, nexprism_token_addr, {
@@ -267,9 +258,6 @@ async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_to
             msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
         }
     });
-
-    console.log("NexPRISM stake res ", send_result);
-    
 
     return send_result;
 }
@@ -330,13 +318,13 @@ export async function simple_deposit(
     console.log("nexprism balance after staking xprism: ", nexprism_bal);
 
     // TODO: stake the nexprism
-    await stake_nexprism(
-        lcd_client,
-        sender,
-        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
-        nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr,
-        nexprism_bal
-    )
-    assert(nexprism_bal < 1)
-    console.log("nexprism balance after staking nexprism: ", nexprism_bal);
+    // await stake_nexprism(
+    //     lcd_client,
+    //     sender,
+    //     nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
+    //     nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr,
+    //     nexprism_bal
+    // )
+    // assert(nexprism_bal < 1)
+    // console.log("nexprism balance after staking nexprism: ", nexprism_bal);
 }
