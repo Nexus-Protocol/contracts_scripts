@@ -4,7 +4,7 @@ import { init_governance_contract, init_psi_token } from "../../basset_vault/def
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
 import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract } from "../../utils";
 import { PrismMarketInfo } from "../deploy_prism/config";
-import { prism_init } from "../deploy_prism/definition";
+import { prism_init, stake_prism_for_xprism } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakingConfig, VaultConfig } from "./config";
 
 const artifacts_path = "wasm_artifacts";
@@ -240,30 +240,6 @@ async function deposit_xprism_to_nexprism_vault(lcd_client: LCDClient, sender: W
             contract: recipient_addr,
             amount: amount.toString(),
             msg: Buffer.from(JSON.stringify(deposit_msg)).toString('base64'),
-        }
-    });
-
-    return send_result;
-}
-
-async function stake_prism_for_xprism(lcd_client: LCDClient, sender: Wallet, prism_token_addr: string, prism_gov_addr: string, amount: number) {
-    // https://stackabuse.com/encoding-and-decoding-base64-strings-in-node-js/
-    // {
-    //     "send": {
-    //       "msg": "eyJtaW50X3hwcmlzbSI6e319",
-    //       "amount": "18474802",
-    //       "contract": "terra1h4al753uvwmhxwhn2dlvm9gfk0jkf52xqasmq2"
-    //     }
-    //   }
-
-    const msg = { mint_xprism: {} };
-    const recipient_addr = prism_gov_addr;
-
-    const send_result = await execute_contract(lcd_client, sender, prism_token_addr, {
-        send: {
-            contract: recipient_addr,
-            amount: amount.toString(),
-            msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
         }
     });
 
