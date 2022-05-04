@@ -3,6 +3,7 @@ import { assert } from "console";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
 import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract } from "../../utils";
+import { PrismMarketInfo } from "../deploy_prism/config";
 import { prism_init } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakingConfig, VaultConfig } from "./config";
 
@@ -25,7 +26,8 @@ async function full_nex_prism_init(
     xprism_prism_pair: string,
     prism_launch_pool: string,
     prism_xprism_boost_addr: string,
-    yluna_prism_pair: string
+    yluna_prism_pair: string,
+    prism_governance_addr: string,
 ): Promise<NexPrismDeploymentInfo> {
     let staking_code_id = await store_contract(lcd_client, sender, nexus_prism_staking)
     console.log(`nexus_prism_staking uploaded\n\tcode_id: ${staking_code_id}`);
@@ -50,7 +52,8 @@ async function full_nex_prism_init(
         prism_launch_pool,
         prism_xprism_boost_addr,
         yluna_prism_pair,
-        autocompounder_code_id
+        autocompounder_code_id,
+        prism_governance_addr,
     )
     let vault_deploy_res = await instantiate_contract_raw(
         lcd_client,
@@ -65,14 +68,15 @@ async function full_nex_prism_init(
     let nyluna_token_addr = ""
     let nyluna_staking_addr = ""
     let nexprism_staking_addr = ""
+    let nexprism_xprism_pair_addr = ""
 
     let contract_events = vault_deploy_res ? getContractEvents(vault_deploy_res) : [];
-	for (let contract_event of contract_events) {
+    for (let contract_event of contract_events) {
         let nexprism_token = contract_event["nexprism_token"];
         if (nexprism_token) {
             nexprism_token_addr = nexprism_token;
         }
-        
+
         let vault_addr = contract_event["contract_address"];
         if (vault_addr) {
             vault_deployment_addr = vault_addr;
@@ -83,17 +87,22 @@ async function full_nex_prism_init(
             nyluna_token_addr = nyluna_token;
         }
 
-        let nyluna_staking = contract_event["nyluna_staking_instantiated"];
+        let nyluna_staking = contract_event["nyluna_staking"];
         if (nyluna_staking) {
             nyluna_staking_addr = nyluna_staking;
         }
 
-        let nexprism_staking = contract_event["nexprism_staking_instantiated"];
+        let nexprism_staking = contract_event["nexprism_staking"];
         if (nexprism_staking) {
             nexprism_staking_addr = nexprism_staking;
         }
-	}
-    
+
+        let nexprism_xprism_pair = contract_event["nexprism_xprism_pair"];
+        if (nexprism_xprism_pair) {
+            nexprism_xprism_pair_addr = nexprism_xprism_pair;
+        }
+    }
+
     console.log(`nexus_prism_vault instantiated\n\taddress: ${vault_deployment_addr}`);
     console.log(`=======================`);
 
@@ -106,8 +115,64 @@ async function full_nex_prism_init(
         nexprism_token_addr,
         nyluna_token_addr,
         nyluna_staking_addr,
-        nexprism_staking_addr
+        nexprism_staking_addr,
+        nexprism_xprism_pair_addr
     }
+}
+
+async function provide_nexprism_xprism_liquidity(lcd_client: LCDClient, sender: Wallet, prism_market_info: PrismMarketInfo, nex_prism_info: NexPrismDeploymentInfo) {
+    const liquidityAmount = 100_000_000_000;
+    const liquidityAmountStr = String(100_000_000_000);
+
+    await stake_prism_for_xprism(
+        lcd_client,
+        sender,
+        prism_market_info.prism_token_addr,
+        prism_market_info.prism_gov_addr,
+        2 * liquidityAmount
+    );
+    await deposit_xprism_to_nexprism_vault(
+        lcd_client,
+        sender,
+        prism_market_info.xprism_token_addr,
+        nex_prism_info.vault_deployment_addr,
+        liquidityAmount
+    );
+
+    const msgIncreaseAllowance = {
+        increase_allowance: {
+            spender: nex_prism_info.nexprism_xprism_pair_addr,
+            amount: liquidityAmountStr,
+        }
+    };
+    await execute_contract(lcd_client, sender, nex_prism_info.nexprism_token_addr, msgIncreaseAllowance);
+    await execute_contract(lcd_client, sender, prism_market_info.xprism_token_addr, msgIncreaseAllowance);
+
+    const msgProvideLiquidity =
+    {
+        provide_liquidity: {
+            assets: [
+                {
+                    amount: liquidityAmountStr,
+                    info: {
+                        token: {
+                            contract_addr: nex_prism_info.nexprism_token_addr,
+                        }
+                    }
+                },
+                {
+                    amount: liquidityAmountStr,
+                    info: {
+                        token: {
+                            contract_addr: prism_market_info.xprism_token_addr,
+                        }
+                    }
+                },
+            ]
+        }
+    };
+    await execute_contract(lcd_client, sender, nex_prism_info.nexprism_xprism_pair_addr, msgProvideLiquidity);
+
 }
 
 export async function prism_nexprism_full_init(
@@ -149,8 +214,13 @@ export async function prism_nexprism_full_init(
         prism_market_info.xprism_prism_pair_addr,
         prism_market_info.prism_launch_pool_addr,
         prism_market_info.prism_xprism_boost_addr,
-        prism_market_info.yluna_prism_pair_addr
+        prism_market_info.yluna_prism_pair_addr,
+        prism_market_info.prism_gov_addr
     )
+
+    await provide_nexprism_xprism_liquidity(lcd_client, sender, prism_market_info, nex_prism_info);
+    console.log(`Liquidity provided for nexPRISM-xPRISM pair`);
+    console.log(`=======================`);
 
     return {
         cw20_code_id,
@@ -163,7 +233,7 @@ export async function prism_nexprism_full_init(
 }
 
 async function deposit_xprism_to_nexprism_vault(lcd_client: LCDClient, sender: Wallet, xprism_token_addr: string, recipient_addr: string, amount: number) {
-    const deposit_msg = {deposit: {}};
+    const deposit_msg = { deposit: {} };
 
     const send_result = await execute_contract(lcd_client, sender, xprism_token_addr, {
         send: {
@@ -185,8 +255,8 @@ async function stake_prism_for_xprism(lcd_client: LCDClient, sender: Wallet, pri
     //       "contract": "terra1h4al753uvwmhxwhn2dlvm9gfk0jkf52xqasmq2"
     //     }
     //   }
-    
-    const msg = {mint_xprism: {}};
+
+    const msg = { mint_xprism: {} };
     const recipient_addr = prism_gov_addr;
 
     const send_result = await execute_contract(lcd_client, sender, prism_token_addr, {
@@ -202,7 +272,7 @@ async function stake_prism_for_xprism(lcd_client: LCDClient, sender: Wallet, pri
 
 // TODO:
 async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string, amount: number) {
-    const msg = {mint_xprism: {}};
+    const msg = { mint_xprism: {} };
     const recipient_addr = nexprism_staking_addr;
 
     const send_result = await execute_contract(lcd_client, sender, nexprism_token_addr, {
