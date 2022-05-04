@@ -121,6 +121,7 @@ export function PrismLaunchPoolConfig(
     xprism_token: Addr,
     prism_gov_deployment_addr: Addr,
     yluna_staking_addr: Addr,
+    prism_xprism_boost_addr: Addr,
 ): PrismLaunchPoolConfig {
     return {
         owner: owner_addr,
@@ -130,8 +131,7 @@ export function PrismLaunchPoolConfig(
         yluna_token: yluna_token,
         prism_token: prism_token,
         vesting_period: 10800,
-        // TODO:
-        boost_contract: "terra1vxejeqv8rjyvycy7gfm3sh0z58xwez6d7jdk42",
+        boost_contract: prism_xprism_boost_addr,
         distribution_schedule: [
             1646560800,
             1649239200,
@@ -194,7 +194,7 @@ export function PrismYassetStakingConfig(
         // TODO: set up cluna and pluna contracts
         cluna_token: "terra108kj35ef46tptcw69a0x5r9qkfu8h7vmjp6w39",
         pluna_token: "terra1sev4e0u23l75g5spzsquw6n7c8g5efl6hg0zl6",
-        
+
         yluna_token: yluna_token,
 
         prism_token: prism_token,
