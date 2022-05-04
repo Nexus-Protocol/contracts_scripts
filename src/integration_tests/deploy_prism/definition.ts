@@ -324,7 +324,8 @@ async function init_prism_xprism_pair_and_provide_liquidity(
 		} 
 	};
 	await execute_contract(lcd_client, sender, xprism_prism_pair_addr, msg_provide_liquidity);
-	console.log(`Provided ${liquidityAmountStr} xprism and ${liquidityAmountStr} prism in liquidity for prism-xprism pair on prismswap`);
+	console.log("Liquidity provided for PRISM-xPRISM pair");
+	console.log(`Provided ${liquidityAmountStr} xPRISM and ${liquidityAmountStr} PRISM`);
 	
 	return xprism_prism_pair_addr
 }
@@ -398,7 +399,8 @@ async function init_yluna_prism_pair_and_provide_liquidity(
 	};
 	
 	await execute_contract(lcd_client, sender, yluna_prism_pair_addr, msg_provide_liquidity);
-	console.log(`Provided ${liquidityAmountStr} yluna and ${liquidityAmountStr} prism in liquidity for prism-yluna pair on prismswap`);
+	console.log("Liquidity provided for yLUNA-PRISM pair");
+	console.log(`Provided ${liquidityAmountStr} PRISM and ${liquidityAmountStr} yLUNA`);
 	
 	return yluna_prism_pair_addr
 }
