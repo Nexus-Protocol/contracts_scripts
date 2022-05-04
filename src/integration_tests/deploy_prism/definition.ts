@@ -1,6 +1,6 @@
 import { getContractAddress, getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { TokenConfig } from '../../config';
-import { execute_contract, instantiate_contract, instantiate_contract_raw, store_contract, increase_token_allowance } from '../../utils';
+import { execute_contract, instantiate_contract, instantiate_contract_raw, store_contract, increase_token_allowance, get_token_balance } from '../../utils';
 import { Addr, PrismGovConfig, PrismGovernanceInfo, PrismLaunchPoolConfig, PrismMarketInfo, PrismswapFactoryConfig, PrismSwapInfo, PrismXprismBoostConfig, PrismYassetStakingConfig, PrismYAssetStakingInfo } from "./config";
 
 // ===================================================
@@ -219,6 +219,31 @@ async function init_prismswap_factory(
 	}
 }
 
+export async function stake_prism_for_xprism(lcd_client: LCDClient, sender: Wallet, prism_token_addr: string, prism_gov_addr: string, amount: number) {
+    // https://stackabuse.com/encoding-and-decoding-base64-strings-in-node-js/
+    // {
+    //     "send": {
+    //       "msg": "eyJtaW50X3hwcmlzbSI6e319",
+    //       "amount": "18474802",
+    //       "contract": "terra1h4al753uvwmhxwhn2dlvm9gfk0jkf52xqasmq2"
+    //     }
+    //   }
+
+    const msg = { mint_xprism: {} };
+    const recipient_addr = prism_gov_addr;
+
+    const send_result = await execute_contract(lcd_client, sender, prism_token_addr, {
+        send: {
+            contract: recipient_addr,
+            amount: amount.toString(),
+            msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
+        }
+    });
+
+    return send_result;
+}
+
+
 async function init_prism_xprism_pair_and_provide_liquidity(
 	lcd_client: LCDClient,
 	sender: Wallet,
@@ -227,10 +252,20 @@ async function init_prism_xprism_pair_and_provide_liquidity(
 	xprism_token_addr: Addr,
 	prismswap_token_code_id: number,
 	prismswap_pair_code_id: number,
+	prism_gov_addr: Addr,
 ) {
 	const liquidityAmount = 100_000_000;
-    const liquidityAmountStr = String(100_000_000);
 
+	// get some xprism
+	await stake_prism_for_xprism(
+		lcd_client,
+		sender,
+		prism_token_addr,
+		prism_gov_addr,
+		liquidityAmount,
+	)
+	
+	// create the pair
 	const xprism_prism_pair_addr = await create_token_to_token_prismswap_pair(
 		lcd_client,
 		sender,
@@ -242,12 +277,10 @@ async function init_prism_xprism_pair_and_provide_liquidity(
 	)
 
 	// increase allowance before providing liquidity
-	const allowance_res_1 = await increase_token_allowance(lcd_client, sender, xprism_token_addr, xprism_prism_pair_addr, liquidityAmount)
-	console.log("STEVENDEBUG allowance_res_1 ", allowance_res_1);
-	
-	const allowance_res_2 = await increase_token_allowance(lcd_client, sender, prism_token_addr, xprism_prism_pair_addr, liquidityAmount)
-	console.log("STEVENDEBUG allowance_res_2 ", allowance_res_2);
+	await increase_token_allowance(lcd_client, sender, xprism_token_addr, xprism_prism_pair_addr, liquidityAmount)
+	await increase_token_allowance(lcd_client, sender, prism_token_addr, xprism_prism_pair_addr, liquidityAmount)
 
+	// provide liquidity
 	// https://github.com/prism-finance/prismswap-contracts/blob/7cc03a91bf2006d19c0839ec3eaf7a35d1ca1d4f/packages/prismswap/src/pair.rs#L36:5
 	// info from a mainnet transaction
 	// {
@@ -286,13 +319,85 @@ async function init_prism_xprism_pair_and_provide_liquidity(
 				}
 			],
 			slippage_tolerance: "0.02",
-			// receiver: sender.key.accAddress,
+			receiver: sender.key.accAddress,
 		} 
 	};
-	const provide_liquidity_res = await execute_contract(lcd_client, sender, xprism_prism_pair_addr, msg_provide_liquidity);
-	console.log("STEVENDEBUG provide_liquidity_res: ", provide_liquidity_res);
+	await execute_contract(lcd_client, sender, xprism_prism_pair_addr, msg_provide_liquidity);
+	console.log("Provided liquidity for prism-xprism pair on prismswap");
 	
 	return xprism_prism_pair_addr
+}
+
+async function init_yluna_prism_pair_and_provide_liquidity(
+	lcd_client: LCDClient,
+	sender: Wallet,
+	prismswap_factory_address: Addr,
+	prism_token_addr: Addr,
+	yluna_token_addr: Addr,
+	prismswap_token_code_id: number,
+	prismswap_pair_code_id: number,
+) {
+	const liquidityAmount = 100_000_000;
+	
+	const yluna_prism_pair_addr = await create_token_to_token_prismswap_pair(
+		lcd_client,
+		sender,
+		prismswap_factory_address,
+		prism_token_addr,
+		yluna_token_addr,
+		prismswap_token_code_id, // TODO: double check this vs. prismswap_token later
+		prismswap_pair_code_id
+	)
+
+	// increase allowance before providing liquidity
+	await increase_token_allowance(lcd_client, sender, yluna_token_addr, yluna_prism_pair_addr, liquidityAmount)
+	await increase_token_allowance(lcd_client, sender, prism_token_addr, yluna_prism_pair_addr, liquidityAmount)
+
+	// https://github.com/prism-finance/prismswap-contracts/blob/7cc03a91bf2006d19c0839ec3eaf7a35d1ca1d4f/packages/prismswap/src/pair.rs#L36:5
+	// info from a mainnet transaction
+	// {
+	// 	"provide_liquidity": {
+	// 		"assets": [
+	// 			{
+	// 			"info": {
+	// 				"cw20": "terra1dh9478k2qvqhqeajhn75a2a7dsnf74y5ukregw"
+	// 			},
+	// 			"amount": "17951937"
+	// 			},
+	// 			{
+	// 			"info": {
+	// 				"cw20": "terra1042wzrwg2uk6jqxjm34ysqquyr9esdgm5qyswz"
+	// 			},
+	// 			"amount": "17479999"
+	// 			}
+	// 		],
+	// 		"slippage_tolerance": "0.02"
+	// 	}
+	// }
+	const msg_provide_liquidity = { 
+		provide_liquidity: { 
+			assets: [
+				{
+					info: {
+						cw20: prism_token_addr,
+					},
+					amount: liquidityAmount
+				},
+				{
+					info: {
+						cw20: yluna_token_addr,
+					},
+					amount: liquidityAmount
+				}
+			],
+			slippage_tolerance: "0.02",
+			receiver: sender.key.accAddress,
+		} 
+	};
+	await execute_contract(lcd_client, sender, yluna_prism_pair_addr, msg_provide_liquidity);
+	console.log("Provided liquidity for prism-xprism pair on prismswap");
+	
+	return yluna_prism_pair_addr
 }
 
 export async function prism_init(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number) {
@@ -385,12 +490,13 @@ async function prism_init_verbose(
 		prism_token_addr,
 		prism_governance_info.xprism_token_addr,
 		prismswap_token_code_id, // TODO: double check this vs. prismswap_token later
-		prismswap_pair_code_id
+		prismswap_pair_code_id,
+		prism_governance_info.prism_gov_deployment_addr,
 	)
 	console.log(`xprism_prism pair instantiated\n\taddress: ${xprism_prism_pair_addr}`);
 	console.log(`=======================`);
 
-	const yluna_prism_pair_addr = await create_token_to_token_prismswap_pair(
+	const yluna_prism_pair_addr = await init_yluna_prism_pair_and_provide_liquidity(
 		lcd_client,
 		sender,
 		prismswap_info.prismswap_factory_address,
