@@ -228,6 +228,9 @@ async function init_prism_xprism_pair_and_provide_liquidity(
 	prismswap_token_code_id: number,
 	prismswap_pair_code_id: number,
 ) {
+	const liquidityAmount = 100_000_000;
+    const liquidityAmountStr = String(100_000_000);
+
 	const xprism_prism_pair_addr = await create_token_to_token_prismswap_pair(
 		lcd_client,
 		sender,
@@ -239,32 +242,31 @@ async function init_prism_xprism_pair_and_provide_liquidity(
 	)
 
 	// increase allowance before providing liquidity
-	const allowance_res_1 = await increase_token_allowance(lcd_client, sender, xprism_token_addr, xprism_prism_pair_addr, 100000000)
-
+	const allowance_res_1 = await increase_token_allowance(lcd_client, sender, xprism_token_addr, xprism_prism_pair_addr, liquidityAmount)
 	console.log("STEVENDEBUG allowance_res_1 ", allowance_res_1);
 	
-	const allowance_res_2 = await increase_token_allowance(lcd_client, sender, prism_token_addr, xprism_prism_pair_addr, 100000000)
+	const allowance_res_2 = await increase_token_allowance(lcd_client, sender, prism_token_addr, xprism_prism_pair_addr, liquidityAmount)
 	console.log("STEVENDEBUG allowance_res_2 ", allowance_res_2);
 
 	// https://github.com/prism-finance/prismswap-contracts/blob/7cc03a91bf2006d19c0839ec3eaf7a35d1ca1d4f/packages/prismswap/src/pair.rs#L36:5
 	// info from a mainnet transaction
 	// {
 	// 	"provide_liquidity": {
-	// 	"assets": [
-	// 		{
-	// 		"info": {
-	// 			"cw20": "terra1dh9478k2qvqhqeajhn75a2a7dsnf74y5ukregw"
-	// 		},
-	// 		"amount": "17951937"
-	// 		},
-	// 		{
-	// 		"info": {
-	// 			"cw20": "terra1042wzrwg2uk6jqxjm34ysqquyr9esdgm5qyswz"
-	// 		},
-	// 		"amount": "17479999"
-	// 		}
-	// 	],
-	// 	"slippage_tolerance": "0.02"
+	// 		"assets": [
+	// 			{
+	// 			"info": {
+	// 				"cw20": "terra1dh9478k2qvqhqeajhn75a2a7dsnf74y5ukregw"
+	// 			},
+	// 			"amount": "17951937"
+	// 			},
+	// 			{
+	// 			"info": {
+	// 				"cw20": "terra1042wzrwg2uk6jqxjm34ysqquyr9esdgm5qyswz"
+	// 			},
+	// 			"amount": "17479999"
+	// 			}
+	// 		],
+	// 		"slippage_tolerance": "0.02"
 	// 	}
 	// }
 	const msg_provide_liquidity = { 
@@ -274,17 +276,17 @@ async function init_prism_xprism_pair_and_provide_liquidity(
 					info: {
 						cw20: prism_token_addr,
 					},
-					amount: "100" // TODO: figure out how to calc
+					amount: "17951937" // TODO: figure out how to calc
 				},
 				{
 					info: {
 						cw20: xprism_token_addr,
 					},
-					amount: "100" // TODO: figure out how to calc
+					amount: "17479999" // TODO: figure out how to calc
 				}
 			],
 			slippage_tolerance: "0.02",
-			receiver: sender.key.accAddress,
+			// receiver: sender.key.accAddress,
 		} 
 	};
 	const provide_liquidity_res = await execute_contract(lcd_client, sender, xprism_prism_pair_addr, msg_provide_liquidity);
