@@ -132,12 +132,8 @@ export function VaultConfig(
   }
 }
 
-// staking_code_id,
-// vault_code_id,
-// autocompounder_code_id,
-// vault_config,
-// vault_deployment_addr,
-
+// infos from deployment of the nex-prism-convex contracts
+// https://github.com/Nexus-Protocol/nex-prism-convex
 export interface NexPrismDeploymentInfo {
   staking_code_id: number,
   vault_code_id: number,
@@ -145,6 +141,9 @@ export interface NexPrismDeploymentInfo {
   vault_config: VaultConfig,
   vault_deployment_addr: string, 
   nexprism_token_addr: string,
+  nyluna_token_addr: string,
+  nyluna_staking_addr: string,
+  nexprism_staking_addr: string,
 }
 export interface NexPrismAddrsAndInfo {
   cw20_code_id: number,
