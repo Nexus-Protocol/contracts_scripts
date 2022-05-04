@@ -24,16 +24,19 @@ export async function init_token(lcd_client: LCDClient, sender: Wallet, code_id:
 	return contract_addr;
 }
 
-// TODO: figure out the contract to put in the minter field from prism's code
-async function init_yluna(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number, minter_address: string) {
-	// source: https://finder.terra.money/testnet/address/terra1knak0taqkas4y07mupvxpr89kvtew5dx9jystw
+async function init_yluna(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number) {
 	let yluna_token_config = {
-		name: "Prism yLuna Token",
-		symbol: "yLuna",
+		name: "Prism yLUNA Token",
+		symbol: "yLUNA",
 		decimals: 6,
-		initial_balances: [],
+		initial_balances: [
+			{
+				address: sender.key.accAddress,
+				amount: "10000000000000000"
+			}
+		],
 		mint: {
-			minter: minter_address
+			minter: sender.key.accAddress,
 		}
 	}
 
@@ -234,9 +237,7 @@ async function prism_init_verbose(
 	console.log(`=======================`);
 
 	// instantiate yLuna token
-	// TODO: figure out which contract is the minter
-	// source: https://finder.terra.money/testnet/address/terra1knak0taqkas4y07mupvxpr89kvtew5dx9jystw
-	let yluna_token_addr = await init_yluna(lcd_client, sender, prismswap_token_code_id, prism_token_addr);
+	let yluna_token_addr = await init_yluna(lcd_client, sender, prismswap_token_code_id);
 	console.log(`yluna_token instantiated\n\taddress: ${yluna_token_addr}`);
 	console.log(`=======================`);
 
