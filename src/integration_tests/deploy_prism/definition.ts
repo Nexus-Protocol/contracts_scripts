@@ -118,7 +118,6 @@ async function init_prism_launch_pool(
 	return prism_launch_pool_address
 }
 
-// TODO: may not be needed so leaving to the end for the nex-prism-convex work
 async function init_prism_yasset_staking(
 	lcd_client: LCDClient,
 	sender: Wallet,
@@ -240,14 +239,12 @@ async function prism_init_verbose(
 	console.log(`=======================`);
 
 	// instantiate yLuna token
-	// TODO: figure out which contract is the minter
 	// source: https://finder.terra.money/testnet/address/terra1knak0taqkas4y07mupvxpr89kvtew5dx9jystw
 	let yluna_token_addr = await init_yluna(lcd_client, sender, prismswap_token_code_id, prism_token_addr);
 	console.log(`yluna_token instantiated\n\taddress: ${yluna_token_addr}`);
 	console.log(`=======================`);
 
 	// instantiate staking and yluna staking
-	// TODO: not needed for nex-prism-vault so not added to return, add later
 	let prism_yasset_staking_info = await init_prism_yasset_staking(
 		lcd_client,
 		sender,
