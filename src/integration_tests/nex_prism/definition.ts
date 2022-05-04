@@ -62,6 +62,10 @@ async function full_nex_prism_init(
 
     let vault_deployment_addr = ""
     let nexprism_token_addr = ""
+    let nyluna_token_addr = ""
+    let nyluna_staking_addr = ""
+    let nexprism_staking_addr = ""
+
     let contract_events = vault_deploy_res ? getContractEvents(vault_deploy_res) : [];
 	for (let contract_event of contract_events) {
         let nexprism_token = contract_event["nexprism_token"];
@@ -72,6 +76,21 @@ async function full_nex_prism_init(
         let vault_addr = contract_event["contract_address"];
         if (vault_addr) {
             vault_deployment_addr = vault_addr;
+        }
+
+        let nyluna_token = contract_event["nyluna_token"];
+        if (nyluna_token) {
+            nyluna_token_addr = nyluna_token;
+        }
+
+        let nyluna_staking = contract_event["nyluna_staking_instantiated"];
+        if (nyluna_staking) {
+            nyluna_staking_addr = nyluna_staking;
+        }
+
+        let nexprism_staking = contract_event["nexprism_staking_instantiated"];
+        if (nexprism_staking) {
+            nexprism_staking_addr = nexprism_staking;
         }
 	}
     
@@ -84,7 +103,10 @@ async function full_nex_prism_init(
         autocompounder_code_id,
         vault_config,
         vault_deployment_addr,
-        nexprism_token_addr
+        nexprism_token_addr,
+        nyluna_token_addr
+        nyluna_staking_addr,
+        nexprism_staking_addr
     }
 }
 
@@ -178,6 +200,21 @@ async function stake_prism_for_xprism(lcd_client: LCDClient, sender: Wallet, pri
     return send_result;
 }
 
+// TODO:
+async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string, amount: number) {
+    const msg = {mint_xprism: {}};
+    const recipient_addr = nexprism_staking_addr;
+
+    const send_result = await execute_contract(lcd_client, sender, nexprism_token_addr, {
+        send: {
+            contract: recipient_addr,
+            amount: amount.toString(),
+            msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
+        }
+    });
+
+    return send_result;
+}
 
 export async function simple_deposit(
     lcd_client: LCDClient,
@@ -232,6 +269,16 @@ export async function simple_deposit(
         nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr
     )
     assert(nexprism_bal > 0)
-    console.log("nexprism balance after deposit: ", nexprism_bal);
+    console.log("nexprism balance after staking xprism: ", nexprism_bal);
 
+    // TODO: stake the nexprism
+    // await stake_nexprism(
+    //     lcd_client,
+    //     sender,
+    //     nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
+    //     nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr,
+    //     nexprism_bal
+    // )
+    // assert(nexprism_bal < 1)
+    // console.log("nexprism balance after staking nexprism: ", nexprism_bal);
 }

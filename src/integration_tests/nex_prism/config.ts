@@ -141,6 +141,9 @@ export interface NexPrismDeploymentInfo {
   vault_config: VaultConfig,
   vault_deployment_addr: string, 
   nexprism_token_addr: string,
+  nyluna_token_addr: string,
+  nyluna_staking_addr: string,
+  nexprism_staking_addr: string,
 }
 export interface NexPrismAddrsAndInfo {
   cw20_code_id: number,

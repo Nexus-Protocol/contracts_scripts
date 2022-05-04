@@ -9,7 +9,6 @@ async function run_program() {
     program
         .action(async () => {
             const nex_prism_addrs_and_info = await deploy();
-            
             await run_simple_deposit(nex_prism_addrs_and_info)
         });
 
