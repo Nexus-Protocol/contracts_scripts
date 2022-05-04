@@ -1,6 +1,6 @@
 import { getContractAddress, getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { TokenConfig } from '../../config';
-import { instantiate_contract, instantiate_contract_raw, sleep, store_contract } from '../../utils';
+import { execute_contract, instantiate_contract, instantiate_contract_raw, sleep, store_contract } from '../../utils';
 import { Addr, PrismGovConfig, PrismGovernanceInfo, PrismLaunchPoolConfig, PrismMarketInfo, PrismswapFactoryConfig, PrismSwapInfo, PrismXprismBoostConfig, PrismYassetStakingConfig } from "./config";
 
 // ===================================================
@@ -104,6 +104,7 @@ async function init_prism_launch_pool(
 	yluna_token_addr: Addr,
 	xprism_token_addr: Addr,
 	prism_gov_deployment_addr: Addr,
+	prism_xprism_boost_addr: Addr,
 ): Promise<Addr> {
 	let prism_launch_pool_code_id = await store_contract(lcd_client, sender, prism_launch_pool_wasm)
 	console.log(`prism_launch_pool uploaded\n\tcode_id: ${prism_launch_pool_code_id}`);
@@ -114,7 +115,8 @@ async function init_prism_launch_pool(
 		yluna_token_addr,
 		prism_token_addr,
 		xprism_token_addr,
-		prism_gov_deployment_addr
+		prism_gov_deployment_addr,
+		prism_xprism_boost_addr
 	);
 	let prism_launch_pool_address = await instantiate_contract(lcd_client, sender, sender.key.accAddress, prism_launch_pool_code_id, prism_launch_pool_config);
 
@@ -252,6 +254,15 @@ async function prism_init_verbose(
 		prism_governance_info.xprism_token_addr
 	);
 
+	// instanstiate boost contract
+	let prism_xprism_boost_addr = await init_prism_xprism_boost(
+		lcd_client,
+		sender,
+		prism_governance_info.xprism_token_addr
+	)
+	console.log(`prism_xprism_boost instantiated\n\taddress: ${prism_xprism_boost_addr}`);
+	console.log(`=======================`);
+
 	// instantiate prism launch pool
 	let prism_launch_pool_addr = await init_prism_launch_pool(
 		lcd_client,
@@ -260,17 +271,14 @@ async function prism_init_verbose(
 		yluna_token_addr,
 		prism_governance_info.xprism_token_addr,
 		prism_governance_info.prism_gov_deployment_addr,
+		prism_xprism_boost_addr,
 	);
 	console.log(`prism_launch_pool instantiated\n\taddress: ${prism_launch_pool_addr}`);
 	console.log(`=======================`);
 
-	// instanstiate boost contract
-	let prism_xprism_boost_addr = await init_prism_xprism_boost(
-		lcd_client,
-		sender,
-		prism_governance_info.xprism_token_addr
-	)
-	console.log(`prism_xprism_boost instantiated\n\taddress: ${prism_xprism_boost_addr}`);
+	const msg_update_config = { update_config: { launch_pool_contract: prism_launch_pool_addr } };
+	await execute_contract(lcd_client, sender, prism_xprism_boost_addr, msg_update_config);
+	console.log(`launch_pool and xprism_boost are linked`);
 	console.log(`=======================`);
 
 	// xprism-prism pairs + yluna-prism using prismswap factory
