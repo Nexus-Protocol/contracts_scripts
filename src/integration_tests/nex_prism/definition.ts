@@ -55,7 +55,6 @@ async function full_nex_prism_init(
         autocompounder_code_id,
         prism_governance_addr,
     )
-    console.log("STEVENDEBUG vault_config ", vault_config);
     
     let vault_deploy_res = await instantiate_contract_raw(
         lcd_client,
