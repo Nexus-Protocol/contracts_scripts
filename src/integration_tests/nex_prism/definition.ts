@@ -248,11 +248,7 @@ async function deposit_xprism_to_nexprism_vault(lcd_client: LCDClient, sender: W
     return send_result;
 }
 
-// TODO:
 async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string, amount: number) {    
-    // const allowance = await increase_token_allowance(lcd_client, sender, nexprism_token_addr, nexprism_staking_addr, amount);
-    // console.log("STEVENDEBUG allowance " + allowance);
-
     // https://github.com/Nexus-Protocol/nex-prism-convex/blob/20c0cce51e8e6810107c981e0189cd4c41701e1d/contracts/nexus_prism_staking/src/commands.rs#L42
     const msg = { bond: {} };
     const recipient_addr = nexprism_staking_addr;
