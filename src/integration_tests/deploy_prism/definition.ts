@@ -255,6 +255,7 @@ async function init_prism_xprism_pair_and_provide_liquidity(
 	prism_gov_addr: Addr,
 ) {
 	const liquidityAmount = 100_000_000;
+    const liquidityAmountStr = String(100_000_000);
 
 	// get some xprism
 	await stake_prism_for_xprism(
@@ -309,13 +310,13 @@ async function init_prism_xprism_pair_and_provide_liquidity(
 					info: {
 						cw20: prism_token_addr,
 					},
-					amount: "17951937" // TODO: figure out how to calc
+					amount: liquidityAmountStr
 				},
 				{
 					info: {
 						cw20: xprism_token_addr,
 					},
-					amount: "17479999" // TODO: figure out how to calc
+					amount: liquidityAmountStr
 				}
 			],
 			slippage_tolerance: "0.02",
@@ -323,7 +324,7 @@ async function init_prism_xprism_pair_and_provide_liquidity(
 		} 
 	};
 	await execute_contract(lcd_client, sender, xprism_prism_pair_addr, msg_provide_liquidity);
-	console.log("Provided liquidity for prism-xprism pair on prismswap");
+	console.log(`Provided ${liquidityAmountStr} xprism and ${liquidityAmountStr} prism in liquidity for prism-xprism pair on prismswap`);
 	
 	return xprism_prism_pair_addr
 }
@@ -338,7 +339,8 @@ async function init_yluna_prism_pair_and_provide_liquidity(
 	prismswap_pair_code_id: number,
 ) {
 	const liquidityAmount = 100_000_000;
-	
+	const liquidityAmountStr = String(100_000_000);
+
 	const yluna_prism_pair_addr = await create_token_to_token_prismswap_pair(
 		lcd_client,
 		sender,
@@ -379,23 +381,24 @@ async function init_yluna_prism_pair_and_provide_liquidity(
 			assets: [
 				{
 					info: {
-						cw20: prism_token_addr,
+						cw20: yluna_token_addr,
 					},
-					amount: liquidityAmount
+					amount: liquidityAmountStr
 				},
 				{
 					info: {
-						cw20: yluna_token_addr,
+						cw20: prism_token_addr,
 					},
-					amount: liquidityAmount
-				}
+					amount: liquidityAmountStr
+				},
 			],
 			slippage_tolerance: "0.02",
 			receiver: sender.key.accAddress,
 		} 
 	};
+	
 	await execute_contract(lcd_client, sender, yluna_prism_pair_addr, msg_provide_liquidity);
-	console.log("Provided liquidity for prism-xprism pair on prismswap");
+	console.log(`Provided ${liquidityAmountStr} yluna and ${liquidityAmountStr} prism in liquidity for prism-yluna pair on prismswap`);
 	
 	return yluna_prism_pair_addr
 }
