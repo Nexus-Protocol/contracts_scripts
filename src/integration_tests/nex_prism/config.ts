@@ -57,6 +57,7 @@ export interface VaultConfig {
   xprism_token: string,
   yluna_token: string,
 
+  prism_governance: string,
   prism_launch_pool: string,
   prism_xprism_boost: string,
 
@@ -94,6 +95,7 @@ export function VaultConfig(
   prism_xprism_boost_addr: string,
   yluna_prism_pair: string,
   autocompounder_code_id: number,
+  prism_gov_addr: string,
 ): VaultConfig {
   return {
     owner: sender,
@@ -112,6 +114,7 @@ export function VaultConfig(
     yluna_token: yluna_addr,
 
     // TODO:
+    prism_governance: prism_gov_addr,
     prism_launch_pool: prism_launch_pool,
     prism_xprism_boost: prism_xprism_boost_addr,
     prism_xprism_pair: xprism_prism_pair,
@@ -139,11 +142,12 @@ export interface NexPrismDeploymentInfo {
   vault_code_id: number,
   autocompounder_code_id: number,
   vault_config: VaultConfig,
-  vault_deployment_addr: string, 
+  vault_deployment_addr: string,
   nexprism_token_addr: string,
   nyluna_token_addr: string,
   nyluna_staking_addr: string,
   nexprism_staking_addr: string,
+  nexprism_xprism_pair_addr: string,
 }
 export interface NexPrismAddrsAndInfo {
   cw20_code_id: number,
