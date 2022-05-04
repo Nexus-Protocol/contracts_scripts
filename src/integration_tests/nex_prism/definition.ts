@@ -249,12 +249,9 @@ async function deposit_xprism_to_nexprism_vault(lcd_client: LCDClient, sender: W
 }
 
 // TODO:
-async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string, amount: number) {
-    console.log("STEVENDEBUG nexprism_staking_addr " + nexprism_staking_addr);
-    
-    const allowance = await increase_token_allowance(lcd_client, sender, nexprism_token_addr, nexprism_staking_addr, amount);
-
-    console.log("STEVENDEBUG allowance " + allowance);
+async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string, amount: number) {    
+    // const allowance = await increase_token_allowance(lcd_client, sender, nexprism_token_addr, nexprism_staking_addr, amount);
+    // console.log("STEVENDEBUG allowance " + allowance);
 
     // https://github.com/Nexus-Protocol/nex-prism-convex/blob/20c0cce51e8e6810107c981e0189cd4c41701e1d/contracts/nexus_prism_staking/src/commands.rs#L42
     const msg = { bond: {} };
@@ -266,10 +263,7 @@ async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_to
             amount: amount.toString(),
             msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
         }
-    });
-
-    console.log("NexPRISM stake res ", send_result);
-    
+    });    
 
     return send_result;
 }
@@ -329,7 +323,7 @@ export async function simple_deposit(
     assert(nexprism_bal > 0)
     console.log("nexprism balance after staking xprism: ", nexprism_bal);
 
-    // TODO: stake the nexprism
+    // stake the nexprism
     await stake_nexprism(
         lcd_client,
         sender,
@@ -337,6 +331,11 @@ export async function simple_deposit(
         nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr,
         nexprism_bal
     )
-    assert(nexprism_bal < 1)
-    console.log("nexprism balance after staking nexprism: ", nexprism_bal);
+    const nexprism_bal_after_stake = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr
+    )
+    assert(nexprism_bal_after_stake < nexprism_bal)
+    console.log("nexprism balance after staking nexprism: ", nexprism_bal_after_stake);
 }
