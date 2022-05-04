@@ -104,7 +104,7 @@ async function full_nex_prism_init(
         vault_config,
         vault_deployment_addr,
         nexprism_token_addr,
-        nyluna_token_addr
+        nyluna_token_addr,
         nyluna_staking_addr,
         nexprism_staking_addr
     }

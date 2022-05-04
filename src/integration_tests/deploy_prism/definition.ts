@@ -1,7 +1,7 @@
 import { getContractAddress, getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { TokenConfig } from '../../config';
 import { instantiate_contract, instantiate_contract_raw, sleep, store_contract } from '../../utils';
-import { Addr, PrismGovConfig, PrismGovernanceInfo, PrismLaunchPoolConfig, PrismMarketInfo, PrismswapFactoryConfig, PrismSwapInfo, PrismXprismBoostConfig, PrismYassetStakingConfig } from "./config";
+import { Addr, PrismGovConfig, PrismGovernanceInfo, PrismLaunchPoolConfig, PrismMarketInfo, PrismswapFactoryConfig, PrismSwapInfo, PrismXprismBoostConfig, PrismYassetStakingConfig, PrismYAssetStakingInfo } from "./config";
 
 // ===================================================
 const artifacts_path = "wasm_artifacts";
@@ -126,10 +126,12 @@ async function init_prism_yasset_staking(
 	yluna_token_addr: Addr,
 	prism_token_addr: Addr,
 	xprism_token_addr: Addr,
-) {
+): Promise<PrismYAssetStakingInfo> {
 	// source: https://finder.terra.money/testnet/address/terra1ysc9ktgwldm7fcw4ry6e7t9yhkm7p4u4ltw4ex
 
 	let prism_yasset_staking_code_id = await store_contract(lcd_client, sender, prism_yasset_staking_wasm)
+	console.log(`prism_yasset_staking uploaded\n\tcode_id: ${prism_yasset_staking_code_id}`);
+
 	let prism_yasset_staking_config = await PrismYassetStakingConfig(
 		sender.key.accAddress,
 		prism_gov_addr,
@@ -137,8 +139,12 @@ async function init_prism_yasset_staking(
 		prism_token_addr,
 		xprism_token_addr
 	)
-
-	return {}
+	let prism_yasset_staking_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, prism_yasset_staking_code_id, prism_yasset_staking_config)
+	
+	return {
+		prism_yasset_staking_addr,
+		prism_yasset_staking_config
+	}
 }
 
 async function init_prism_xprism_boost(
@@ -250,6 +256,8 @@ async function prism_init_verbose(
 		prism_token_addr,
 		prism_governance_info.xprism_token_addr
 	);
+	console.log(`prism_yasset_staking instantiated\n\taddress: ${prism_yasset_staking_info.prism_yasset_staking_addr}`);
+	console.log(`=======================`);
 
 	// instantiate prism launch pool
 	let prism_launch_pool_addr = await init_prism_launch_pool(
@@ -318,7 +326,8 @@ async function prism_init_verbose(
 		prism_xprism_boost_addr,
 		prismswap_info,
 		xprism_prism_pair_addr,
-		yluna_prism_pair_addr
+		yluna_prism_pair_addr,
+		prism_yasset_staking_info
 	)
 }
 

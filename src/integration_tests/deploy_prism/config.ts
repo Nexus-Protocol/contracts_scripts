@@ -7,6 +7,11 @@ export interface PrismGovernanceInfo {
     prism_gov_config: PrismGovConfig,
     prism_gov_deployment_addr: Addr,
 }
+
+export interface PrismYAssetStakingInfo {
+    prism_yasset_staking_addr: Addr,
+    prism_yasset_staking_config: PrismYassetStakingConfig,
+}
 export interface PrismMarketInfo {
     prism_token_addr: Addr,
     prism_gov_addr: Addr,
@@ -18,6 +23,7 @@ export interface PrismMarketInfo {
     prismswap_info: PrismSwapInfo,
     xprism_prism_pair_addr: Addr,
     yluna_prism_pair_addr: Addr,
+    prism_yasset_staking_info: PrismYAssetStakingInfo,
 }
 
 export function PrismMarketInfo(
@@ -31,6 +37,7 @@ export function PrismMarketInfo(
     prismswap_info: PrismSwapInfo,
     xprism_prism_pair_addr: Addr,
     yluna_prism_pair_addr: Addr,
+    prism_yasset_staking_info: PrismYAssetStakingInfo,
 ): PrismMarketInfo {
     return {
         prism_token_addr,
@@ -42,7 +49,8 @@ export function PrismMarketInfo(
         prism_xprism_boost_addr,
         prismswap_info,
         xprism_prism_pair_addr,
-        yluna_prism_pair_addr
+        yluna_prism_pair_addr,
+        prism_yasset_staking_info,
     }
 }
 
