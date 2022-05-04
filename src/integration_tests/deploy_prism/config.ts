@@ -120,12 +120,13 @@ export function PrismLaunchPoolConfig(
     prism_token: Addr,
     xprism_token: Addr,
     prism_gov_deployment_addr: Addr,
+    yluna_staking_addr: Addr,
 ): PrismLaunchPoolConfig {
     return {
         owner: owner_addr,
         operator: operator_addr,
         // TODO:
-        yluna_staking: "terra1ysc9ktgwldm7fcw4ry6e7t9yhkm7p4u4ltw4ex",
+        yluna_staking: yluna_staking_addr,
         yluna_token: yluna_token,
         prism_token: prism_token,
         vesting_period: 10800,
