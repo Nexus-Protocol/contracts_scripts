@@ -29,6 +29,18 @@ export async function create_contract(lcd_client: LCDClient, sender: Wallet, con
 	return contract_addr;
 }
 
+export async function increase_token_allowance(lcd_client: LCDClient, sender: Wallet, token_addr: string, spender_addr: string, amount: number): Promise<BlockTxBroadcastResult | undefined> {
+	const msg = {
+		increase_allowance: {
+			spender: spender_addr,
+			amount: amount.toString(),
+		}
+	};
+
+	const tx_result = await execute_contract(lcd_client, sender, token_addr, msg);
+	return tx_result;
+}
+
 export async function get_token_balance(lcd_client: LCDClient, token_holder_addr: string, token_addr: string) {
     const result: BalanceResponse = await lcd_client.wasm.contractQuery(token_addr, {
         balance: {

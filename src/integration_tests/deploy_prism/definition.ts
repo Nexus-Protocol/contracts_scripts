@@ -1,6 +1,6 @@
 import { getContractAddress, getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { TokenConfig } from '../../config';
-import { execute_contract, instantiate_contract, instantiate_contract_raw, sleep, store_contract } from '../../utils';
+import { execute_contract, instantiate_contract, instantiate_contract_raw, store_contract, increase_token_allowance } from '../../utils';
 import { Addr, PrismGovConfig, PrismGovernanceInfo, PrismLaunchPoolConfig, PrismMarketInfo, PrismswapFactoryConfig, PrismSwapInfo, PrismXprismBoostConfig, PrismYassetStakingConfig, PrismYAssetStakingInfo } from "./config";
 
 // ===================================================
@@ -146,7 +146,7 @@ async function init_prism_yasset_staking(
 		xprism_token_addr
 	)
 	let prism_yasset_staking_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, prism_yasset_staking_code_id, prism_yasset_staking_config)
-	
+
 	return {
 		prism_yasset_staking_addr,
 		prism_yasset_staking_config
@@ -219,6 +219,80 @@ async function init_prismswap_factory(
 	}
 }
 
+async function init_prism_xprism_pair_and_provide_liquidity(
+	lcd_client: LCDClient,
+	sender: Wallet,
+	prismswap_factory_address: Addr,
+	prism_token_addr: Addr,
+	xprism_token_addr: Addr,
+	prismswap_token_code_id: number,
+	prismswap_pair_code_id: number,
+) {
+	const xprism_prism_pair_addr = await create_token_to_token_prismswap_pair(
+		lcd_client,
+		sender,
+		prismswap_factory_address,
+		prism_token_addr,
+		xprism_token_addr,
+		prismswap_token_code_id, // TODO: double check this vs. prismswap_token later
+		prismswap_pair_code_id
+	)
+
+	// increase allowance before providing liquidity
+	const allowance_res_1 = await increase_token_allowance(lcd_client, sender, xprism_token_addr, xprism_prism_pair_addr, 100000000)
+
+	console.log("STEVENDEBUG allowance_res_1 ", allowance_res_1);
+	
+	const allowance_res_2 = await increase_token_allowance(lcd_client, sender, prism_token_addr, xprism_prism_pair_addr, 100000000)
+	console.log("STEVENDEBUG allowance_res_2 ", allowance_res_2);
+
+	// https://github.com/prism-finance/prismswap-contracts/blob/7cc03a91bf2006d19c0839ec3eaf7a35d1ca1d4f/packages/prismswap/src/pair.rs#L36:5
+	// info from a mainnet transaction
+	// {
+	// 	"provide_liquidity": {
+	// 	"assets": [
+	// 		{
+	// 		"info": {
+	// 			"cw20": "terra1dh9478k2qvqhqeajhn75a2a7dsnf74y5ukregw"
+	// 		},
+	// 		"amount": "17951937"
+	// 		},
+	// 		{
+	// 		"info": {
+	// 			"cw20": "terra1042wzrwg2uk6jqxjm34ysqquyr9esdgm5qyswz"
+	// 		},
+	// 		"amount": "17479999"
+	// 		}
+	// 	],
+	// 	"slippage_tolerance": "0.02"
+	// 	}
+	// }
+	const msg_provide_liquidity = { 
+		provide_liquidity: { 
+			assets: [
+				{
+					info: {
+						cw20: prism_token_addr,
+					},
+					amount: "100" // TODO: figure out how to calc
+				},
+				{
+					info: {
+						cw20: xprism_token_addr,
+					},
+					amount: "100" // TODO: figure out how to calc
+				}
+			],
+			slippage_tolerance: "0.02",
+			receiver: sender.key.accAddress,
+		} 
+	};
+	const provide_liquidity_res = await execute_contract(lcd_client, sender, xprism_prism_pair_addr, msg_provide_liquidity);
+	console.log("STEVENDEBUG provide_liquidity_res: ", provide_liquidity_res);
+	
+	return xprism_prism_pair_addr
+}
+
 export async function prism_init(lcd_client: LCDClient, sender: Wallet, cw20_code_id: number) {
 	const result = await prism_init_verbose(
 		lcd_client,
@@ -285,13 +359,13 @@ async function prism_init_verbose(
 	console.log(`prism_launch_pool instantiated\n\taddress: ${prism_launch_pool_addr}`);
 	console.log(`=======================`);
 
+	// link launch pool and boost contracts together
 	const msg_update_config = { update_config: { launch_pool_contract: prism_launch_pool_addr } };
 	await execute_contract(lcd_client, sender, prism_xprism_boost_addr, msg_update_config);
 	console.log(`launch_pool and xprism_boost are linked`);
 	console.log(`=======================`);
 
 	// xprism-prism pairs + yluna-prism using prismswap factory
-
 	let prismswap_pair_code_id = await store_contract(lcd_client, sender, prismswap_pair_wasm)
 	const prismswap_info = await init_prismswap_factory(
 		lcd_client,
@@ -302,7 +376,7 @@ async function prism_init_verbose(
 	console.log(`prismswap_factory instantiated\n\taddress: ${JSON.stringify(prismswap_info.prismswap_factory_address)}`);
 	console.log(`=======================`);
 
-	const xprism_prism_pair_addr = await create_token_to_token_prismswap_pair(
+	const xprism_prism_pair_addr = await init_prism_xprism_pair_and_provide_liquidity(
 		lcd_client,
 		sender,
 		prismswap_info.prismswap_factory_address,
