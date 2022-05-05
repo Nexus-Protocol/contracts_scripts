@@ -219,22 +219,32 @@ async function init_prismswap_factory(
 	}
 }
 
-export async function stake_xprism_into_boost_contract(lcd_client: LCDClient, sender: Wallet, xprism_token_addr: string, prism_xprism_boost_addr: Addr, amount: number) {
+export async function stake_unstake_xprism_into_boost_contract(lcd_client: LCDClient, sender: Wallet, xprism_token_addr: string, prism_xprism_boost_addr: Addr, amount: number, stake: boolean) {
 	// source: https://github.com/prism-finance/prism-contracts/blob/2ec8f25c983fed1323296c259d3f320dce297ae4/contracts/prism-xprism-boost/src/contract.rs#L129
-	const msg = {
+	const bond_msg = {
         bond: {
             user: sender.key.accAddress
         }
     };
-    const recipient_addr = prism_xprism_boost_addr;
-
-    const send_result = await execute_contract(lcd_client, sender, xprism_token_addr, {
-        send: {
-            contract: recipient_addr,
-            amount: amount.toString(),
-            msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
-        }
-    });
+	const unbond_msg = {
+		unbond: {
+			amount: amount
+		}
+	}
+	
+    let send_result = null;
+	if (stake) {
+		const recipient_addr = prism_xprism_boost_addr;
+		send_result = await execute_contract(lcd_client, sender, xprism_token_addr, {
+			send: {
+				contract: recipient_addr,
+				amount: amount.toString(),
+				msg: Buffer.from(JSON.stringify(bond_msg)).toString('base64'),
+			}
+		});
+	} else {
+		send_result = await execute_contract(lcd_client, sender, prism_xprism_boost_addr, unbond_msg);
+	}
 
     return send_result;
 }

@@ -4,7 +4,7 @@ import { init_governance_contract, init_psi_token } from "../../basset_vault/def
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
 import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance } from "../../utils";
 import { PrismMarketInfo } from "../deploy_prism/config";
-import { prism_init, stake_prism_for_xprism, stake_xprism_into_boost_contract } from "../deploy_prism/definition";
+import { prism_init, stake_prism_for_xprism, stake_unstake_xprism_into_boost_contract } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakingConfig, VaultConfig } from "./config";
 
 const artifacts_path = "wasm_artifacts";
@@ -292,7 +292,7 @@ export async function stake_xprism_and_verify_rewards(
     sender: Wallet,
     nexprism_addrs_and_info: NexPrismAddrsAndInfo
 ) {
-    const test_amt = 100
+    const test_amt = 35566926
     const boost_contract_addr = nexprism_addrs_and_info.prism_market_info.prism_xprism_boost_addr;
 
     // get some xprism
@@ -308,20 +308,22 @@ export async function stake_xprism_and_verify_rewards(
         test_amt
     )
     const xprism_bal = await get_token_balance(lcd_client, sender.key.accAddress, nexprism_addrs_and_info.prism_market_info.xprism_token_addr);
-    assert(prism_bal > 110)
+    assert(xprism_bal >= test_amt)
 
     // stake xprism into boost/amps contract
-    const boost_res = await stake_xprism_into_boost_contract(
+    await stake_unstake_xprism_into_boost_contract(
         lcd_client,
         sender,
         nexprism_addrs_and_info.prism_market_info.xprism_token_addr,
         boost_contract_addr,
-        test_amt
+        test_amt,
+        true
     )
-    console.log("STEVENDEBUG boost_res ", boost_res);
 
     // check rewards
-    sleep(100)
+    const seconds = 30
+    const ms = seconds * 1000
+    await sleep(ms)
     const rewards_accrued = await lcd_client.wasm.contractQuery(boost_contract_addr, {
         get_boost: {
             user: sender.key.accAddress
@@ -330,7 +332,14 @@ export async function stake_xprism_and_verify_rewards(
     console.log("STEVENDEBUG rewards_accrued ", rewards_accrued);
 
     // unstake xprism
-
+    await stake_unstake_xprism_into_boost_contract(
+        lcd_client,
+        sender,
+        nexprism_addrs_and_info.prism_market_info.xprism_token_addr,
+        boost_contract_addr,
+        test_amt,
+        false
+    )
 }
 
 export async function simple_deposit(
@@ -405,7 +414,7 @@ export async function simple_deposit(
     console.log("nexprism balance after staking nexprism: ", nexprism_bal_after_stake);
 
     // claim rewards
-    const mins = 1;
+    const mins = 0.5;
     const millisecs = mins * 60 * 1000;
     console.log("waiting for ", mins, " mins to accumulate rewards. Edit the mins variable to change the wait times.");
     await sleep(millisecs)

@@ -8,6 +8,15 @@ export async function get_lcd_config_with_wallet_for_integration_tests_only(): P
 	return [lcd_client, sender];
 }
 
+export async function get_lcd_config_for_mainnet(): Promise<[LCDClient]> {
+	const lcd_client = new LCDClient({
+		URL: 'https://lcd.nexusprotocol.app',
+		chainID: 'columbus-5',
+	}); 
+
+	return [lcd_client];
+}
+
 export async function get_random_addr(){
 	const source ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 	const seed = get_random_seed(source, 64);
