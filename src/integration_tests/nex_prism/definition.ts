@@ -273,16 +273,17 @@ async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet,
     console.log("STEVENDEBUG rewards_earned_resp ", rewards_earned_resp);
 
 
-    const claim_rewards_result = await execute_contract(lcd_client, sender, nexprism_staking_addr, {
-        anyone: {
-            claim_rewards: {
-                recipient: sender.key.accAddress,
-            }
-        }
-    });
+    // TODO:
+    // const claim_rewards_result = await execute_contract(lcd_client, sender, nexprism_staking_addr, {
+    //     anyone: {
+    //         claim_rewards: {
+    //             recipient: sender.key.accAddress,
+    //         }
+    //     }
+    // });
 
-    console.log("STEVENDEBUG claim_rewards_result ", claim_rewards_result);
-    return claim_rewards_result;
+    // console.log("STEVENDEBUG claim_rewards_result ", claim_rewards_result);
+    // return claim_rewards_result;
 }
 
 // source: https://prismprotocol.app/gov?tab=amps
@@ -376,6 +377,9 @@ export async function simple_deposit(
     nex_prism_addrs_and_info: NexPrismAddrsAndInfo
 ) {
     const test_amt = 35566926
+
+    // setup the nexprism vaults
+    await stake_nyluna_test(lcd_client, sender, nex_prism_addrs_and_info)
 
     // check xprism balance
     const prism_bal = await get_token_balance(

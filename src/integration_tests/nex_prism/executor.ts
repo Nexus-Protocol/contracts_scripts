@@ -9,7 +9,6 @@ async function run_program() {
     program
         .action(async () => {
             const nex_prism_addrs_and_info = await deploy();
-            await run_stake_xprism_and_verify_rewards(nex_prism_addrs_and_info);
             await run_nexprism_simple_deposit(nex_prism_addrs_and_info);
         });
 
@@ -23,6 +22,12 @@ async function run_program() {
         .command('stake_nyluna')
         .action(async () => {
             await run_stake_nyluna_test(await deploy());
+        });
+    
+    program
+        .command('stake_xprism_and_verify_rewards')
+        .action(async () => {
+            await run_stake_xprism_and_verify_rewards(await deploy());
         });
 
     await program.parseAsync(process.argv);
