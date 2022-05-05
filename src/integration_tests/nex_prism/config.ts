@@ -157,3 +157,10 @@ export interface NexPrismAddrsAndInfo {
   prism_market_info: PrismMarketInfo,
   nex_prism_info: NexPrismDeploymentInfo,
 }
+
+export interface StakerResponse {
+  address: string,
+  balance: string,
+  virtual_pending_rewards: string,
+  real_pending_rewards: string,
+}
