@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { get_lcd_config_with_wallet_for_integration_tests_only } from '../utils';
 import { NexPrismAddrsAndInfo } from './config';
-import { prism_nexprism_full_init, simple_deposit } from './definition';
+import { prism_nexprism_full_init, simple_deposit, stake_xprism_and_verify_rewards } from './definition';
 
 async function run_program() {
     const program = new Command();
@@ -9,7 +9,8 @@ async function run_program() {
     program
         .action(async () => {
             const nex_prism_addrs_and_info = await deploy();
-            await run_simple_deposit(nex_prism_addrs_and_info)
+            await run_stake_xprism_and_verify_rewards(nex_prism_addrs_and_info);
+            await run_nexprism_simple_deposit(nex_prism_addrs_and_info);
         });
 
     program
@@ -37,7 +38,12 @@ async function deploy() {
     return nex_prism_addrs_and_info;
 }
 
-async function run_simple_deposit(nex_prism_addrs_and_info: NexPrismAddrsAndInfo) {
+async function run_nexprism_simple_deposit(nex_prism_addrs_and_info: NexPrismAddrsAndInfo) {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
     await simple_deposit(lcd_client, sender, nex_prism_addrs_and_info);
+}
+
+async function run_stake_xprism_and_verify_rewards(nex_prism_addrs_and_info: NexPrismAddrsAndInfo) {
+    const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
+    await stake_xprism_and_verify_rewards(lcd_client, sender, nex_prism_addrs_and_info);
 }

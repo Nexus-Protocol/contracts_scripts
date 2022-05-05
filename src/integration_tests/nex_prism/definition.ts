@@ -4,7 +4,7 @@ import { init_governance_contract, init_psi_token } from "../../basset_vault/def
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
 import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance } from "../../utils";
 import { PrismMarketInfo } from "../deploy_prism/config";
-import { prism_init, stake_prism_for_xprism } from "../deploy_prism/definition";
+import { prism_init, stake_prism_for_xprism, stake_xprism_into_boost_contract } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakingConfig, VaultConfig } from "./config";
 
 const artifacts_path = "wasm_artifacts";
@@ -55,7 +55,7 @@ async function full_nex_prism_init(
         autocompounder_code_id,
         prism_governance_addr,
     )
-    
+
     let vault_deploy_res = await instantiate_contract_raw(
         lcd_client,
         sender,
@@ -247,7 +247,7 @@ async function deposit_xprism_to_nexprism_vault(lcd_client: LCDClient, sender: W
     return send_result;
 }
 
-async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string, amount: number) {    
+async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string, amount: number) {
     // https://github.com/Nexus-Protocol/nex-prism-convex/blob/20c0cce51e8e6810107c981e0189cd4c41701e1d/contracts/nexus_prism_staking/src/commands.rs#L42
     const msg = { bond: {} };
     const recipient_addr = nexprism_staking_addr;
@@ -258,9 +258,79 @@ async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_to
             amount: amount.toString(),
             msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
         }
-    });    
+    });
 
     return send_result;
+}
+
+async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, _nexprism_token_addr: string, nexprism_staking_addr: string) {
+    // query amt of rewards
+    let rewards_earned_resp = await lcd_client.wasm.contractQuery(nexprism_staking_addr, {
+        rewards: {
+            address: sender.key.accAddress
+        }
+    });
+    console.log("STEVENDEBUG rewards_earned_resp ", rewards_earned_resp);
+
+
+    const claim_rewards_result = await execute_contract(lcd_client, sender, nexprism_staking_addr, {
+        anyone: {
+            claim_rewards: {
+                recipient: sender.key.accAddress,
+            }
+        }
+    });
+
+    console.log("STEVENDEBUG claim_rewards_result ", claim_rewards_result);
+    return claim_rewards_result;
+}
+
+// source: https://prismprotocol.app/gov?tab=amps
+// boost/amps contract
+export async function stake_xprism_and_verify_rewards(
+    lcd_client: LCDClient,
+    sender: Wallet,
+    nexprism_addrs_and_info: NexPrismAddrsAndInfo
+) {
+    const test_amt = 100
+    const boost_contract_addr = nexprism_addrs_and_info.prism_market_info.prism_xprism_boost_addr;
+
+    // get some xprism
+    const prism_bal = await get_token_balance(lcd_client, sender.key.accAddress, nexprism_addrs_and_info.prism_market_info.prism_token_addr);
+    assert(prism_bal > 110)
+    console.log("STEVENDEBUG prism_bal ", prism_bal);
+
+    await stake_prism_for_xprism(
+        lcd_client,
+        sender,
+        nexprism_addrs_and_info.prism_market_info.prism_token_addr,
+        nexprism_addrs_and_info.prism_market_info.prism_gov_addr,
+        test_amt
+    )
+    const xprism_bal = await get_token_balance(lcd_client, sender.key.accAddress, nexprism_addrs_and_info.prism_market_info.xprism_token_addr);
+    assert(prism_bal > 110)
+
+    // stake xprism into boost/amps contract
+    const boost_res = await stake_xprism_into_boost_contract(
+        lcd_client,
+        sender,
+        nexprism_addrs_and_info.prism_market_info.xprism_token_addr,
+        boost_contract_addr,
+        test_amt
+    )
+    console.log("STEVENDEBUG boost_res ", boost_res);
+
+    // check rewards
+    sleep(100)
+    const rewards_accrued = await lcd_client.wasm.contractQuery(boost_contract_addr, {
+        get_boost: {
+            user: sender.key.accAddress
+        }
+    })
+    console.log("STEVENDEBUG rewards_accrued ", rewards_accrued);
+
+    // unstake xprism
+
 }
 
 export async function simple_deposit(
@@ -333,4 +403,17 @@ export async function simple_deposit(
     )
     assert(nexprism_bal_after_stake < nexprism_bal)
     console.log("nexprism balance after staking nexprism: ", nexprism_bal_after_stake);
+
+    // claim rewards
+    const mins = 1;
+    const millisecs = mins * 60 * 1000;
+    console.log("waiting for ", mins, " mins to accumulate rewards. Edit the mins variable to change the wait times.");
+    await sleep(millisecs)
+
+    await claim_all_nexprism_rewards(
+        lcd_client,
+        sender,
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr
+    )
 }

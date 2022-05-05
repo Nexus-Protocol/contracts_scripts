@@ -219,6 +219,26 @@ async function init_prismswap_factory(
 	}
 }
 
+export async function stake_xprism_into_boost_contract(lcd_client: LCDClient, sender: Wallet, xprism_token_addr: string, prism_xprism_boost_addr: Addr, amount: number) {
+	// source: https://github.com/prism-finance/prism-contracts/blob/2ec8f25c983fed1323296c259d3f320dce297ae4/contracts/prism-xprism-boost/src/contract.rs#L129
+	const msg = {
+        bond: {
+            user: sender.key.accAddress
+        }
+    };
+    const recipient_addr = prism_xprism_boost_addr;
+
+    const send_result = await execute_contract(lcd_client, sender, xprism_token_addr, {
+        send: {
+            contract: recipient_addr,
+            amount: amount.toString(),
+            msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
+        }
+    });
+
+    return send_result;
+}
+
 export async function stake_prism_for_xprism(lcd_client: LCDClient, sender: Wallet, prism_token_addr: string, prism_gov_addr: string, amount: number) {
     // https://stackabuse.com/encoding-and-decoding-base64-strings-in-node-js/
     // {

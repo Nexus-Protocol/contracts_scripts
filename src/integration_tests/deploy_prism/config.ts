@@ -223,8 +223,8 @@ export function PrismXprismBoostConfig(
     return {
         owner: owner,
         xprism_token: xprism_token,
-        boost_per_hour: "0.014",
-        max_boost_per_xprism: "1"
+        boost_per_hour: "0.02083",
+        max_boost_per_xprism: "100"
     }
 }
 
