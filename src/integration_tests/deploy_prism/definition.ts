@@ -228,7 +228,7 @@ export async function stake_unstake_xprism_into_boost_contract(lcd_client: LCDCl
     };
 	const unbond_msg = {
 		unbond: {
-			amount: amount
+			amount: amount.toString()
 		}
 	}
 	
