@@ -347,6 +347,8 @@ export async function simple_deposit(
     sender: Wallet,
     nex_prism_addrs_and_info: NexPrismAddrsAndInfo
 ) {
+    const test_amt = 35566926
+
     // check xprism balance
     const prism_bal = await get_token_balance(
         lcd_client,
@@ -362,7 +364,7 @@ export async function simple_deposit(
         sender,
         nex_prism_addrs_and_info.prism_market_info.prism_token_addr,
         nex_prism_addrs_and_info.prism_market_info.prism_gov_addr,
-        prism_bal / 2
+        test_amt
     )
     const xprism_bal = await get_token_balance(
         lcd_client,
@@ -378,7 +380,7 @@ export async function simple_deposit(
         sender,
         nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
         nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr,
-        xprism_bal / 2
+        test_amt
     )
     const xprism_bal_after_dep = await get_token_balance(
         lcd_client,
