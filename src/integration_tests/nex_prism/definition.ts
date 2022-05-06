@@ -124,6 +124,23 @@ async function provide_nexprism_xprism_liquidity(lcd_client: LCDClient, sender: 
     const liquidityAmount = 100_000_000_000;
     const liquidityAmountStr = String(100_000_000_000);
 
+    await execute_contract(
+        lcd_client,
+        sender,
+        prism_market_info.prism_token_addr,
+        { transfer: { recipient: prism_market_info.prism_launch_pool_addr, amount: "1000000000000" } },
+    );
+
+    console.log("deposit yluna to vault");
+    const x = await deposit_yluna_to_nyluna_vault(
+        lcd_client,
+        sender,
+        prism_market_info.yluna_token_addr,
+        nex_prism_info.vault_deployment_addr,
+        5_000_000_000
+    );
+    console.log(`EVENTS: ${JSON.stringify(getContractEvents(x!))}`);
+
     await stake_prism_for_xprism(
         lcd_client,
         sender,
@@ -246,9 +263,23 @@ async function deposit_xprism_to_nexprism_vault(lcd_client: LCDClient, sender: W
     return send_result;
 }
 
+async function deposit_yluna_to_nyluna_vault(lcd_client: LCDClient, sender: Wallet, yluna_token_addr: string, recipient_addr: string, amount: number) {
+    const deposit_msg = { deposit: {} };
+
+    const send_result = await execute_contract(lcd_client, sender, yluna_token_addr, {
+        send: {
+            contract: recipient_addr,
+            amount: amount.toString(),
+            msg: Buffer.from(JSON.stringify(deposit_msg)).toString('base64'),
+        }
+    });
+
+    return send_result;
+}
+
 // TODO:
 async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string, amount: number) {
-    const msg = { mint_xprism: {} };
+    const msg = { bond: {} };
     const recipient_addr = nexprism_staking_addr;
 
     const send_result = await execute_contract(lcd_client, sender, nexprism_token_addr, {
@@ -292,14 +323,15 @@ export async function simple_deposit(
     assert(xprism_bal > 0)
     console.log("xprism balance: ", xprism_bal);
 
-    // deposit xprism to vault
-    await deposit_xprism_to_nexprism_vault(
+    console.log("deposit xprism to vault");
+    const x = await deposit_xprism_to_nexprism_vault(
         lcd_client,
         sender,
         nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
         nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr,
         xprism_bal / 2
     )
+    console.log(`EVENTS: ${JSON.stringify(getContractEvents(x!))}`);
     const xprism_bal_after_dep = await get_token_balance(
         lcd_client,
         sender.key.accAddress,
@@ -317,14 +349,39 @@ export async function simple_deposit(
     assert(nexprism_bal > 0)
     console.log("nexprism balance after staking xprism: ", nexprism_bal);
 
-    // TODO: stake the nexprism
-    // await stake_nexprism(
-    //     lcd_client,
-    //     sender,
-    //     nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
-    //     nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr,
-    //     nexprism_bal
-    // )
-    // assert(nexprism_bal < 1)
-    // console.log("nexprism balance after staking nexprism: ", nexprism_bal);
+    await sleep(5000);
+    console.log("deposit xprism to vault");
+    const y = await deposit_xprism_to_nexprism_vault(
+        lcd_client,
+        sender,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+        nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr,
+        xprism_bal_after_dep / 10
+    )
+    console.log(`EVENTS: ${JSON.stringify(getContractEvents(y!))}`);
+
+    const q1: any = await lcd_client.wasm.contractQuery(
+        nex_prism_addrs_and_info.prism_market_info.prism_xprism_boost_addr, { get_boost: { user: nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr } });
+    console.log(`q: ${JSON.stringify(q1)}`);
+    const q2: any = await lcd_client.wasm.contractQuery(
+        nex_prism_addrs_and_info.prism_market_info.prism_launch_pool_addr, { distribution_status: {} });
+    console.log(`q: ${JSON.stringify(q2)}`);
+    const q3: any = await lcd_client.wasm.contractQuery(
+        nex_prism_addrs_and_info.prism_market_info.prism_launch_pool_addr, { config: {} });
+    console.log(`q: ${JSON.stringify(q3)}`);
+    const q4: any = await lcd_client.wasm.contractQuery(
+        nex_prism_addrs_and_info.prism_market_info.prism_launch_pool_addr, { reward_info: { staker_addr: nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr } });
+    console.log(`q: ${JSON.stringify(q4)}`);
+
+    let r: any = await lcd_client.wasm.contractQuery(
+        nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr, { simulate_update_rewards_distribution: {} });
+    console.log(`UPDATE: ${JSON.stringify(r)}`);
+
+    await stake_nexprism(
+        lcd_client,
+        sender,
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr,
+        nexprism_bal
+    )
 }
