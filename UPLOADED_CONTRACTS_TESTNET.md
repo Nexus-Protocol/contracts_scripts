@@ -158,7 +158,7 @@ pol_contract instantiated
 	nexprism-xprism pair addr: terra1afumr70wuld42pac5tec8ffqyukzur8kxlcn7u
 	nexprism-xprism lp token: terra1hcppd4pzytvytplr5tthxej60fsqps5sx5susa
 	psi staking addr: terra1a65v50u4xevdstx0vk84edgsaw9ee9v7lfj9e0
-	yluna staking addr: terra1esawdjgnwmj9xh94l333zefvcjgt79cydv7lmd
+	nyluna staking addr: terra1esawdjgnwmj9xh94l333zefvcjgt79cydv7lmd
 	nyluna autocompounder: terra1x4z0hx7f8qv8wkrjgvvjyr9wx7ezmj36a2gd54
 	nexprism staking: terra109y6veq2vz6dz60kq35nvf7e3v2y0hk4uuzrul
 	nexprism autocompounder: terra17afapwxja8y8lp9qxv8dgnrgd86ush0pwd8t70
