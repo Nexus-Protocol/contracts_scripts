@@ -277,7 +277,6 @@ async function deposit_yluna_to_nyluna_vault(lcd_client: LCDClient, sender: Wall
     return send_result;
 }
 
-// TODO:
 async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string, amount: number) {
     const msg = { bond: {} };
     const recipient_addr = nexprism_staking_addr;
@@ -291,6 +290,31 @@ async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_to
     });
 
     return send_result;
+}
+
+async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, _nexprism_token_addr: string, nexprism_staking_addr: string) {
+    // query amt of rewards
+    let rewards_earned_resp = await lcd_client.wasm.contractQuery(nexprism_staking_addr, {
+        rewards: {
+            address: sender.key.accAddress
+        }
+    });
+    console.log("STEVENDEBUG rewards_earned_resp ", rewards_earned_resp);
+
+
+    // TODO:
+    const claim_rewards_result = await execute_contract(lcd_client, sender, nexprism_staking_addr, {
+        anyone: {
+            anyone_msg: {
+                claim_rewards: {
+                    recipient: sender.key.accAddress,
+                }
+            }
+        }
+    });
+
+    console.log("STEVENDEBUG claim_rewards_result ", claim_rewards_result);
+    return claim_rewards_result;
 }
 
 export async function simple_deposit(
@@ -377,11 +401,25 @@ export async function simple_deposit(
         nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr, { simulate_update_rewards_distribution: {} });
     console.log(`UPDATE: ${JSON.stringify(r)}`);
 
+    // stake nexprism
     await stake_nexprism(
         lcd_client,
         sender,
         nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
         nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr,
         nexprism_bal
+    )
+
+    // assert recieve correct amount of reward
+    const mins = 0.5;
+    const millisecs = mins * 60 * 1000;
+    console.log("waiting for ", mins, " mins to accumulate rewards. Edit the mins variable to change the wait times.");
+    await sleep(millisecs)
+
+    await claim_all_nexprism_rewards(
+        lcd_client,
+        sender,
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr
     )
 }
