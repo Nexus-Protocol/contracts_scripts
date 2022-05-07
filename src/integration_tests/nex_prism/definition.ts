@@ -319,18 +319,18 @@ async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet,
 
 
     // TODO:
-    const claim_rewards_result = await execute_contract(lcd_client, sender, nexprism_staking_addr, {
-        anyone: {
-            anyone_msg: {
-                claim_rewards: {
-                    recipient: sender.key.accAddress,
-                }
-            }
-        }
-    });
+    // const claim_rewards_result = await execute_contract(lcd_client, sender, nexprism_staking_addr, {
+    //     anyone: {
+    //         anyone_msg: {
+    //             claim_rewards: {
+    //                 recipient: sender.key.accAddress,
+    //             }
+    //         }
+    //     }
+    // });
 
-    console.log("STEVENDEBUG claim_rewards_result ", claim_rewards_result);
-    return claim_rewards_result;
+    // console.log("STEVENDEBUG claim_rewards_result ", claim_rewards_result);
+    return null;
 }
 
 async function stake_nyluna(lcd_client: LCDClient, sender: Wallet, nyluna_token: string, nyluna_staking: string, amount: number) {    
