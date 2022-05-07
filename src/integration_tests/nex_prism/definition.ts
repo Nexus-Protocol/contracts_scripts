@@ -1,5 +1,5 @@
 import { getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
-import { assert } from "console";
+import * as assert from "assert";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
 import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance } from "../../utils";
@@ -510,58 +510,43 @@ export async function claim_reward_from_stacking_nyluna(
 
     const nyluna_token = nex_prism_addrs_and_info.nex_prism_info.nyluna_token_addr;
     const nyluna_staking = nex_prism_addrs_and_info.nex_prism_info.nyluna_staking_addr;
+    const prism_token = nex_prism_addrs_and_info.prism_market_info.prism_token_addr;
 
     const nyluna_bal = await get_token_balance(
         lcd_client,
         sender.key.accAddress,
         nyluna_token,
     )
-    console.log("nyluna balance:", nyluna_bal);
 
     await stake_nyluna(lcd_client, sender, nyluna_token, nyluna_staking, nyluna_bal);
 
-    // sleep(10000);
+    const prism_bal_before_claim = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        prism_token,
+    )
+    console.log("prism balance before reward:", prism_bal_before_claim);
 
-    const staker: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
-        staker: {
-            address: sender.key.accAddress,
+    // Claim Prism reward
+    await execute_contract(lcd_client, sender, nyluna_staking, {
+        anyone: {
+            anyone_msg: {
+                claim_rewards: {
+                    recipient: sender.key.accAddress,
+                }
+            }
         }
     });
 
-    console.log("Staker:", staker);
-    assert(Number(staker.balance) == nyluna_bal);
+    const prism_bal_after_claim = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        prism_token,
+    )
+    console.log("prism balance after reward:", prism_bal_after_claim);
 
-    const state = await lcd_client.wasm.contractQuery(nyluna_staking, {
-        state: {}
-    });
-    console.log("State", state);
+    assert(prism_bal_after_claim > prism_bal_before_claim);
 
-    // There is no real reward
-
-    // await execute_contract(lcd_client, sender, nyluna_staking, {
-    //     anyone: {
-    //         anyone_msg: {
-    //             claim_rewards: {
-    //                 recipient: sender.key.accAddress,
-    //             }
-    //         }
-    //     }
-    // });
-
-    // {
-    //     const staker: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
-    //         staker: {
-    //             address: sender.key.accAddress,
-    //         }
-    //     });
-    
-    //     console.log("Staker:", staker);
-    
-    //     const state = await lcd_client.wasm.contractQuery(nyluna_staking, {
-    //         state: {}
-    //     });
-    
-    //     console.log("State", state);
-    // }
+    console.log("Test claim_reward_from_stacking_nyluna passed!");
 }
 
