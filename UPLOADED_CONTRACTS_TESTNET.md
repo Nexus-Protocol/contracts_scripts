@@ -147,9 +147,9 @@ pol_contract instantiated
 =======================
 ====== NEXPRISM =======
 =======================
-	staking code_id: 70154
+	staking code_id: 70426
 	autocompounder code_id: 70155
-	vault code_id: 70156
+	vault code_id: 70427
 	lockdrop code_id: 69288
 	===
 	vault addr: terra1lnqdv6zcnfr7s69a4rpchpf8hjwcxl8slut70l
