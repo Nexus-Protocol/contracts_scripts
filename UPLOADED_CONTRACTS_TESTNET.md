@@ -147,17 +147,20 @@ pol_contract instantiated
 =======================
 ====== NEXPRISM =======
 =======================
-	staking code_id: 67946
-	vault code_id: 67982
-	autocompounder code_id: 67948
+	staking code_id: 70154
+	autocompounder code_id: 70155
+	vault code_id: 70156
 	lockdrop code_id: 69288
 	===
-	vault addr: terra139w6neqzdk9uqvn6v7sjcr7vpexh3pe0ty7w3m
-	nyluna token addr: terra1u2amvzp0s0ywsndw9el5yhxafd59fr68gs5xre
-	nexprism token addr: terra1e2zcnfqduhuafs9cwf357wkrhnwncr8z6pepjz
-	nexprism-xprism pair addr: terra1w6362ywvujtv06msggaraml84ex58hs94sr0eq
-	nexprism-xprism lp token: terra1249j6hy86sjsltq82q08cuk8gtgy6ut9y95pn7
-	psi staking addr: terra1l37hcmnqpa5hkxr6ncr0mt0rxk0fmepswnwn8s
-	yluna staking addr: terra1reyshrs9n3acvhhf62wqcutat90mekfpp5xewe
+	vault addr: terra1lnqdv6zcnfr7s69a4rpchpf8hjwcxl8slut70l
+	nyluna token addr: terra17mmjvnvlk39f64mag25m2c8lh2x448e5nh6unl
+	nexprism token addr: terra1ylw4ezgwualyvsjy3flrrtjqas80g3lpchmvds
+	nexprism-xprism pair addr: terra1afumr70wuld42pac5tec8ffqyukzur8kxlcn7u
+	nexprism-xprism lp token: terra1hcppd4pzytvytplr5tthxej60fsqps5sx5susa
+	psi staking addr: terra1a65v50u4xevdstx0vk84edgsaw9ee9v7lfj9e0
+	nyluna staking addr: terra1esawdjgnwmj9xh94l333zefvcjgt79cydv7lmd
+	nyluna autocompounder: terra1x4z0hx7f8qv8wkrjgvvjyr9wx7ezmj36a2gd54
+	nexprism staking: terra109y6veq2vz6dz60kq35nvf7e3v2y0hk4uuzrul
+	nexprism autocompounder: terra17afapwxja8y8lp9qxv8dgnrgd86ush0pwd8t70
 	lockdrop addr: terra1ue49w62curgpxz6a7et5c36tmux6k60u5j6qrg
 ```
