@@ -314,10 +314,9 @@ async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet,
             address: sender.key.accAddress
         }
     });
-    console.log("STEVENDEBUG rewards_earned_resp ", rewards_earned_resp);
+    console.log("rewards \n\t", rewards_earned_resp);
 
 
-    // TODO:
     try {
         const claim_rewards_result = await execute_contract(lcd_client, sender, nexprism_staking_addr, {
             anyone: {
@@ -328,12 +327,11 @@ async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet,
                 }
             }
         });
-        console.log("STEVENDEBUG claim_rewards_result ", claim_rewards_result);
+        return claim_rewards_result
     } catch (e) {
-        console.log("STEVENDEBUG error ", e);
+        console.log("claim_all_nexprism_rewards error ", e);
+        return null;
     }
-
-    return null;
 }
 
 async function stake_nyluna(lcd_client: LCDClient, sender: Wallet, nyluna_token: string, nyluna_staking: string, amount: number) {
@@ -356,15 +354,17 @@ export async function simple_deposit(
     nex_prism_addrs_and_info: NexPrismAddrsAndInfo
 ) {
     // check xprism balance
+    // stake some prism for xprism
+    // deposit xprism to nex-prism-convex vault
+    
+    console.log("deposit xprism to vault");
+
     const prism_bal = await get_token_balance(
         lcd_client,
         sender.key.accAddress,
         nex_prism_addrs_and_info.prism_market_info.prism_token_addr
     )
     assert(prism_bal > 0)
-    console.log("prism balance: ", prism_bal);
-
-    // stake some prism for xprism
     await stake_prism_for_xprism(
         lcd_client,
         sender,
@@ -378,10 +378,8 @@ export async function simple_deposit(
         nex_prism_addrs_and_info.prism_market_info.xprism_token_addr
     )
     assert(xprism_bal > 0)
-    console.log("xprism balance: ", xprism_bal);
 
-    console.log("deposit xprism to vault");
-    const x = await deposit_xprism_to_nexprism_vault(
+    await deposit_xprism_to_nexprism_vault(
         lcd_client,
         sender,
         nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
@@ -395,7 +393,6 @@ export async function simple_deposit(
         nex_prism_addrs_and_info.prism_market_info.xprism_token_addr
     )
     assert(xprism_bal > xprism_bal_after_dep)
-    console.log("xprism balance after deposit: ", xprism_bal_after_dep);
 
     // assert recieve correct amount of nexprism back
     const nexprism_bal = await get_token_balance(
@@ -404,19 +401,18 @@ export async function simple_deposit(
         nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr
     )
     assert(nexprism_bal > 0)
-    console.log("nexprism balance after staking xprism: ", nexprism_bal);
+    console.log("nexprism balance after staking xprism into nex-prism-convex vault\n\t ", nexprism_bal, " nexprism");
 
-    await sleep(5000);
-    console.log("deposit xprism to nexprism vault");
-    const y = await deposit_xprism_to_nexprism_vault(
-        lcd_client,
-        sender,
-        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
-        nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr,
-        xprism_bal_after_dep / 10
-    )
+    // @dev - commnented out for cleaning up terminal view
+    // await sleep(5000);
+    // const y = await deposit_xprism_to_nexprism_vault(
+    //     lcd_client,
+    //     sender,
+    //     nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+    //     nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr,
+    //     xprism_bal_after_dep / 10
+    // )
     // console.log(`EVENTS: ${JSON.stringify(getContractEvents(y!))}`);
-
     // const q1: any = await lcd_client.wasm.contractQuery(
     //     nex_prism_addrs_and_info.prism_market_info.prism_xprism_boost_addr, { get_boost: { user: nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr } });
     // console.log(`q: ${JSON.stringify(q1)}`);
@@ -429,12 +425,12 @@ export async function simple_deposit(
     // const q4: any = await lcd_client.wasm.contractQuery(
     //     nex_prism_addrs_and_info.prism_market_info.prism_launch_pool_addr, { reward_info: { staker_addr: nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr } });
     // console.log(`q: ${JSON.stringify(q4)}`);
-
-    let r: any = await lcd_client.wasm.contractQuery(
-        nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr, { simulate_update_rewards_distribution: {} });
+    // let r: any = await lcd_client.wasm.contractQuery(
+    //     nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr, { simulate_update_rewards_distribution: {} });
     // console.log(`UPDATE: ${JSON.stringify(r)}`);
 
     // stake nexprism
+    console.log(`staking \n\t`, nexprism_bal, `nexprism`);
     await stake_nexprism(
         lcd_client,
         sender,
@@ -446,15 +442,16 @@ export async function simple_deposit(
     // assert recieve correct amount of reward
     const mins = 0.5;
     const millisecs = mins * 60 * 1000;
-    console.log("waiting for ", mins, " mins to accumulate rewards. Edit the mins variable to change the wait times.");
+    console.log("waiting for ", mins, " mins to accumulate rewards. \n\t edit the mins variable to change the wait times.");
     await sleep(millisecs)
-
-    await claim_all_nexprism_rewards(
+    const claim_reward_res = await claim_all_nexprism_rewards(
         lcd_client,
         sender,
         nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
         nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr
     )
+    // console.log("claimed nexprism rewards", claim_reward_res);
+    console.log(`=======================`);
 }
 
 export async function stake_nyluna_test(
