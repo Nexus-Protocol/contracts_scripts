@@ -500,3 +500,68 @@ export async function stake_nyluna_test(
 
     console.log("Staked nyluna successfully");
 }
+
+export async function claim_reward_from_stacking_nyluna(
+    lcd_client: LCDClient,
+    sender: Wallet,
+    nex_prism_addrs_and_info: NexPrismAddrsAndInfo
+) {
+    console.log("Start claim_reward_from_stacking_nyluna test");
+
+    const nyluna_token = nex_prism_addrs_and_info.nex_prism_info.nyluna_token_addr;
+    const nyluna_staking = nex_prism_addrs_and_info.nex_prism_info.nyluna_staking_addr;
+
+    const nyluna_bal = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        nyluna_token,
+    )
+    console.log("nyluna balance:", nyluna_bal);
+
+    await stake_nyluna(lcd_client, sender, nyluna_token, nyluna_staking, nyluna_bal);
+
+    // sleep(10000);
+
+    const staker: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
+        staker: {
+            address: sender.key.accAddress,
+        }
+    });
+
+    console.log("Staker:", staker);
+    assert(Number(staker.balance) == nyluna_bal);
+
+    const state = await lcd_client.wasm.contractQuery(nyluna_staking, {
+        state: {}
+    });
+    console.log("State", state);
+
+    // There is no real reward
+
+    // await execute_contract(lcd_client, sender, nyluna_staking, {
+    //     anyone: {
+    //         anyone_msg: {
+    //             claim_rewards: {
+    //                 recipient: sender.key.accAddress,
+    //             }
+    //         }
+    //     }
+    // });
+
+    // {
+    //     const staker: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
+    //         staker: {
+    //             address: sender.key.accAddress,
+    //         }
+    //     });
+    
+    //     console.log("Staker:", staker);
+    
+    //     const state = await lcd_client.wasm.contractQuery(nyluna_staking, {
+    //         state: {}
+    //     });
+    
+    //     console.log("State", state);
+    // }
+}
+
