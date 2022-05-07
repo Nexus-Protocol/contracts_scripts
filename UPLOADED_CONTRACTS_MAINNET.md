@@ -134,4 +134,9 @@ staking_contract instantiated (Astroport)
 	autocompounder address: terra1fupv3y5tcpy33w4pjjrrhqjtnla6f9y676hvaw
 	token address: terra1nagqpmyw55yjphea4rhntlfv87ugmeaj8ym756
 =======================
+====== NEXPRISM =======
+=======================
+	lockdrop code_id: 5019
+	===
+	lockdrop addr: terra1v99j36hxhhl6vg6gyqftfxflxqgp87m2kvt0s5
 ```
