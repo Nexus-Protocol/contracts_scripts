@@ -2,7 +2,7 @@ import { getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { assert } from "console";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
-import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance } from "../../utils";
+import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance, get_token_balance_and_log } from "../../utils";
 import { PrismMarketInfo } from "../deploy_prism/config";
 import { prism_init, stake_prism_for_xprism } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakerResponse, StakingConfig, VaultConfig } from "./config";
@@ -461,12 +461,18 @@ export async function simple_deposit(
 
     // assert recieve correct amount of reward
     console.log("checking and claim rewards");
-    const prism_bal_before_claim_reward = await get_token_balance(
+    await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
-        nex_prism_addrs_and_info.prism_market_info.prism_token_addr
+        nex_prism_addrs_and_info.prism_market_info.prism_token_addr,
+        "prism"
     )
-    console.log("\t", `before nexprism reward claim: user has ${prism_bal_before_claim_reward} prism balance`);
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+        "xprism"
+    )
     
     const mins = 0.5;
     const millisecs = mins * 60 * 1000;
@@ -480,12 +486,18 @@ export async function simple_deposit(
         nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr
     )
 
-    const prism_bal_after_claim_reward = await get_token_balance(
+    await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
-        nex_prism_addrs_and_info.prism_market_info.prism_token_addr
+        nex_prism_addrs_and_info.prism_market_info.prism_token_addr,
+        "prism"
     )
-    console.log("\t", `after nexprism reward claim: user has ${prism_bal_after_claim_reward} prism balance`);
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+        "xprism"
+    )
 
     // unstake nexprism
     console.log("unstaking nexprism");

@@ -58,6 +58,15 @@ export async function get_token_balance(lcd_client: LCDClient, token_holder_addr
     return +result.balance;
 }
 
+export async function get_token_balance_and_log(lcd_client: LCDClient, token_holder_addr: string, token_addr: string, token_name: string) {
+    const result: BalanceResponse = await lcd_client.wasm.contractQuery(token_addr, {
+        balance: {
+            address: token_holder_addr
+        }
+    });
+	console.log("\t", +result.balance, " ", token_name);
+}
+
 // ============================================================
 // ============================================================
 // ============================================================
