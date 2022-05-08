@@ -4,7 +4,7 @@
 cw20_base uploaded; code_id: 9324
 =======================
 governance_contract uploaded
-        code_id: 52470
+        code_id: 70523
 governance_contract instantiated
         address: terra1u7tnl4326ge86mzqeqnzxxjg7xkgj8nfg65a2h
 =======================
