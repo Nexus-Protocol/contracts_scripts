@@ -1,4 +1,4 @@
-import { getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
+import { getContractEvents, LCDClient, LocalTerra, Wallet } from "@terra-money/terra.js";
 import * as assert from "assert";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
@@ -134,14 +134,14 @@ async function provide_nexprism_xprism_liquidity(lcd_client: LCDClient, sender: 
     );
 
     console.log("deposit yluna to vault");
-    const x = await deposit_yluna_to_nyluna_vault(
+    await deposit_yluna_to_nyluna_vault(
         lcd_client,
         sender,
         prism_market_info.yluna_token_addr,
         nex_prism_info.vault_deployment_addr,
         5_000_000_000
     );
-    console.log(`EVENTS: ${JSON.stringify(getContractEvents(x!))}`);
+    // console.log(`EVENTS: ${JSON.stringify(getContractEvents(x!))}`);
 
     await stake_prism_for_xprism(
         lcd_client,
@@ -454,19 +454,18 @@ export async function simple_deposit(
     )
 }
 
-export async function stake_nyluna_test(
+async function deposit_and_stake_yluna(
     lcd_client: LCDClient,
     sender: Wallet,
-    nex_prism_addrs_and_info: NexPrismAddrsAndInfo
+    nex_prism_addrs_and_info: NexPrismAddrsAndInfo,
+    amount: number,
 ) {
-    console.log("Start staking nyluna test");
-
     const yluna_token = nex_prism_addrs_and_info.prism_market_info.yluna_token_addr;
     const nyluna_token = nex_prism_addrs_and_info.nex_prism_info.nyluna_token_addr;
     const nyluna_staking = nex_prism_addrs_and_info.nex_prism_info.nyluna_staking_addr;
     const nexprism_vault = nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr;
 
-    const yluna_deposit_amount = 10000000;
+    const yluna_deposit_amount = amount;
 
     // check yluna balance
     const yluna_bal = await get_token_balance(
@@ -474,8 +473,7 @@ export async function stake_nyluna_test(
         sender.key.accAddress,
         yluna_token,
     )
-    console.log("yluna balance:", yluna_bal);
-    assert(yluna_bal > yluna_deposit_amount);
+    assert(yluna_bal >= yluna_deposit_amount);
 
     await deposit_yluna(lcd_client, sender, yluna_token, nexprism_vault, yluna_deposit_amount);
 
@@ -484,10 +482,23 @@ export async function stake_nyluna_test(
         sender.key.accAddress,
         nyluna_token,
     )
-    console.log("nyluna balance:", nyluna_bal);
     assert(nyluna_bal == yluna_deposit_amount);
 
     await stake_nyluna(lcd_client, sender, nyluna_token, nyluna_staking, nyluna_bal);
+}
+
+export async function stake_nyluna_test(
+    lcd_client: LCDClient,
+    sender: Wallet,
+    nex_prism_addrs_and_info: NexPrismAddrsAndInfo
+) {
+    console.log("Start staking nyluna test");
+
+    const nyluna_staking = nex_prism_addrs_and_info.nex_prism_info.nyluna_staking_addr;
+
+    const amount = 100_000_000;
+
+    await deposit_and_stake_yluna(lcd_client, sender, nex_prism_addrs_and_info, amount);
 
     const staker: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
         staker: {
@@ -496,7 +507,7 @@ export async function stake_nyluna_test(
     });
 
     console.log("Staker:", staker);
-    assert(Number(staker.balance) == nyluna_bal);
+    assert(Number(staker.balance) == amount);
 
     console.log("Staked nyluna successfully");
 }
@@ -508,6 +519,7 @@ export async function claim_reward_from_stacking_nyluna(
 ) {
     console.log("Start claim_reward_from_stacking_nyluna test");
 
+    const yluna_token = nex_prism_addrs_and_info.prism_market_info.yluna_token_addr;
     const nyluna_token = nex_prism_addrs_and_info.nex_prism_info.nyluna_token_addr;
     const nyluna_staking = nex_prism_addrs_and_info.nex_prism_info.nyluna_staking_addr;
     const prism_token = nex_prism_addrs_and_info.prism_market_info.prism_token_addr;
@@ -520,12 +532,46 @@ export async function claim_reward_from_stacking_nyluna(
 
     await stake_nyluna(lcd_client, sender, nyluna_token, nyluna_staking, nyluna_bal);
 
+    const sender2: Wallet = (lcd_client as LocalTerra).wallets.test2;
+
+    const deposit_from_sender2_amount = 3_000_000_000;
+
+    await execute_contract(lcd_client, sender, yluna_token, {
+        transfer: {
+            recipient: sender2.key.accAddress,
+            amount: (deposit_from_sender2_amount).toString(),
+        }
+    });
+
+    await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, deposit_from_sender2_amount);
+
     const prism_bal_before_claim = await get_token_balance(
         lcd_client,
         sender.key.accAddress,
         prism_token,
     )
-    console.log("prism balance before reward:", prism_bal_before_claim);
+    const prism_bal_before_claim2 = await get_token_balance(
+        lcd_client,
+        sender2.key.accAddress,
+        prism_token,
+    )
+    console.log("prism balance before reward:", prism_bal_before_claim, prism_bal_before_claim2);
+
+    sleep(10000);
+
+    const staker: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
+        staker: {
+            address: sender.key.accAddress,
+        }
+    });
+    console.log("Staker:", staker);
+    
+    const staker2: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
+        staker: {
+            address: sender2.key.accAddress,
+        }
+    });
+    console.log("Staker2:", staker2);
 
     // Claim Prism reward
     await execute_contract(lcd_client, sender, nyluna_staking, {
@@ -537,15 +583,31 @@ export async function claim_reward_from_stacking_nyluna(
             }
         }
     });
+    // Claim Prism reward
+    await execute_contract(lcd_client, sender, nyluna_staking, {
+        anyone: {
+            anyone_msg: {
+                claim_rewards: {
+                    recipient: sender2.key.accAddress,
+                }
+            }
+        }
+    });
 
     const prism_bal_after_claim = await get_token_balance(
         lcd_client,
         sender.key.accAddress,
         prism_token,
     )
-    console.log("prism balance after reward:", prism_bal_after_claim);
+    const prism_bal_after_claim2 = await get_token_balance(
+        lcd_client,
+        sender2.key.accAddress,
+        prism_token,
+    )
+    console.log("prism balance after reward:", prism_bal_after_claim, prism_bal_after_claim2);
 
     assert(prism_bal_after_claim > prism_bal_before_claim);
+    assert(prism_bal_after_claim2 > prism_bal_before_claim2);
 
     console.log("Test claim_reward_from_stacking_nyluna passed!");
 }
