@@ -348,6 +348,17 @@ async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet,
     }
 }
 
+async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, _nexprism_token_addr: string, nexprism_staking_addr: string) {
+    // query amt of rewards
+    let rewards_earned_resp = await lcd_client.wasm.contractQuery(nexprism_staking_addr, {
+        rewards: {
+            address: sender.key.accAddress
+        }
+    });
+    console.log("\t", "rewards: ", rewards_earned_resp);
+    return rewards_earned_resp;
+}
+
 async function stake_nyluna(lcd_client: LCDClient, sender: Wallet, nyluna_token: string, nyluna_staking: string, amount: number) {
     const msg = { bond: {} };
 
@@ -362,7 +373,7 @@ async function stake_nyluna(lcd_client: LCDClient, sender: Wallet, nyluna_token:
     return send_result;
 }
 
-export async function simple_deposit(
+export async function stake_unstake_nexprism_without_claiming_rewards(
     lcd_client: LCDClient,
     sender: Wallet,
     nex_prism_addrs_and_info: NexPrismAddrsAndInfo
@@ -495,7 +506,13 @@ export async function simple_deposit(
     console.log("\t", "waiting for ", mins, " mins to accumulate rewards. edit the mins variable to change the wait times.");
     await sleep(millisecs)
     
-    await claim_all_nexprism_rewards(
+    // await claim_all_nexprism_rewards(
+    //     lcd_client,
+    //     sender,
+    //     nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
+    //     nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr
+    // )
+    await check_nexprism_rewards(
         lcd_client,
         sender,
         nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
