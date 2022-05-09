@@ -134,8 +134,8 @@ export function PrismLaunchPoolConfig(
         boost_contract: prism_xprism_boost_addr,
         distribution_schedule: [
             1646560800,
-            1649239200,
-            "130000000000"
+            1678096800,
+            "130000000000000"
         ],
         base_pool_ratio: "0.8",
         min_bond_amount: "1000000",

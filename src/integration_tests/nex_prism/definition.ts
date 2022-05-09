@@ -56,7 +56,7 @@ async function full_nex_prism_init(
         prism_governance_addr,
     )
     console.log("STEVENDEBUG vault_config ", vault_config);
-    
+
     let vault_deploy_res = await instantiate_contract_raw(
         lcd_client,
         sender,
@@ -130,7 +130,7 @@ async function provide_nexprism_xprism_liquidity(lcd_client: LCDClient, sender: 
         lcd_client,
         sender,
         prism_market_info.prism_token_addr,
-        { transfer: { recipient: prism_market_info.prism_launch_pool_addr, amount: "1000000000000" } },
+        { transfer: { recipient: prism_market_info.prism_launch_pool_addr, amount: "1000000000000000" } },
     );
 
     console.log("deposit yluna to vault");
@@ -289,7 +289,7 @@ async function stake_nexprism(lcd_client: LCDClient, sender: Wallet, nexprism_to
             amount: amount.toString(),
             msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
         }
-    });    
+    });
 
     return send_result;
 }
@@ -333,7 +333,7 @@ async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet,
     return null;
 }
 
-async function stake_nyluna(lcd_client: LCDClient, sender: Wallet, nyluna_token: string, nyluna_staking: string, amount: number) {    
+async function stake_nyluna(lcd_client: LCDClient, sender: Wallet, nyluna_token: string, nyluna_staking: string, amount: number) {
     const msg = { bond: {} };
 
     const send_result = await execute_contract(lcd_client, sender, nyluna_token, {
@@ -342,7 +342,7 @@ async function stake_nyluna(lcd_client: LCDClient, sender: Wallet, nyluna_token:
             amount: amount.toString(),
             msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
         }
-    });    
+    });
 
     return send_result;
 }
@@ -475,7 +475,8 @@ async function deposit_and_stake_yluna(
     )
     assert(yluna_bal >= yluna_deposit_amount);
 
-    await deposit_yluna(lcd_client, sender, yluna_token, nexprism_vault, yluna_deposit_amount);
+    const x = await deposit_yluna(lcd_client, sender, yluna_token, nexprism_vault, yluna_deposit_amount);
+    console.log(`EVENTS: ${JSON.stringify(getContractEvents(x!))}`);
 
     const nyluna_bal = await get_token_balance(
         lcd_client,
@@ -543,7 +544,7 @@ export async function claim_reward_from_stacking_nyluna(
         }
     });
 
-    await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, deposit_from_sender2_amount);
+    await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, deposit_from_sender2_amount / 2);
 
     const prism_bal_before_claim = await get_token_balance(
         lcd_client,
@@ -557,7 +558,8 @@ export async function claim_reward_from_stacking_nyluna(
     )
     console.log("prism balance before reward:", prism_bal_before_claim, prism_bal_before_claim2);
 
-    sleep(10000);
+    await sleep(10000);
+    await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, deposit_from_sender2_amount / 2);
 
     const staker: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
         staker: {
@@ -565,7 +567,7 @@ export async function claim_reward_from_stacking_nyluna(
         }
     });
     console.log("Staker:", staker);
-    
+
     const staker2: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
         staker: {
             address: sender2.key.accAddress,
@@ -578,17 +580,15 @@ export async function claim_reward_from_stacking_nyluna(
         anyone: {
             anyone_msg: {
                 claim_rewards: {
-                    recipient: sender.key.accAddress,
                 }
             }
         }
     });
     // Claim Prism reward
-    await execute_contract(lcd_client, sender, nyluna_staking, {
+    await execute_contract(lcd_client, sender2, nyluna_staking, {
         anyone: {
             anyone_msg: {
                 claim_rewards: {
-                    recipient: sender2.key.accAddress,
                 }
             }
         }
