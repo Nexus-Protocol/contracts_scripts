@@ -793,6 +793,7 @@ export async function governance_communication_to_nexprism_psi_staking(
 		// assert(staker.virtual_pending_rewards !== "0");
 	    //TODO: how to query indexes?
     }
+    console.log("===================================");
 	// 5. send some rewards to  psi_staking
 	await sleep(20000);
 	console.log(`before claim_all_rewards on nexprism_vault`);
