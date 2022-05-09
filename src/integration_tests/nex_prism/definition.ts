@@ -658,7 +658,8 @@ export async function governance_communication_to_nexprism_psi_staking(
     // 8. claim rewards from psi_staking
     // 9. get user_index from psi_staking (it should be updated again)
 
-    console.log("Start governance_communication_to_nexprism_psi_staking test");
+	console.log("Start governance_communication_to_nexprism_psi_staking test");
+    const nexprism_vault = nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr;
     const yluna_token = nex_prism_addrs_and_info.prism_market_info.yluna_token_addr;
 	const psi_token = nex_prism_addrs_and_info.psi_token_addr;
 	const psi_staking = nex_prism_addrs_and_info.nex_prism_info.psi_staking_addr;
@@ -698,12 +699,15 @@ export async function governance_communication_to_nexprism_psi_staking(
     			amount: (sender2_yluna_balance).toString(),
     		}
     	});
-    	await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, sender2_yluna_balance / 3);
+    	await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, sender2_yluna_balance);
     }
     
     // 1. send some rewards to psi_staking
     // now, when there is yLuna in Prism - we just need to wait to get rewards
-    await sleep(20000);
+	await sleep(20000);
+	await execute_contract(lcd_client, sender, nexprism_vault, {
+	    claim_all_rewards: {}
+    });
 
     // 2. get user_index from psi_staking
     //check indexes to != 0
@@ -743,6 +747,9 @@ export async function governance_communication_to_nexprism_psi_staking(
     }
     // 5. send some rewards to  psi_staking
     await sleep(20000);
+	await execute_contract(lcd_client, sender, nexprism_vault, {
+	    claim_all_rewards: {}
+    });
     // 6. partially unstake Psi from governance
 	{
 		await execute_contract(lcd_client, sender, governance_addr, {
