@@ -157,5 +157,8 @@ npm run nex-prism-integration-tests
 ### Notes
 
 Change for localterra in prism-contracts (https://github.com/prism-finance/prism-contracts).
+
 Rewards are splitted into 10 secs vesting records.
 ```prism-contracts/contracts/prism-launch-pool/src/vest.rs -> pub const TIME_UNIT: u64 = 10;```
+
+So ```prism_launch_pool.wasm``` rebuilt and updated by us.
