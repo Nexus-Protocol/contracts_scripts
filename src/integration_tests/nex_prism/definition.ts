@@ -232,6 +232,18 @@ export async function prism_nexprism_full_init(
         prism_market_info.yluna_prism_pair_addr,
         prism_market_info.prism_gov_addr
     )
+    // set psi token addr to governance contract
+    await execute_contract(lcd_client, sender, governance_contract_addr,
+    	{
+    		anyone: {
+    			anyone_msg: {
+    				register_token: {
+    					psi_token: psi_token_addr
+    				}
+    			}
+    		}
+    	}
+    );
 	//set psi_staking add to Governance
     {
     	let res = await execute_contract(lcd_client, sender, governance_contract_addr, {
