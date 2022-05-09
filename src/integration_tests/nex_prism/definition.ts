@@ -71,6 +71,7 @@ async function full_nex_prism_init(
     let nyluna_staking_addr = ""
     let nexprism_staking_addr = ""
     let nexprism_xprism_pair_addr = ""
+    let psi_staking_addr = ""
 
     let contract_events = vault_deploy_res ? getContractEvents(vault_deploy_res) : [];
     for (let contract_event of contract_events) {
@@ -101,7 +102,11 @@ async function full_nex_prism_init(
 
         let nexprism_xprism_pair = contract_event["nexprism_xprism_pair"];
         if (nexprism_xprism_pair) {
-            nexprism_xprism_pair_addr = nexprism_xprism_pair;
+	    nexprism_xprism_pair_addr = nexprism_xprism_pair;
+	}
+        let psi_staking = contract_event["psi_staking "];
+        if (psi_staking) {
+            psi_staking_addr = psi_staking;
         }
     }
 
@@ -118,7 +123,8 @@ async function full_nex_prism_init(
         nyluna_token_addr,
         nyluna_staking_addr,
         nexprism_staking_addr,
-        nexprism_xprism_pair_addr
+        nexprism_xprism_pair_addr,
+	psi_staking_addr
     }
 }
 
@@ -226,6 +232,19 @@ export async function prism_nexprism_full_init(
         prism_market_info.yluna_prism_pair_addr,
         prism_market_info.prism_gov_addr
     )
+	//set psi_staking add to Governance
+    {
+    	let res = await execute_contract(lcd_client, sender, governance_contract_addr, {
+		    governance: {
+			    governance_msg: {
+				    update_config: {
+					    psi_nexprism_staking: nex_prism_info.psi_staking_addr
+				    }
+			    }
+			}
+		});
+        console.log(`EVENTS: ${JSON.stringify(res!)}`);
+    }
 
     await provide_nexprism_xprism_liquidity(lcd_client, sender, prism_market_info, nex_prism_info);
     console.log(`Liquidity provided for nexPRISM-xPRISM pair`);
@@ -612,3 +631,145 @@ export async function claim_reward_from_stacking_nyluna(
     console.log("Test claim_reward_from_stacking_nyluna passed!");
 }
 
+export async function governance_communication_to_nexprism_psi_staking(
+    lcd_client: LCDClient,
+    sender: Wallet,
+	nex_prism_addrs_and_info: NexPrismAddrsAndInfo
+) {
+    // 0. stake Psi tokens in Governance
+    // 1. send some rewards to psi_staking
+    // 2. get user_index from psi_staking
+    // 3. stake Psi in governance
+    // 4. user_index in psi_staking should be updated
+    // 5. send some rewards to  psi_staking
+    // 6. partially unstake Psi from governance
+    // 7. get user_index from psi_staking (it should be updated now)
+    // 8. claim rewards from psi_staking
+    // 9. get user_index from psi_staking (it should be updated again)
+
+    console.log("Start governance_communication_to_nexprism_psi_staking test");
+    const yluna_token = nex_prism_addrs_and_info.prism_market_info.yluna_token_addr;
+	const psi_token = nex_prism_addrs_and_info.psi_token_addr;
+	const psi_staking = nex_prism_addrs_and_info.nex_prism_info.psi_staking_addr;
+    const governance_addr = nex_prism_addrs_and_info.governance_contract_addr;
+	// we will use it to trigger rewards calculation in nexprism_vault
+	const sender2: Wallet = (lcd_client as LocalTerra).wallets.test2;
+
+    // 0. stake Psi tokens in Governance
+    {
+    	const msg = { stake_voting_tokens: {} };
+    	await execute_contract(lcd_client, sender, psi_token, {
+    		send: {
+    			contract: governance_addr,
+    			amount: (1_000_000_000).toString(),
+    			msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
+    		}
+    	});
+    }
+    //check indexes to == 0
+    {
+	    const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
+		    staker: {
+			    address: sender.key.accAddress,
+		    }
+	    });
+	    console.log(`staker indexes on step 0: real=${staker.real_pending_rewards}, virtual=${staker.virtual_pending_rewards}`);
+	    assert(staker.real_pending_rewards === "0");
+	    assert(staker.virtual_pending_rewards === "0");
+    }
+
+    //sending some yLuna to vault (from Sender2) to start accumulating rewards from Prism
+    {
+    	const sender2_yluna_balance = 10_000_000_000;
+    	await execute_contract(lcd_client, sender, yluna_token, {
+    		transfer: {
+    			recipient: sender2.key.accAddress,
+    			amount: (sender2_yluna_balance).toString(),
+    		}
+    	});
+    	await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, sender2_yluna_balance / 3);
+    }
+    
+    // 1. send some rewards to psi_staking
+    // now, when there is yLuna in Prism - we just need to wait to get rewards
+    await sleep(20000);
+
+    // 2. get user_index from psi_staking
+    //check indexes to != 0
+    {
+	    const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
+		    staker: {
+			    address: sender.key.accAddress,
+		    }
+	    });
+	    console.log(`staker indexes on step 1: real=${staker.real_pending_rewards}, virtual=${staker.virtual_pending_rewards}`);
+            assert(staker.real_pending_rewards !== "0");
+            assert(staker.virtual_pending_rewards !== "0");
+    }
+    
+    // 3. stake Psi in governance
+    {
+	    const msg = { stake_voting_tokens: {} };
+	    await execute_contract(lcd_client, sender, psi_token, {
+		    send: {
+			    contract: governance_addr,
+			    amount: (1_000_000_000).toString(),
+			    msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
+		    }
+	    });
+    }
+	// 4. user_index in psi_staking should be updated
+	{
+		const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
+			staker: {
+			    address: sender.key.accAddress,
+		    }
+	    });
+	    console.log(`staker indexes on step 4: real=${staker.real_pending_rewards}, virtual=${staker.virtual_pending_rewards}`);
+		assert(staker.real_pending_rewards !== "0");
+		assert(staker.virtual_pending_rewards !== "0");
+	    //TODO: how to query indexes?
+    }
+    // 5. send some rewards to  psi_staking
+    await sleep(20000);
+    // 6. partially unstake Psi from governance
+	{
+		await execute_contract(lcd_client, sender, governance_addr, {
+			anyone: {
+				anyone_msg: {
+					withdraw_voting_tokens: {
+						amount: "1000000000"
+					}
+				}
+			}
+		});
+	}
+// 7. get user_index from psi_staking (it should be updated now)
+{
+	    //TODO
+    }
+	// 8. claim rewards from psi_staking
+	{
+		await execute_contract(lcd_client, sender, psi_staking, {
+			anyone: {
+				anyone_msg: {
+					claim_rewards: {}
+				}
+			}
+		});
+	}
+    // 9. get user_index from psi_staking (it should be updated again)
+    {
+		const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
+			staker: {
+			    address: sender.key.accAddress,
+		    }
+	    });
+	    console.log(`staker indexes on step 9: real=${staker.real_pending_rewards}, virtual=${staker.virtual_pending_rewards}`);
+		assert(staker.real_pending_rewards !== "0");
+		assert(staker.virtual_pending_rewards !== "0");
+	    //TODO: how to query indexes?
+    }
+
+    console.log("Test governance_communication_to_nexprism_psi_staking passed!");
+}
