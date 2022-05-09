@@ -104,7 +104,7 @@ async function full_nex_prism_init(
         if (nexprism_xprism_pair) {
 	    nexprism_xprism_pair_addr = nexprism_xprism_pair;
 	}
-        let psi_staking = contract_event["psi_staking "];
+        let psi_staking = contract_event["psi_staking"];
         if (psi_staking) {
             psi_staking_addr = psi_staking;
         }
@@ -246,14 +246,6 @@ export async function prism_nexprism_full_init(
     );
 	//set psi_staking add to Governance
 	{
-
-		{
-			let gov_config = await lcd_client.wasm.contractQuery(governance_contract_addr, {
-				config: {}
-			});
-		    console.log(`gov config before set psi_nexprism_staking ${JSON.stringify(gov_config)}`);
-		}
-
     	 await execute_contract(lcd_client, sender, governance_contract_addr, {
 		    governance: {
 			    governance_msg: {
@@ -263,12 +255,6 @@ export async function prism_nexprism_full_init(
 			    }
 			}
 		});
-		{
-			let gov_config = await lcd_client.wasm.contractQuery(governance_contract_addr, {
-				config: {}
-			});
-		    console.log(`gov config after set psi_nexprism_staking ${JSON.stringify(gov_config)}`);
-		}
     }
 
     await provide_nexprism_xprism_liquidity(lcd_client, sender, prism_market_info, nex_prism_info);
