@@ -704,10 +704,13 @@ export async function governance_communication_to_nexprism_psi_staking(
     
     // 1. send some rewards to psi_staking
     // now, when there is yLuna in Prism - we just need to wait to get rewards
-	await sleep(20000);
-	await execute_contract(lcd_client, sender, nexprism_vault, {
-	    claim_all_rewards: {}
-    });
+    {
+	    await sleep(20000);
+	    let resp = await execute_contract(lcd_client, sender, nexprism_vault, {
+		    claim_all_rewards: {}
+	    });
+	    console.log(`claim_all_rewards EVENTS: ${JSON.stringify(getContractEvents(resp!))}`);
+    }
 
     // 2. get user_index from psi_staking
     //check indexes to != 0
