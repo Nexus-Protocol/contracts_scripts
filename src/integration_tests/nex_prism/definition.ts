@@ -2,7 +2,7 @@ import { getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { assert } from "console";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
-import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance } from "../../utils";
+import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance, get_token_balance_and_log } from "../../utils";
 import { PrismMarketInfo } from "../deploy_prism/config";
 import { prism_init, stake_prism_for_xprism } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakerResponse, StakingConfig, VaultConfig, VaultRewardRatios } from "./config";
@@ -325,7 +325,7 @@ export async function deposit_yluna(lcd_client: LCDClient, sender: Wallet, yluna
     return send_result;
 }
 
-async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string) {
+async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, nexprism_staking_addr: string) {
     let rewards_earned_resp = await lcd_client.wasm.contractQuery(nexprism_staking_addr, {
         rewards: {
             address: sender.key.accAddress
@@ -336,9 +336,6 @@ async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, nex
 }
 
 async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, _nexprism_token_addr: string, nexprism_staking_addr: string) {
-    // query amt of rewards
-    let _rewards_earned_resp = await check_nexprism_rewards(lcd_client, sender, _nexprism_token_addr, nexprism_staking_addr);
-
     try {
         const claim_rewards_result = await execute_contract(lcd_client, sender, nexprism_staking_addr, {
             anyone: {
@@ -566,7 +563,22 @@ export async function test_changing_reward_ratios(
         "0.33",
         "0.33",
     )
-    const deploy_split_evenly_info = prism_nexprism_full_init(lcd_client, sender, split_rewards_evenly);
+    const deploy_split_evenly_info = await prism_nexprism_full_init(lcd_client, sender, split_rewards_evenly);
+
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        deploy_split_evenly_info.prism_market_info.prism_token_addr,
+        "prism",
+        ""
+    )
+
+    // await stake_prism_for_xprism(
+    //     lcd_client,
+    //     sender,
+    //     deploy_split_evenly_info.prism_market_info.prism_token_addr,
+    //     deploy_split_evenly_info.prism_market_info.prism_staking_addr,
+    // )
 
     // TODO:
 }
