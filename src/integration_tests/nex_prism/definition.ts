@@ -2,7 +2,7 @@ import { getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { assert } from "console";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
-import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance } from "../../utils";
+import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance, get_token_balance_and_log } from "../../utils";
 import { PrismMarketInfo } from "../deploy_prism/config";
 import { prism_init, stake_prism_for_xprism } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakerResponse, StakingConfig, VaultConfig } from "./config";
@@ -328,7 +328,7 @@ async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet,
             address: sender.key.accAddress
         }
     });
-    console.log("rewards \n\t", rewards_earned_resp);
+    console.log("\t", "rewards: ", rewards_earned_resp);
 
 
     try {
@@ -343,9 +343,20 @@ async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet,
         });
         return claim_rewards_result
     } catch (e) {
-        console.log("claim_all_nexprism_rewards error ", e);
+        console.log("\t", "claim_all_nexprism_rewards error ", e);
         return null;
     }
+}
+
+async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, _nexprism_token_addr: string, nexprism_staking_addr: string) {
+    // query amt of rewards
+    let rewards_earned_resp = await lcd_client.wasm.contractQuery(nexprism_staking_addr, {
+        rewards: {
+            address: sender.key.accAddress
+        }
+    });
+    console.log("\t", "rewards: ", rewards_earned_resp);
+    return rewards_earned_resp;
 }
 
 async function stake_nyluna(lcd_client: LCDClient, sender: Wallet, nyluna_token: string, nyluna_staking: string, amount: number) {
@@ -362,7 +373,7 @@ async function stake_nyluna(lcd_client: LCDClient, sender: Wallet, nyluna_token:
     return send_result;
 }
 
-export async function simple_deposit(
+export async function stake_unstake_nexprism_without_claiming_rewards(
     lcd_client: LCDClient,
     sender: Wallet,
     nex_prism_addrs_and_info: NexPrismAddrsAndInfo
@@ -371,16 +382,18 @@ export async function simple_deposit(
     // stake some prism for xprism
     // deposit xprism to nex-prism-convex vault
     console.log("starting simple_deposit test");
-    console.log("deposit xprism to vault");
     
-    const prism_bal = await get_token_balance(
+    const prism_bal = await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
-        nex_prism_addrs_and_info.prism_market_info.prism_token_addr
+        nex_prism_addrs_and_info.prism_market_info.prism_token_addr,
+        "prism",
+        "user has:"
     )
-    assert(prism_bal > 0)
-    console.log("\t", `prism balance now: ${prism_bal}`);
+    assert(prism_bal > 0, "user should have recieved prism from the deployment minting");
+    
 
+    console.log("stake prism to prism governance to recieve xprism");
     await stake_prism_for_xprism(
         lcd_client,
         sender,
@@ -388,14 +401,24 @@ export async function simple_deposit(
         nex_prism_addrs_and_info.prism_market_info.prism_gov_addr,
         prism_bal / 2
     )
-    const xprism_bal = await get_token_balance(
+
+    await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
-        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr
+        nex_prism_addrs_and_info.prism_market_info.prism_token_addr,
+        "prism",
+        "user now has:"
     )
-    console.log("\t", `xprism_bal balance now: ${xprism_bal}`);
-    assert(xprism_bal > 0)
+    const xprism_bal = await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+        "xprism",
+        "user now has:"
+    )
+    assert(xprism_bal > 0, "user should have recieved xprism after staking to prism governance");
 
+    console.log("depositing xprism to nex-prism-convex vault");
     await deposit_xprism_to_nexprism_vault(
         lcd_client,
         sender,
@@ -404,24 +427,28 @@ export async function simple_deposit(
         xprism_bal / 2
     )
     // console.log(`EVENTS: ${JSON.stringify(getContractEvents(x!))}`);
-    const xprism_bal_after_dep = await get_token_balance(
+    
+    const xprism_bal_after_deposit = await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
-        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+        "xprism",
+        "user now has:"
     )
-    assert(xprism_bal > xprism_bal_after_dep)
+    assert(xprism_bal > xprism_bal_after_deposit)
 
     // assert recieve correct amount of nexprism back
-    const nexprism_bal = await get_token_balance(
+    const nexprism_bal = await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
-        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
+        "nexprism",
+        "user now has:"
     )
     assert(nexprism_bal > 0)
-    console.log("staking xprism into nex-prism-convex vault");
-    console.log("\t new balance:", nexprism_bal, "nexprism");
 
     // @dev - commnented out for cleaning up terminal view
+    // console.log("staking xprism into nex-prism-convex vault");
     // await sleep(5000);
     // const y = await deposit_xprism_to_nexprism_vault(
     //     lcd_client,
@@ -458,27 +485,66 @@ export async function simple_deposit(
     )
 
     // assert recieve correct amount of reward
+    console.log("checking and claim rewards");
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.prism_token_addr,
+        "prism",
+        "before claiming nexprism staking rewards, user has:"
+    )
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+        "xprism",
+        "before claiming nexprism staking rewards, user has:"
+    )
+
     const mins = 0.5;
     const millisecs = mins * 60 * 1000;
-    console.log("waiting for ", mins, " mins to accumulate rewards. \n\t edit the mins variable to change the wait times.");
+    console.log("\t", "waiting for ", mins, " mins to accumulate rewards. edit the mins variable to change the wait times.");
     await sleep(millisecs)
-    const claim_reward_res = await claim_all_nexprism_rewards(
+    
+    // await claim_all_nexprism_rewards(
+    //     lcd_client,
+    //     sender,
+    //     nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
+    //     nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr
+    // )
+    await check_nexprism_rewards(
         lcd_client,
         sender,
         nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
         nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr
     )
-    // console.log("claimed nexprism rewards", claim_reward_res);
+
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.prism_token_addr,
+        "prism",
+        "after claiming nexprism staking rewards, user has:"
+    )
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        nex_prism_addrs_and_info.prism_market_info.xprism_token_addr,
+        "xprism",
+        "after claiming nexprism staking rewards, user has:"
+    )
 
     // unstake nexprism
     console.log("unstaking nexprism");
-    const before_unstake = await get_token_balance(
+    const before_unstake = await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
-        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
+        "nexprism",
+        "before nexprism unstake, user has:"
     )
-    console.log("\t", `before unstake: ${before_unstake} nexprism balance`);
     assert(before_unstake == 0)
+
     await unstake_nexprism(
         lcd_client,
         sender,
@@ -486,13 +552,15 @@ export async function simple_deposit(
         nex_prism_addrs_and_info.nex_prism_info.nexprism_staking_addr,
         nexprism_bal
     )
-    const after_unstake = await get_token_balance(
+
+    const after_unstake = await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
-        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr
+        nex_prism_addrs_and_info.nex_prism_info.nexprism_token_addr,
+        "nexprism",
+        "after nexprism unstake, user has:"
     )
     assert(after_unstake > 0)
-    console.log("\t", `after unstake: ${after_unstake} nexprism balance`);
     
     console.log(`=======================`);
 }

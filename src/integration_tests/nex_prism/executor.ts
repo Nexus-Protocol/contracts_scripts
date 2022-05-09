@@ -1,15 +1,16 @@
 import { Command } from 'commander';
 import { get_lcd_config_with_wallet_for_integration_tests_only } from '../utils';
 import { NexPrismAddrsAndInfo } from './config';
-import { prism_nexprism_full_init, simple_deposit, stake_nyluna_test } from './definition';
+import { prism_nexprism_full_init, stake_nyluna_test, stake_unstake_nexprism_without_claiming_rewards } from './definition';
 
 async function run_program() {
     const program = new Command();
 
     program
         .action(async () => {
-            const nex_prism_addrs_and_info = await deploy();
-            await run_simple_deposit(nex_prism_addrs_and_info)
+            // TODO: put everything together here
+            // const nex_prism_addrs_and_info = await deploy();
+            // await run_stake_unstake_nexprism_without_claiming_rewards(nex_prism_addrs_and_info)
         });
 
     program
@@ -24,6 +25,13 @@ async function run_program() {
             await run_stake_nyluna_test(await deploy());
         });
 
+    // main test: npm run nex-prism-integration-tests -- stake_unstake_nexprism_without_claiming_rewards
+    program
+        .command('stake_unstake_nexprism_without_claiming_rewards')
+        .action(async () => {
+            await run_stake_unstake_nexprism_without_claiming_rewards(await deploy());
+        })
+    
     await program.parseAsync(process.argv);
 
 }
@@ -43,9 +51,9 @@ async function deploy() {
     return nex_prism_addrs_and_info;
 }
 
-async function run_simple_deposit(nex_prism_addrs_and_info: NexPrismAddrsAndInfo) {
+async function run_stake_unstake_nexprism_without_claiming_rewards(nex_prism_addrs_and_info: NexPrismAddrsAndInfo) {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
-    await simple_deposit(lcd_client, sender, nex_prism_addrs_and_info);
+    await stake_unstake_nexprism_without_claiming_rewards(lcd_client, sender, nex_prism_addrs_and_info);
 }
 
 async function run_stake_nyluna_test(nex_prism_addrs_and_info: NexPrismAddrsAndInfo) {
