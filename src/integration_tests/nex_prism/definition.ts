@@ -562,9 +562,9 @@ export async function test_changing_reward_ratios(
 
     const split_rewards_evenly = VaultRewardRatios(
         use_default,
-        ".34",
-        ".33",
-        ".33",
+        "0.34",
+        "0.33",
+        "0.33",
     )
     const deploy_split_evenly_info = prism_nexprism_full_init(lcd_client, sender, split_rewards_evenly);
 
