@@ -1,5 +1,4 @@
 import { Command } from 'commander';
-import { Cw20CodeId } from 'src/config';
 import { get_lcd_config_with_wallet_for_integration_tests_only } from '../utils';
 import { NexPrismAddrsAndInfo } from './config';
 import { prism_nexprism_full_init, simple_deposit, stake_nyluna_test, test_changing_reward_ratios } from './definition';

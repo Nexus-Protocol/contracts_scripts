@@ -325,15 +325,19 @@ export async function deposit_yluna(lcd_client: LCDClient, sender: Wallet, yluna
     return send_result;
 }
 
-async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, _nexprism_token_addr: string, nexprism_staking_addr: string) {
-    // query amt of rewards
+async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, nexprism_token_addr: string, nexprism_staking_addr: string) {
     let rewards_earned_resp = await lcd_client.wasm.contractQuery(nexprism_staking_addr, {
         rewards: {
             address: sender.key.accAddress
         }
     });
     console.log("rewards \n\t", rewards_earned_resp);
+    return rewards_earned_resp
+}
 
+async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, _nexprism_token_addr: string, nexprism_staking_addr: string) {
+    // query amt of rewards
+    let _rewards_earned_resp = await check_nexprism_rewards(lcd_client, sender, _nexprism_token_addr, nexprism_staking_addr);
 
     try {
         const claim_rewards_result = await execute_contract(lcd_client, sender, nexprism_staking_addr, {
@@ -552,9 +556,9 @@ export async function test_changing_reward_ratios(
     lcd_client: LCDClient,
     sender: Wallet,
 ) {
-    console.log("Start changing nex-prism-convex reward ratios test");
-
     const use_default = undefined;
+
+    console.log("Start changing nex-prism-convex reward ratios test");
 
     const split_rewards_evenly = VaultRewardRatios(
         use_default,
@@ -562,6 +566,7 @@ export async function test_changing_reward_ratios(
         ".33",
         ".33",
     )
-    prism_nexprism_full_init(lcd_client, sender, split_rewards_evenly);
+    const deploy_split_evenly_info = prism_nexprism_full_init(lcd_client, sender, split_rewards_evenly);
+
     // TODO:
 }
