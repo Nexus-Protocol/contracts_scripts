@@ -510,13 +510,15 @@ export async function claim_reward_from_stacking_nyluna(
 ) {
     console.log("Start claim_reward_from_stacking_nyluna test");
     console.log("deposit yluna to vault");
-    await deposit_yluna_to_nyluna_vault(
+    const x = await deposit_yluna_to_nyluna_vault(
         lcd_client,
         sender,
         nex_prism_addrs_and_info.prism_market_info.yluna_token_addr,
         nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr,
         5_000_000_000
     );
+    console.log(`EVENTS: ${JSON.stringify(getContractEvents(x!))}`);
+    await sleep(20000);
 
     const yluna_token = nex_prism_addrs_and_info.prism_market_info.yluna_token_addr;
     const nyluna_token = nex_prism_addrs_and_info.nex_prism_info.nyluna_token_addr;

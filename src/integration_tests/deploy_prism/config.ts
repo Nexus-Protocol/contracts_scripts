@@ -130,7 +130,7 @@ export function PrismLaunchPoolConfig(
         yluna_staking: yluna_staking_addr,
         yluna_token: yluna_token,
         prism_token: prism_token,
-        vesting_period: 10800,
+        vesting_period: 15,
         boost_contract: prism_xprism_boost_addr,
         distribution_schedule: [
             1646560800,
