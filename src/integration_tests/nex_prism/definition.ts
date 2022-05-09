@@ -5,7 +5,7 @@ import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_fa
 import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance } from "../../utils";
 import { PrismMarketInfo } from "../deploy_prism/config";
 import { prism_init, stake_prism_for_xprism } from "../deploy_prism/definition";
-import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakerResponse, StakingConfig, VaultConfig } from "./config";
+import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakerResponse, StakingConfig, VaultConfig, VaultRewardRatios } from "./config";
 
 const artifacts_path = "wasm_artifacts";
 const path_to_nexprism_artifacts = `${artifacts_path}/nexus/nexprism`;
@@ -28,6 +28,7 @@ async function full_nex_prism_init(
     prism_xprism_boost_addr: string,
     yluna_prism_pair: string,
     prism_governance_addr: string,
+    vault_reward_ratios: VaultRewardRatios = VaultRewardRatios(), // optional
 ): Promise<NexPrismDeploymentInfo> {
     let staking_code_id = await store_contract(lcd_client, sender, nexus_prism_staking)
     console.log(`nexus_prism_staking uploaded\n\tcode_id: ${staking_code_id}`);
@@ -54,6 +55,7 @@ async function full_nex_prism_init(
         yluna_prism_pair,
         autocompounder_code_id,
         prism_governance_addr,
+        vault_reward_ratios,
     )
 
     let vault_deploy_res = await instantiate_contract_raw(
@@ -196,6 +198,7 @@ async function provide_nexprism_xprism_liquidity(lcd_client: LCDClient, sender: 
 export async function prism_nexprism_full_init(
     lcd_client: LCDClient,
     sender: Wallet,
+    nex_prism_vault_reward_ratio: VaultRewardRatios = VaultRewardRatios(),
 ): Promise<NexPrismAddrsAndInfo> {
     // get cw20_code_id
     let cw20_code_id = await Cw20CodeId(lcd_client, sender);
@@ -233,7 +236,8 @@ export async function prism_nexprism_full_init(
         prism_market_info.prism_launch_pool_addr,
         prism_market_info.prism_xprism_boost_addr,
         prism_market_info.yluna_prism_pair_addr,
-        prism_market_info.prism_gov_addr
+        prism_market_info.prism_gov_addr,
+        nex_prism_vault_reward_ratio
     )
 
     await provide_nexprism_xprism_liquidity(lcd_client, sender, prism_market_info, nex_prism_info);
@@ -542,4 +546,22 @@ export async function stake_nyluna_test(
     assert(Number(staker.balance) == nyluna_bal);
 
     console.log("Staked nyluna successfully");
+}
+
+export async function test_changing_reward_ratios(
+    lcd_client: LCDClient,
+    sender: Wallet,
+) {
+    console.log("Start changing nex-prism-convex reward ratios test");
+
+    const use_default = undefined;
+
+    const split_rewards_evenly = VaultRewardRatios(
+        use_default,
+        ".34",
+        ".33",
+        ".33",
+    )
+    prism_nexprism_full_init(lcd_client, sender, split_rewards_evenly);
+    // TODO:
 }

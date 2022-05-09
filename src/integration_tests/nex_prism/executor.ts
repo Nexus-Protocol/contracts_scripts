@@ -1,7 +1,8 @@
 import { Command } from 'commander';
+import { Cw20CodeId } from 'src/config';
 import { get_lcd_config_with_wallet_for_integration_tests_only } from '../utils';
 import { NexPrismAddrsAndInfo } from './config';
-import { prism_nexprism_full_init, simple_deposit, stake_nyluna_test } from './definition';
+import { prism_nexprism_full_init, simple_deposit, stake_nyluna_test, test_changing_reward_ratios } from './definition';
 
 async function run_program() {
     const program = new Command();
@@ -23,6 +24,13 @@ async function run_program() {
         .action(async () => {
             await run_stake_nyluna_test(await deploy());
         });
+
+    // npm run nex-prism-integration-tests -- test_changing_reward_ratios
+    program
+        .command('test_changing_reward_ratios')
+        .action(async () => {
+            await run_test_changing_reward_ratios();
+        })
 
     await program.parseAsync(process.argv);
 
@@ -51,4 +59,11 @@ async function run_simple_deposit(nex_prism_addrs_and_info: NexPrismAddrsAndInfo
 async function run_stake_nyluna_test(nex_prism_addrs_and_info: NexPrismAddrsAndInfo) {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
     await stake_nyluna_test(lcd_client, sender, nex_prism_addrs_and_info);
+}
+
+async function run_test_changing_reward_ratios() {
+    // changes reward ratios on the nex-prism-convex contracts
+    const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
+
+    await test_changing_reward_ratios(lcd_client, sender);
 }
