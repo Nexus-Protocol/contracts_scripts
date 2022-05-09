@@ -698,6 +698,7 @@ export async function governance_communication_to_nexprism_psi_staking(
 	    assert(staker.real_pending_rewards === "0");
 	    assert(staker.virtual_pending_rewards === "0");
     }
+    console.log("===================================");
 
     //sending some yLuna to vault (from Sender2) to start accumulating rewards from Prism
     {
@@ -710,6 +711,7 @@ export async function governance_communication_to_nexprism_psi_staking(
     	});
     	await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, sender2_yluna_balance);
     }
+    console.log("===================================");
     
     // 1. send some rewards to psi_staking
     // now, when there is yLuna in Prism - we just need to wait to get rewards
@@ -720,6 +722,7 @@ export async function governance_communication_to_nexprism_psi_staking(
 	    });
 	    console.log(`claim_all_rewards EVENTS: ${JSON.stringify(resp!)}`);
     }
+    console.log("===================================");
 
     // 2. get user_index from psi_staking
     //check indexes to != 0
@@ -734,9 +737,14 @@ export async function governance_communication_to_nexprism_psi_staking(
 			state: {}
 		});
 	    console.log(`state response on step 1: ${JSON.stringify(state)}`);
+		const gov_state = await lcd_client.wasm.contractQuery(governance_addr, {
+			state: {}
+		});
+	    console.log(`gov_state response on step 1: ${JSON.stringify(gov_state)}`);
             // assert(staker.real_pending_rewards !== "0");
-            // assert(staker.virtual_pending_rewards !== "0");
-    }
+		// assert(staker.virtual_pending_rewards !== "0");
+	}
+    console.log("===================================");
     
     // 3. stake Psi in governance
     {
@@ -748,7 +756,22 @@ export async function governance_communication_to_nexprism_psi_staking(
 			    msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
 		    }
 	    });
+		const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
+			staker: {
+			    address: sender.key.accAddress,
+		    }
+	    });
+	    console.log(`staker response on step 3: ${JSON.stringify(staker)}`);
+		const state = await lcd_client.wasm.contractQuery(psi_staking, {
+			state: {}
+		});
+		console.log(`state response on step 3: ${JSON.stringify(state)}`);
+		const gov_state = await lcd_client.wasm.contractQuery(governance_addr, {
+			state: {}
+		});
+	    console.log(`gov_state response on step 3: ${JSON.stringify(gov_state)}`);
     }
+    console.log("===================================");
 	// 4. user_index in psi_staking should be updated
 	{
 		const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
@@ -760,7 +783,12 @@ export async function governance_communication_to_nexprism_psi_staking(
 		const state = await lcd_client.wasm.contractQuery(psi_staking, {
 			state: {}
 		});
-	    console.log(`state response on step 4: ${JSON.stringify(state)}`);
+		console.log(`state response on step 4: ${JSON.stringify(state)}`);
+		const gov_state = await lcd_client.wasm.contractQuery(governance_addr, {
+			state: {}
+		});
+	    console.log(`gov_state response on step 4: ${JSON.stringify(gov_state)}`);
+
 		// assert(staker.real_pending_rewards !== "0");
 		// assert(staker.virtual_pending_rewards !== "0");
 	    //TODO: how to query indexes?
@@ -771,7 +799,7 @@ export async function governance_communication_to_nexprism_psi_staking(
 	await execute_contract(lcd_client, sender, nexprism_vault, {
 	    claim_all_rewards: {}
     });
-	console.log(`before claim_all_rewards on nexprism_vault`);
+    console.log("===================================");
     // 6. partially unstake Psi from governance
 	{
 		await execute_contract(lcd_client, sender, governance_addr, {
@@ -783,11 +811,31 @@ export async function governance_communication_to_nexprism_psi_staking(
 				}
 			}
 		});
+
+		{
+			const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
+				staker: {
+					address: sender.key.accAddress,
+				}
+			});
+			console.log(`staker response on step 6: ${JSON.stringify(staker)}`);
+
+			const state = await lcd_client.wasm.contractQuery(psi_staking, {
+				state: {}
+			});
+			console.log(`state response on step 6: ${JSON.stringify(state)}`);
+		const gov_state = await lcd_client.wasm.contractQuery(governance_addr, {
+			state: {}
+		});
+	    console.log(`gov_state response on step 6: ${JSON.stringify(gov_state)}`);
+		}
 	}
+    console.log("===================================");
 // 7. get user_index from psi_staking (it should be updated now)
 {
 	    //TODO
     }
+    console.log("===================================");
 	// 8. claim rewards from psi_staking
 	{
 	console.log(`before claim_rewards on psi_staking`);
@@ -799,6 +847,7 @@ export async function governance_communication_to_nexprism_psi_staking(
 			}
 		});
 	}
+    console.log("===================================");
 	console.log(`after claim_rewards on psi_staking`);
     // 9. get user_index from psi_staking (it should be updated again)
     {
@@ -815,6 +864,10 @@ export async function governance_communication_to_nexprism_psi_staking(
 		// assert(staker.real_pending_rewards !== "0");
 		// assert(staker.virtual_pending_rewards !== "0");
 	    //TODO: how to query indexes?
+		const gov_state = await lcd_client.wasm.contractQuery(governance_addr, {
+			state: {}
+		});
+	    console.log(`gov_state response on step 9: ${JSON.stringify(gov_state)}`);
     }
 
     console.log("Test governance_communication_to_nexprism_psi_staking passed!");
