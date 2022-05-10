@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { get_lcd_config_with_wallet_for_integration_tests_only } from '../utils';
 import { NexPrismAddrsAndInfo } from './config';
-import { governance_communication_to_nexprism_psi_staking, claim_reward_from_stacking_nyluna, prism_nexprism_full_init, simple_deposit, stake_nyluna_test } from './definition';
+import { psiStakingAndGovernanceCommunicateProperly, claim_reward_from_stacking_nyluna, prism_nexprism_full_init, simple_deposit, stake_nyluna_test } from './definition';
 
 async function run_program() {
     const program = new Command();
@@ -72,5 +72,5 @@ async function run_claim_reward_from_stacking_nyluna(nex_prism_addrs_and_info: N
 
 async function run_governance_communication_to_nexprism_psi_staking(nex_prism_addrs_and_info: NexPrismAddrsAndInfo) {
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
-    await governance_communication_to_nexprism_psi_staking(lcd_client, sender, nex_prism_addrs_and_info);
+    await psiStakingAndGovernanceCommunicateProperly(lcd_client, sender, nex_prism_addrs_and_info);
 }

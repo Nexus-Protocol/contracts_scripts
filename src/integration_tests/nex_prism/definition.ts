@@ -1,5 +1,6 @@
 import { getContractEvents, LCDClient, LocalTerra, Wallet } from "@terra-money/terra.js";
 import * as assert from "assert";
+import Decimal from "decimal.js";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
 import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance } from "../../utils";
@@ -102,8 +103,8 @@ async function full_nex_prism_init(
 
         let nexprism_xprism_pair = contract_event["nexprism_xprism_pair"];
         if (nexprism_xprism_pair) {
-	    nexprism_xprism_pair_addr = nexprism_xprism_pair;
-	}
+            nexprism_xprism_pair_addr = nexprism_xprism_pair;
+        }
         let psi_staking = contract_event["psi_staking"];
         if (psi_staking) {
             psi_staking_addr = psi_staking;
@@ -124,13 +125,13 @@ async function full_nex_prism_init(
         nyluna_staking_addr,
         nexprism_staking_addr,
         nexprism_xprism_pair_addr,
-	psi_staking_addr
+        psi_staking_addr
     }
 }
 
 async function provide_nexprism_xprism_liquidity(lcd_client: LCDClient, sender: Wallet, prism_market_info: PrismMarketInfo, nex_prism_info: NexPrismDeploymentInfo) {
-    const liquidityAmount = 100_000_000_000;
-    const liquidityAmountStr = String(100_000_000_000);
+    const liquidityAmount = 100_000_000_000_000;
+    const liquidityAmountStr = String(100_000_000_000_000);
 
     await execute_contract(
         lcd_client,
@@ -234,27 +235,27 @@ export async function prism_nexprism_full_init(
     )
     // set psi token addr to governance contract
     await execute_contract(lcd_client, sender, governance_contract_addr,
-    	{
-    		anyone: {
-    			anyone_msg: {
-    				register_token: {
-    					psi_token: psi_token_addr
-    				}
-    			}
-    		}
-    	}
+        {
+            anyone: {
+                anyone_msg: {
+                    register_token: {
+                        psi_token: psi_token_addr
+                    }
+                }
+            }
+        }
     );
-	//set psi_staking add to Governance
-	{
-    	 await execute_contract(lcd_client, sender, governance_contract_addr, {
-		    governance: {
-			    governance_msg: {
-				    update_config: {
-					    psi_nexprism_staking: nex_prism_info.psi_staking_addr
-				    }
-			    }
-			}
-		});
+    //set psi_staking add to Governance
+    {
+        await execute_contract(lcd_client, sender, governance_contract_addr, {
+            governance: {
+                governance_msg: {
+                    update_config: {
+                        psi_nexprism_staking: nex_prism_info.psi_staking_addr
+                    }
+                }
+            }
+        });
     }
 
     await provide_nexprism_xprism_liquidity(lcd_client, sender, prism_market_info, nex_prism_info);
@@ -474,7 +475,7 @@ export async function simple_deposit(
     )
 }
 
-async function deposit_and_stake_yluna(
+async function depositYLUNAAndStakeNyLUNA(
     lcd_client: LCDClient,
     sender: Wallet,
     nex_prism_addrs_and_info: NexPrismAddrsAndInfo,
@@ -519,7 +520,7 @@ export async function stake_nyluna_test(
 
     const amount = 100_000_000;
 
-    await deposit_and_stake_yluna(lcd_client, sender, nex_prism_addrs_and_info, amount);
+    await depositYLUNAAndStakeNyLUNA(lcd_client, sender, nex_prism_addrs_and_info, amount);
 
     const staker: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
         staker: {
@@ -574,7 +575,7 @@ export async function claim_reward_from_stacking_nyluna(
         }
     });
 
-    await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, deposit_from_sender2_amount / 2);
+    await depositYLUNAAndStakeNyLUNA(lcd_client, sender2, nex_prism_addrs_and_info, deposit_from_sender2_amount / 2);
 
     const prism_bal_before_claim = await get_token_balance(
         lcd_client,
@@ -589,7 +590,7 @@ export async function claim_reward_from_stacking_nyluna(
     console.log("prism balance before reward:", prism_bal_before_claim, prism_bal_before_claim2);
 
     await sleep(10000);
-    await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, deposit_from_sender2_amount / 2);
+    await depositYLUNAAndStakeNyLUNA(lcd_client, sender2, nex_prism_addrs_and_info, deposit_from_sender2_amount / 2);
 
     const staker: StakerResponse = await lcd_client.wasm.contractQuery(nyluna_staking, {
         staker: {
@@ -642,234 +643,172 @@ export async function claim_reward_from_stacking_nyluna(
     console.log("Test claim_reward_from_stacking_nyluna passed!");
 }
 
-export async function governance_communication_to_nexprism_psi_staking(
-    lcd_client: LCDClient,
+async function printVaultConfig(lcdClient: LCDClient, vault: string) {
+    console.log("===================================");
+    const config = await lcdClient.wasm.contractQuery(vault, { config: {} });
+    console.log(`nexPRISM/nyLUNA vault config: ${JSON.stringify(config!)}`);
+    console.log("===================================");
+}
+
+async function stakePSI(
+    lcdClient: LCDClient,
     sender: Wallet,
-	nex_prism_addrs_and_info: NexPrismAddrsAndInfo
+    psiToken: string,
+    governance: string,
+    amount: Decimal,
 ) {
-    // 0. stake Psi tokens in Governance
-    // 1. send some rewards to psi_staking
-    // 2. get user_index from psi_staking
-    // 3. stake Psi in governance
-    // 4. user_index in psi_staking should be updated
-    // 5. send some rewards to  psi_staking
-    // 6. partially unstake Psi from governance
-    // 7. get user_index from psi_staking (it should be updated now)
-    // 8. claim rewards from psi_staking
-    // 9. get user_index from psi_staking (it should be updated again)
-
-	console.log("Start governance_communication_to_nexprism_psi_staking test");
-    const nexprism_vault = nex_prism_addrs_and_info.nex_prism_info.vault_deployment_addr;
-    const yluna_token = nex_prism_addrs_and_info.prism_market_info.yluna_token_addr;
-	const psi_token = nex_prism_addrs_and_info.psi_token_addr;
-	const psi_staking = nex_prism_addrs_and_info.nex_prism_info.psi_staking_addr;
-    const governance_addr = nex_prism_addrs_and_info.governance_contract_addr;
-	// we will use it to trigger rewards calculation in nexprism_vault
-	const sender2: Wallet = (lcd_client as LocalTerra).wallets.test2;
-
-	/////////////////
-	{
-		const config_resp = await lcd_client.wasm.contractQuery(nexprism_vault, {
-			config: {}
-		});
-		console.log(`nexprism_vault config: ${JSON.stringify(config_resp!)}`);
-	}
-
-	////////////////
-    // 0. stake Psi tokens in Governance
-    {
-    	const msg = { stake_voting_tokens: {} };
-    	await execute_contract(lcd_client, sender, psi_token, {
-    		send: {
-    			contract: governance_addr,
-    			amount: (1_000_000_000).toString(),
-    			msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
-    		}
-    	});
-    }
-    //check indexes to == 0
-    {
-	    const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
-		    staker: {
-			    address: sender.key.accAddress,
-		    }
-	    });
-	    console.log(`staker response on step 0: ${JSON.stringify(staker)}`);
-	    assert(staker.real_pending_rewards === "0");
-	    assert(staker.virtual_pending_rewards === "0");
-    }
-    console.log("===================================");
-
-    //sending some yLuna to vault (from Sender2) to start accumulating rewards from Prism
-    {
-    	const sender2_yluna_balance = 10_000_000_000;
-    	await execute_contract(lcd_client, sender, yluna_token, {
-    		transfer: {
-    			recipient: sender2.key.accAddress,
-    			amount: (sender2_yluna_balance).toString(),
-    		}
-    	});
-    	await deposit_and_stake_yluna(lcd_client, sender2, nex_prism_addrs_and_info, sender2_yluna_balance);
-    }
-    console.log("===================================");
-    
-    // 1. send some rewards to psi_staking
-    // now, when there is yLuna in Prism - we just need to wait to get rewards
-    {
-	    await sleep(20000);
-	    let resp = await execute_contract(lcd_client, sender, nexprism_vault, {
-		    claim_all_rewards: {}
-	    });
-	    console.log(`claim_all_rewards EVENTS: ${JSON.stringify(resp!)}`);
-    }
-    console.log("===================================");
-
-    // 2. get user_index from psi_staking
-    //check indexes to != 0
-    {
-	    const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
-		    staker: {
-			    address: sender.key.accAddress,
-		    }
-	    });
-		console.log(`staker response on step 1: ${JSON.stringify(staker)}`);
-		const state = await lcd_client.wasm.contractQuery(psi_staking, {
-			state: {}
-		});
-	    console.log(`state response on step 1: ${JSON.stringify(state)}`);
-		const gov_state = await lcd_client.wasm.contractQuery(governance_addr, {
-			state: {}
-		});
-	    console.log(`gov_state response on step 1: ${JSON.stringify(gov_state)}`);
-            // assert(staker.real_pending_rewards !== "0");
-		// assert(staker.virtual_pending_rewards !== "0");
-	}
-    console.log("===================================");
-    
-    // 3. stake Psi in governance
-    {
-	    const msg = { stake_voting_tokens: {} };
-	    await execute_contract(lcd_client, sender, psi_token, {
-		    send: {
-			    contract: governance_addr,
-			    amount: (1_000_000_000).toString(),
-			    msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
-		    }
-	    });
-		const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
-			staker: {
-			    address: sender.key.accAddress,
-		    }
-	    });
-	    console.log(`staker response on step 3: ${JSON.stringify(staker)}`);
-		const state = await lcd_client.wasm.contractQuery(psi_staking, {
-			state: {}
-		});
-		console.log(`state response on step 3: ${JSON.stringify(state)}`);
-		const gov_state = await lcd_client.wasm.contractQuery(governance_addr, {
-			state: {}
-		});
-	    console.log(`gov_state response on step 3: ${JSON.stringify(gov_state)}`);
-    }
-    console.log("===================================");
-	// 4. user_index in psi_staking should be updated
-	{
-		const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
-			staker: {
-			    address: sender.key.accAddress,
-		    }
-	    });
-	    console.log(`staker response on step 4: ${JSON.stringify(staker)}`);
-		const state = await lcd_client.wasm.contractQuery(psi_staking, {
-			state: {}
-		});
-		console.log(`state response on step 4: ${JSON.stringify(state)}`);
-		const gov_state = await lcd_client.wasm.contractQuery(governance_addr, {
-			state: {}
-		});
-	    console.log(`gov_state response on step 4: ${JSON.stringify(gov_state)}`);
-
-		// assert(staker.real_pending_rewards !== "0");
-		// assert(staker.virtual_pending_rewards !== "0");
-	    //TODO: how to query indexes?
-    }
-    console.log("===================================");
-	// 5. send some rewards to  psi_staking
-	await sleep(20000);
-	console.log(`before claim_all_rewards on nexprism_vault`);
-	await execute_contract(lcd_client, sender, nexprism_vault, {
-	    claim_all_rewards: {}
+    const msg = { stake_voting_tokens: {} };
+    await execute_contract(lcdClient, sender, psiToken, {
+        send: {
+            contract: governance,
+            amount: amount.toFixed(0),
+            msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
+        }
     });
-    console.log("===================================");
-    // 6. partially unstake Psi from governance
-	{
-		await execute_contract(lcd_client, sender, governance_addr, {
-			anyone: {
-				anyone_msg: {
-					withdraw_voting_tokens: {
-						amount: "1000000000"
-					}
-				}
-			}
-		});
+}
 
-		{
-			const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
-				staker: {
-					address: sender.key.accAddress,
-				}
-			});
-			console.log(`staker response on step 6: ${JSON.stringify(staker)}`);
+async function unstakePSI(
+    lcdClient: LCDClient,
+    sender: Wallet,
+    governance: string,
+    amount: Decimal,
+) {
+    let r = await execute_contract(lcdClient, sender, governance, {
+        anyone: {
+            anyone_msg: {
+                withdraw_voting_tokens: {
+                    amount: amount.toFixed(0),
+                }
+            }
+        }
+    });
+}
 
-			const state = await lcd_client.wasm.contractQuery(psi_staking, {
-				state: {}
-			});
-			console.log(`state response on step 6: ${JSON.stringify(state)}`);
-		const gov_state = await lcd_client.wasm.contractQuery(governance_addr, {
-			state: {}
-		});
-	    console.log(`gov_state response on step 6: ${JSON.stringify(gov_state)}`);
-		}
-	}
-    console.log("===================================");
-// 7. get user_index from psi_staking (it should be updated now)
-{
-	    //TODO
-    }
-    console.log("===================================");
-	// 8. claim rewards from psi_staking
-	{
-	console.log(`before claim_rewards on psi_staking`);
-		await execute_contract(lcd_client, sender, psi_staking, {
-			anyone: {
-				anyone_msg: {
-					claim_rewards: {}
-				}
-			}
-		});
-	}
-    console.log("===================================");
-	console.log(`after claim_rewards on psi_staking`);
-    // 9. get user_index from psi_staking (it should be updated again)
+async function getStaker(lcdClient: LCDClient, sender: Wallet, staking: string) {
+    const staker: StakerResponse = await lcdClient.wasm.contractQuery(staking, {
+        staker: {
+            address: sender.key.accAddress,
+        }
+    });
+    return {
+        virtualPendingRewards: new Decimal(staker.virtual_pending_rewards),
+        realPendingRewards: new Decimal(staker.real_pending_rewards),
+    };
+}
+
+async function transfer(
+    lcdClient: LCDClient,
+    from: Wallet,
+    to: Wallet,
+    token: string,
+    amount: Decimal,
+) {
+    await execute_contract(lcdClient, from, token, {
+        transfer: {
+            recipient: to.key.accAddress,
+            amount: amount.toFixed(0),
+        }
+    });
+}
+
+async function makeVaultClaimAllRewards(lcdClient: LCDClient, sender: Wallet, vault: string) {
+    await execute_contract(lcdClient, sender, vault, {
+        claim_all_rewards: {}
+    });
+}
+
+async function claimRewards(lcdClient: LCDClient, sender: Wallet, staking: string) {
+    await execute_contract(lcdClient, sender, staking, {
+        anyone: {
+            anyone_msg: {
+                claim_rewards: {}
+            }
+        }
+    });
+}
+
+type BalanceResponse = {
+    balance: string,
+}
+
+async function getTokenBalance(lcdClient: LCDClient, token: string, addr: string) {
+    let r: BalanceResponse = await lcdClient.wasm.contractQuery(token, { balance: { address: addr } });
+    return r;
+}
+
+export async function psiStakingAndGovernanceCommunicateProperly(
+    lcdClient: LCDClient,
+    sender: Wallet,
+    info: NexPrismAddrsAndInfo,
+) {
+    console.log("TEST psiStakingAndGovernanceCommunicateProperly START");
+
+    const vault = info.nex_prism_info.vault_deployment_addr;
+    const ylunaToken = info.prism_market_info.yluna_token_addr;
+    const nexprismToken = info.nex_prism_info.nexprism_token_addr;
+    const psiToken = info.psi_token_addr;
+    const psiStaking = info.nex_prism_info.psi_staking_addr;
+    const governance = info.governance_contract_addr;
+
+    const sender2: Wallet = (lcdClient as LocalTerra).wallets.test2;
+
+    await printVaultConfig(lcdClient, vault);
+
+    console.log(`Stake PSI tokens into governance`);
     {
-		const staker: StakerResponse = await lcd_client.wasm.contractQuery(psi_staking, {
-			staker: {
-			    address: sender.key.accAddress,
-		    }
-	    });
-		console.log(`staker response on step 9: ${JSON.stringify(staker)}`);
-		const state = await lcd_client.wasm.contractQuery(psi_staking, {
-			state: {}
-		});
-	    console.log(`state response on step 9: ${JSON.stringify(state)}`);
-		// assert(staker.real_pending_rewards !== "0");
-		// assert(staker.virtual_pending_rewards !== "0");
-	    //TODO: how to query indexes?
-		const gov_state = await lcd_client.wasm.contractQuery(governance_addr, {
-			state: {}
-		});
-	    console.log(`gov_state response on step 9: ${JSON.stringify(gov_state)}`);
+        await stakePSI(lcdClient, sender, psiToken, governance, new Decimal(1_000_000_000));
+        const pendingRewards = await getStaker(lcdClient, sender, psiStaking);
+        assert.strictEqual(pendingRewards.virtualPendingRewards.toFixed(), "0");
+        assert.strictEqual(pendingRewards.realPendingRewards.toFixed(), "0");
     }
+    console.log("===================================");
 
-    console.log("Test governance_communication_to_nexprism_psi_staking passed!");
+    console.log(`Deposit yLUNA tokens to vault`);
+    {
+        const sender2YLUNABalance = new Decimal(10_000_000_000);
+        await transfer(lcdClient, sender, sender2, ylunaToken, sender2YLUNABalance);
+        await depositYLUNAAndStakeNyLUNA(lcdClient, sender2, info, sender2YLUNABalance.toNumber());
+    }
+    console.log("===================================");
+
+    console.log(`Wait for rewards and make vault claim PRISM rewards`);
+    {
+        await sleep(11000);
+        await makeVaultClaimAllRewards(lcdClient, sender, vault);
+    }
+    console.log("===================================");
+
+    console.log(`Stake PSI tokens into governance`);
+    {
+        await stakePSI(lcdClient, sender, psiToken, governance, new Decimal(1_000_000_000));
+        const pendingRewards = await getStaker(lcdClient, sender, psiStaking);
+        assert.notStrictEqual(pendingRewards.virtualPendingRewards.toFixed(), "0");
+        assert.notStrictEqual(pendingRewards.realPendingRewards.toFixed(), "0");
+    }
+    console.log("===================================");
+
+    console.log(`Wait for rewards and make vault claim PRISM rewards`);
+    {
+        await sleep(11000);
+        await makeVaultClaimAllRewards(lcdClient, sender, vault);
+    }
+    console.log("===================================");
+
+    console.log(`Unstake a half of PSI tokens from governance`);
+    {
+        await unstakePSI(lcdClient, sender, governance, new Decimal(1_000_000_000));
+    }
+    console.log("===================================");
+
+    console.log(`Collect rewards from PSI staking`);
+    {
+        await claimRewards(lcdClient, sender, psiStaking);
+        const nexprismBalance =
+            await getTokenBalance(lcdClient, nexprismToken, sender.key.accAddress);
+        console.log(`Amount of nexPRISM rewards got: ${nexprismBalance.balance}`);
+        assert(new Decimal(nexprismBalance.balance) > new Decimal(0));
+    }
+    console.log("===================================");
+
+    console.log("TEST psiStakingAndGovernanceCommunicateProperly END");
 }
