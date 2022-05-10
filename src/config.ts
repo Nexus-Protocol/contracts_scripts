@@ -1,4 +1,4 @@
-import {LCDClient, Wallet} from '@terra-money/terra.js';
+import { LCDClient, Wallet } from '@terra-money/terra.js';
 import {
 	astroport_factory_wasm,
 	astroport_pair_wasm,
@@ -6,7 +6,9 @@ import {
 	terraswap_factory_wasm,
 	terraswap_pair_wasm
 } from "./basset_vault/definition"
-import {instantiate_contract, store_contract} from './utils';
+import { instantiate_contract, store_contract } from './utils';
+
+export const astroport_pair_stable_wasm = `wasm_artifacts/astroport/astroport_pair_stable.wasm`;
 
 // ================================================
 
@@ -90,7 +92,7 @@ export async function init_astroport_factory_stableswap(lcd_client: LCDClient, s
 		console.log(`in localterra, so storing our own astroport contracts`);
 		let astroport_factory_code_id = await store_contract(lcd_client, sender, astroport_factory_wasm);
 		console.log(`astroport_factory uploaded\n\tcode_id: ${astroport_factory_code_id}`);
-		let astroport_pair_code_id = await store_contract(lcd_client, sender, astroport_pair_wasm);
+		let astroport_pair_code_id = await store_contract(lcd_client, sender, astroport_pair_stable_wasm);
 		console.log(`astroport_pair uploaded\n\tcode_id: ${astroport_pair_code_id}`);
 		let astroport_factory_init_msg = {
 			owner: sender.key.accAddress,
@@ -101,10 +103,13 @@ export async function init_astroport_factory_stableswap(lcd_client: LCDClient, s
 						stable: {}
 					},
 					total_fee_bps: 0,
-					maker_fee_bps: 0
+					maker_fee_bps: 0,
+					is_disabled: false,
+					is_generator_disabled: true
 				},
 			],
-			token_code_id: cw20_code_id
+			token_code_id: cw20_code_id,
+			whitelist_code_id: 234 // doesnt matter
 		}
 		let astroport_factory_contract_addr = await instantiate_contract(lcd_client, sender, sender.key.accAddress, astroport_factory_code_id, astroport_factory_init_msg);
 		console.log(`astroport_factory instantiated\n\taddress: ${astroport_factory_contract_addr}`);
@@ -137,14 +142,14 @@ export interface Logo {
 }
 
 export interface InstantiateMarketingInfo {
-    project?: string,
-    description?: string,
-    marketing?: string,
-    logo?: Logo,
+	project?: string,
+	description?: string,
+	marketing?: string,
+	logo?: Logo,
 }
 
 export interface BalanceResponse {
-    balance: string
+	balance: string
 }
 
 export interface TokenConfig {
@@ -250,14 +255,14 @@ export function astroport_factory_contract_addr(lcd_client: LCDClient): string {
 //
 // Mirror params
 // {
-  // "quorum": "0.09998",
-  // "threshold": "0.49989",
-  // "voting_period": 604800,
-  // "effective_delay": 86400,
-  // "expiration_period": 86400,
-  // "proposal_deposit": "100000000",
-  // "voter_weight": "0.5",
-  // "snapshot_period": 86400
+// "quorum": "0.09998",
+// "threshold": "0.49989",
+// "voting_period": 604800,
+// "effective_delay": 86400,
+// "expiration_period": 86400,
+// "proposal_deposit": "100000000",
+// "voter_weight": "0.5",
+// "snapshot_period": 86400
 // }
 
 export interface GovernanceConfig {
@@ -345,7 +350,7 @@ export interface BassetVaultStrategyConfig {
 }
 
 export function prod_BassetVaultStrategyConfigForbLuna(governance_contract_addr: string): BassetVaultStrategyConfig {
-	 return {
+	return {
 		governance_contract_addr: governance_contract_addr,
 		oracle_contract_addr: "terra1cgg6yef7qcdm070qftghfulaxmllgmvk77nc7t",
 		basset_token_addr: "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp",
@@ -383,7 +388,7 @@ export function BassetVaultStrategyConfigForbLuna(lcd_client: LCDClient, governa
 }
 
 export function prod_BassetVaultStrategyConfigForbEth(governance_contract_addr: string): BassetVaultStrategyConfig {
-	 return {
+	return {
 		governance_contract_addr: governance_contract_addr,
 		oracle_contract_addr: "terra1cgg6yef7qcdm070qftghfulaxmllgmvk77nc7t",
 		basset_token_addr: "terra1dzhzukyezv0etz22ud940z7adyv7xgcjkahuun",
@@ -413,7 +418,7 @@ export function testnet_BassetVaultStrategyConfigForbEth(governance_contract_add
 }
 
 export function prod_BassetVaultStrategyConfigForwasAvax(governance_contract_addr: string): BassetVaultStrategyConfig {
-	 return {
+	return {
 		governance_contract_addr: governance_contract_addr,
 		oracle_contract_addr: "terra1cgg6yef7qcdm070qftghfulaxmllgmvk77nc7t",
 		basset_token_addr: "terra1z3e2e4jpk4n0xzzwlkgcfvc95pc5ldq0xcny58",
@@ -443,7 +448,7 @@ export function testnet_BassetVaultStrategyConfigForbAtom(governance_contract_ad
 }
 
 export function prod_BassetVaultStrategyConfigForbAtom(governance_contract_addr: string): BassetVaultStrategyConfig {
-	 return {
+	return {
 		governance_contract_addr: governance_contract_addr,
 		oracle_contract_addr: "terra1cgg6yef7qcdm070qftghfulaxmllgmvk77nc7t",
 		basset_token_addr: "terra18zqcnl83z98tf6lly37gghm7238k7lh79u4z9a",
@@ -558,37 +563,37 @@ export function prod_BassetVaultConfigForbLuna(
 	basset_vault_strategy_contract_addr: string,
 	ts_factory_addr: string
 ): BassetVaultConfig {
-	 return {
-		 gov_addr: governance_contract_addr,
-		 community_addr: community_pool_contract_addr,
-		 nasset_t_ci: nasset_token_code_id,
-		 nasset_t_ch_ci: nasset_token_config_holder_code_id,
-		 nasset_t_r_ci: nasset_token_rewards_code_id,
-		 psi_distr_ci: psi_distributor_code_id,
-		 collateral_ts: "Luna",
-		 basset_addr: "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp",
-		 anchor_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
-		 a_market_addr: "terra1sepfj7s0aeg5967uxnfk4thzlerrsktkpelm5s",
-		 a_overseer_addr: "terra1tmnqgvg567ypvsvk6rwsga3srp7e3lg6u0elp8",
-		 a_custody_basset_addr: "terra1ptjp2vfjrwh0j0faj9r6katm640kgjxnwwq9kn",
-		 anc_stable_swap_addr: "terra1gm5p3ner9x9xpwugn9sp6gvhd0lwrtkyrecdn3",
-		 psi_stable_swap_addr: psi_stable_swap_contract_addr,
-		 aterra_addr: "terra1hzh9vpxhsk8253se0vv5jj6etdvxu3nv8z07zu",
-		 psi_addr: psi_token_addr,
-		 basset_vs_addr: basset_vault_strategy_contract_addr,
-		 stable_denom: "uusd",
-		 claiming_rewards_delay: 120,
-		 ///UST value in balance should be more than loan
-		 ///on what portion.
-		 ///for example: 1.01 means 1% more than loan
-		 over_loan_balance_value: "1.01",
-		 ///mean ltv that user manage by himself (advise: 58%)
-		 manual_ltv: "0.58",
-		 ///fees, need to calc how much send to governance and community pools
-		 fee_rate: "0.5",
-		 tax_rate: "0.25",
-		 ts_factory_addr: ts_factory_addr,
-	 }
+	return {
+		gov_addr: governance_contract_addr,
+		community_addr: community_pool_contract_addr,
+		nasset_t_ci: nasset_token_code_id,
+		nasset_t_ch_ci: nasset_token_config_holder_code_id,
+		nasset_t_r_ci: nasset_token_rewards_code_id,
+		psi_distr_ci: psi_distributor_code_id,
+		collateral_ts: "Luna",
+		basset_addr: "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp",
+		anchor_addr: "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76",
+		a_market_addr: "terra1sepfj7s0aeg5967uxnfk4thzlerrsktkpelm5s",
+		a_overseer_addr: "terra1tmnqgvg567ypvsvk6rwsga3srp7e3lg6u0elp8",
+		a_custody_basset_addr: "terra1ptjp2vfjrwh0j0faj9r6katm640kgjxnwwq9kn",
+		anc_stable_swap_addr: "terra1gm5p3ner9x9xpwugn9sp6gvhd0lwrtkyrecdn3",
+		psi_stable_swap_addr: psi_stable_swap_contract_addr,
+		aterra_addr: "terra1hzh9vpxhsk8253se0vv5jj6etdvxu3nv8z07zu",
+		psi_addr: psi_token_addr,
+		basset_vs_addr: basset_vault_strategy_contract_addr,
+		stable_denom: "uusd",
+		claiming_rewards_delay: 120,
+		///UST value in balance should be more than loan
+		///on what portion.
+		///for example: 1.01 means 1% more than loan
+		over_loan_balance_value: "1.01",
+		///mean ltv that user manage by himself (advise: 58%)
+		manual_ltv: "0.58",
+		///fees, need to calc how much send to governance and community pools
+		fee_rate: "0.5",
+		tax_rate: "0.25",
+		ts_factory_addr: ts_factory_addr,
+	}
 }
 
 export function testnet_BassetVaultConfigForbLuna(
@@ -690,7 +695,7 @@ export function prod_BassetVaultConfigForbEth(
 	basset_vault_strategy_contract_addr: string,
 	ts_factory_addr: string
 ): BassetVaultConfig {
-	 return {
+	return {
 		gov_addr: governance_contract_addr,
 		community_addr: community_pool_contract_addr,
 		nasset_t_ci: nasset_token_code_id,
@@ -719,7 +724,7 @@ export function prod_BassetVaultConfigForbEth(
 		///fees, need to calc how much send to governance and community pools
 		fee_rate: "0.5",
 		tax_rate: "0.25",
-		 ts_factory_addr: ts_factory_addr
+		ts_factory_addr: ts_factory_addr
 	}
 }
 
@@ -864,7 +869,7 @@ export function prod_BassetVaultConfigForwasAvax(
 	basset_vault_strategy_contract_addr: string,
 	ts_factory_addr: string
 ): BassetVaultConfig {
-	 return {
+	return {
 		gov_addr: governance_contract_addr,
 		community_addr: community_pool_contract_addr,
 		nasset_t_ci: nasset_token_code_id,
@@ -996,7 +1001,7 @@ export function prod_BassetVaultConfigForbAtom(
 	basset_vault_strategy_contract_addr: string,
 	ts_factory_addr: string
 ): BassetVaultConfig {
-	 return {
+	return {
 		gov_addr: governance_contract_addr,
 		community_addr: community_pool_contract_addr,
 		nasset_t_ci: nasset_token_code_id,

@@ -148,6 +148,7 @@ export interface NexPrismDeploymentInfo {
   nyluna_staking_addr: string,
   nexprism_staking_addr: string,
   nexprism_xprism_pair_addr: string,
+  psi_staking_addr: string,
 }
 export interface NexPrismAddrsAndInfo {
   cw20_code_id: number,
