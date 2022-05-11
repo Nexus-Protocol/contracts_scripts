@@ -565,6 +565,33 @@ export async function test_changing_reward_ratios(
     )
     const deploy_split_evenly_info = await prism_nexprism_full_init(lcd_client, sender, split_rewards_evenly);
 
+    // get some xprism, nexprism, yluna etc
+    const prism_bal = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        deploy_split_evenly_info.prism_market_info.prism_token_addr,
+    )
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        deploy_split_evenly_info.prism_market_info.yluna_token_addr,
+        "yluna",
+        ""
+    )
+    await stake_prism_for_xprism(
+        lcd_client,
+        sender,
+        deploy_split_evenly_info.prism_market_info.prism_token_addr,
+        deploy_split_evenly_info.prism_market_info.prism_gov_addr,
+        prism_bal / 2
+    )
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        deploy_split_evenly_info.prism_market_info.xprism_token_addr,
+        "xprism",
+        ""
+    )
     await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
