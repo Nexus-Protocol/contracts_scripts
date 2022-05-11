@@ -2,7 +2,7 @@ import { getContractEvents, LCDClient, Wallet } from "@terra-money/terra.js";
 import { assert } from "console";
 import { init_governance_contract, init_psi_token } from "../../basset_vault/definition";
 import { Cw20CodeId, GovernanceConfig, init_astroport_factory, init_astroport_factory_stableswap, PSiTokensOwner, TokenConfig } from "../../config";
-import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance, get_token_balance_and_log } from "../../utils";
+import { instantiate_contract_raw, execute_contract, get_token_balance, instantiate_contract, sleep, store_contract, increase_token_allowance, get_token_balance_and_log, precise } from "../../utils";
 import { PrismMarketInfo } from "../deploy_prism/config";
 import { prism_init, stake_prism_for_xprism } from "../deploy_prism/definition";
 import { NexPrismAddrsAndInfo, NexPrismDeploymentInfo, StakerResponse, StakingConfig, VaultConfig, VaultRewardRatios } from "./config";
@@ -335,14 +335,19 @@ async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, nex
     return rewards_earned_resp
 }
 
-async function check_nyluna_rewards(lcd_client: LCDClient, sender: Wallet, nyluna_staking_addr: string) {
+interface RewardsResponse { 
+    real_rewards: string, 
+    virtual_rewards: string,
+}
+
+async function check_nyluna_rewards(lcd_client: LCDClient, sender: Wallet, nyluna_staking_addr: string): Promise<RewardsResponse> {
     let rewards_earned_resp = await lcd_client.wasm.contractQuery(nyluna_staking_addr, {
         rewards: {
             address: sender.key.accAddress
         }
     });
     console.log("rewards \n\t", rewards_earned_resp);
-    return rewards_earned_resp
+    return rewards_earned_resp as RewardsResponse
 }
 
 
@@ -703,7 +708,17 @@ export async function test_changing_reward_ratios(
     )
 
     // assert()
+    assert(precise(nexprism_rewards.real_rewards, 4) == precise(nyluna_rewards.real_rewards, 4));
 
+    // check state and configs in the vault
+    const config_res = await lcd_client.wasm.contractQuery(
+        deploy_split_evenly_info.nex_prism_info.vault_deployment_addr,
+        {
+            config: {}
+        }
+    )
+    console.log("config_res: ", config_res);
+    
 
     console.log("Staking psi");
 
