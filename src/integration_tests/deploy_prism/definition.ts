@@ -513,6 +513,9 @@ async function prism_init_verbose(
 	console.log(`yluna_prism pair instantiated\n\taddress: ${yluna_prism_pair_addr}`);
 	console.log(`=======================`);
 
+	// TODO: stake a send a few xprism, yluna to other wallets and stake them to get a few users into prism
+	// localterra.wallets["test1"];
+
 	return PrismMarketInfo(
 		prism_token_addr,
 		prism_governance_info.prism_gov_deployment_addr,

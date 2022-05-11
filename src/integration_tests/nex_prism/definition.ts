@@ -732,6 +732,8 @@ export async function test_changing_reward_ratios(
     );
     if (is_ratio_correct) {
         console.log("rewards are split correctly");
+    } else {
+        process.exit(1)
     }
 
     // check state and configs in the vault
