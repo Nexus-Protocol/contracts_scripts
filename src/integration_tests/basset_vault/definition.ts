@@ -577,7 +577,7 @@ async function get_token_balance(lcd_client: LCDClient, token_holder_addr: strin
         }
     });
     return +result.balance;
-}
+} 
 
 async function assert_loan(lcd_client: LCDClient, anchor_market_addr: string, borrower_addr: string, liability: number) {
     const anchor_market_state: AnchorStateResponse = await lcd_client.wasm.contractQuery(anchor_market_addr, {

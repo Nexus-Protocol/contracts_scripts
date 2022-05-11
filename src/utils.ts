@@ -40,13 +40,20 @@ export async function increase_token_allowance(lcd_client: LCDClient, sender: Wa
 	const tx_result = await execute_contract(lcd_client, sender, token_addr, msg);
 
 	const allowance = await lcd_client.wasm.contractQuery(token_addr, {
-			allowance: {
-				owner: sender.key.accAddress,
-				spender: spender_addr,
+		allowance: {
+			owner: sender.key.accAddress,
+			spender: spender_addr,
 		}
 	})
 
 	return allowance;
+}
+
+export function precise(x: number | string, significantFig: number): number {
+	if (typeof x !== 'number') {
+		x = parseFloat(x);
+	}
+	return parseFloat(x.toPrecision(significantFig));
 }
 
 export async function get_token_balance(lcd_client: LCDClient, token_holder_addr: string, token_addr: string) {
@@ -56,6 +63,16 @@ export async function get_token_balance(lcd_client: LCDClient, token_holder_addr
         }
     });
     return +result.balance;
+}
+
+export async function get_token_balance_and_log(lcd_client: LCDClient, token_holder_addr: string, token_addr: string, token_name: string, info_text: string = "") {
+    const result: BalanceResponse = await lcd_client.wasm.contractQuery(token_addr, {
+        balance: {
+            address: token_holder_addr
+        }
+    });
+	console.log("\t", info_text, +result.balance, token_name);
+	return +result.balance; 
 }
 
 // ============================================================
