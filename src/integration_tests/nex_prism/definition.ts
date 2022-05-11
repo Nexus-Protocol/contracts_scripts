@@ -688,6 +688,7 @@ export async function test_changing_reward_ratios(
     psi_stakers_reward_ratio: string,
     nexprism_stakers_reward_ratio: string,
     nyluna_stakers_reward_ratio: string,
+    significant_digits: number = 1, // significant figures used for the rewards calc
 ) {
     const use_default = undefined;
 
@@ -721,8 +722,8 @@ export async function test_changing_reward_ratios(
     )
 
     // check rewards
-    const nexprism_rewards_rounded = precise(nexprism_rewards["real_rewards"], 1)
-    const nyluna_rewards_rounded = precise(nyluna_rewards["real_rewards"], 1)
+    const nexprism_rewards_rounded = precise(nexprism_rewards["real_rewards"], significant_digits)
+    const nyluna_rewards_rounded = precise(nyluna_rewards["real_rewards"], significant_digits)
     const rewards_actually_given_ratio = nexprism_rewards_rounded / nyluna_rewards_rounded
     const rewards_nexprism_nyluna_ratio = parseFloat(nexprism_stakers_reward_ratio) / parseFloat(nyluna_stakers_reward_ratio)
     const is_ratio_correct = rewards_actually_given_ratio == rewards_nexprism_nyluna_ratio

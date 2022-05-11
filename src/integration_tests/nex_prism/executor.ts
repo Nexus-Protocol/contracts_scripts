@@ -71,7 +71,7 @@ async function run_test_changing_reward_ratios() {
     await test_changing_reward_ratios(lcd_client, sender, "0.34", "0.22", "0.44");
 
     // very uneven split between nexprism/yluna
-    await test_changing_reward_ratios(lcd_client, sender, "0.34", "0.01", "0.65");
+    await test_changing_reward_ratios(lcd_client, sender, "0.34", "0.10", "0.56", 2);
 
     // zero to psi stakers doesn't work, commenting out for now
     // await test_changing_reward_ratios(lcd_client, sender, "0", "0.5", "0.5");
