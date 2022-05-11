@@ -160,7 +160,9 @@ pol_contract instantiated
 	psi staking addr: terra1a65v50u4xevdstx0vk84edgsaw9ee9v7lfj9e0
 	nyluna staking addr: terra1esawdjgnwmj9xh94l333zefvcjgt79cydv7lmd
 	nyluna autocompounder: terra1x4z0hx7f8qv8wkrjgvvjyr9wx7ezmj36a2gd54
+	cnyluna token addr: terra1pz7x3m8spspp40vlvwt6q2lrzgvxrj2sfmw2dz
 	nexprism staking: terra109y6veq2vz6dz60kq35nvf7e3v2y0hk4uuzrul
 	nexprism autocompounder: terra17afapwxja8y8lp9qxv8dgnrgd86ush0pwd8t70
+	cnexprism token addr: terra1p9hfv3kkg6ltad2kuk9p4w6ldprwyjnyj929mn
 	lockdrop addr: terra1ue49w62curgpxz6a7et5c36tmux6k60u5j6qrg
 ```
