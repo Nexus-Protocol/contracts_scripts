@@ -726,7 +726,7 @@ export async function test_changing_reward_ratios(
     const nyluna_rewards_rounded = precise(nyluna_rewards["real_rewards"], significant_digits)
     const rewards_actually_given_ratio = nexprism_rewards_rounded / nyluna_rewards_rounded
     const rewards_nexprism_nyluna_ratio = parseFloat(nexprism_stakers_reward_ratio) / parseFloat(nyluna_stakers_reward_ratio)
-    const is_ratio_correct = rewards_actually_given_ratio == rewards_nexprism_nyluna_ratio
+    const is_ratio_correct = precise(rewards_actually_given_ratio, 2) == precise(rewards_nexprism_nyluna_ratio, 2)
     assert(is_ratio_correct,
         `rewards ratios should be about evenly split but aren't, rewards ratio split ${rewards_nexprism_nyluna_ratio} \n rewards given split ${rewards_actually_given_ratio}`
     );
