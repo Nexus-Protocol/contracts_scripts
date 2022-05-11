@@ -685,6 +685,9 @@ async function stake_equal_amts_xprism_yluna(lcd_client: LCDClient, sender: Wall
 export async function test_changing_reward_ratios(
     lcd_client: LCDClient,
     sender: Wallet,
+    psi_stakers_reward_ratio: string,
+    nexprism_stakers_reward_ratio: string,
+    nyluna_stakers_reward_ratio: string,
 ) {
     const use_default = undefined;
 
@@ -692,9 +695,9 @@ export async function test_changing_reward_ratios(
 
     const split_rewards_evenly = VaultRewardRatios(
         use_default,
-        "0.34",
-        "0.33",
-        "0.33",
+        nexprism_stakers_reward_ratio,
+        psi_stakers_reward_ratio,
+        nyluna_stakers_reward_ratio,
     )
     const deploy_split_evenly_info = await prism_nexprism_full_init(lcd_client, sender, split_rewards_evenly);
 
@@ -720,11 +723,14 @@ export async function test_changing_reward_ratios(
     // check rewards
     const nexprism_rewards_rounded = precise(nexprism_rewards["real_rewards"], 1)
     const nyluna_rewards_rounded = precise(nyluna_rewards["real_rewards"], 1)
-    assert(nexprism_rewards_rounded == nyluna_rewards_rounded,
-        `rewards should be about evenly split but aren't, nexprism rewards ${precise(nexprism_rewards["real_rewards"], 1)} / nyluna ${precise(nyluna_rewards.real_rewards, 1)}`
+    const rewards_actually_given_ratio = nexprism_rewards_rounded / nyluna_rewards_rounded
+    const rewards_nexprism_nyluna_ratio = parseFloat(nexprism_stakers_reward_ratio) / parseFloat(nyluna_stakers_reward_ratio)
+    const is_ratio_correct = rewards_actually_given_ratio == rewards_nexprism_nyluna_ratio
+    assert(is_ratio_correct,
+        `rewards ratios should be about evenly split but aren't, rewards ratio split ${rewards_nexprism_nyluna_ratio} \n rewards given split ${rewards_actually_given_ratio}`
     );
-    if (nexprism_rewards_rounded == nyluna_rewards_rounded) {
-        console.log("rewards are evenly split");
+    if (is_ratio_correct) {
+        console.log("rewards are split correctly");
     }
 
     // check state and configs in the vault
@@ -736,6 +742,5 @@ export async function test_changing_reward_ratios(
     )
     console.log("config_res: ", config_res);
     
-
     // TODO: stake psi and check as well to be about 1/3
 }

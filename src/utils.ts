@@ -49,11 +49,11 @@ export async function increase_token_allowance(lcd_client: LCDClient, sender: Wa
 	return allowance;
 }
 
-export function precise(x: number | string, significantFig: number): string {
+export function precise(x: number | string, significantFig: number): number {
 	if (typeof x !== 'number') {
 		x = parseFloat(x);
 	}
-	return x.toPrecision(significantFig);
+	return parseFloat(x.toPrecision(significantFig));
 }
 
 export async function get_token_balance(lcd_client: LCDClient, token_holder_addr: string, token_addr: string) {
