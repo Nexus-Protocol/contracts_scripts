@@ -325,8 +325,18 @@ export async function deposit_yluna(lcd_client: LCDClient, sender: Wallet, yluna
     return send_result;
 }
 
-async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, nexprism_staking_addr: string) {
+async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, nexprism_staking_addr: string, log: boolean = true) {
     let rewards_earned_resp = await lcd_client.wasm.contractQuery(nexprism_staking_addr, {
+        rewards: {
+            address: sender.key.accAddress
+        }
+    });
+    log && console.log("rewards \n\t", rewards_earned_resp);
+    return rewards_earned_resp
+}
+
+async function check_nyluna_rewards(lcd_client: LCDClient, sender: Wallet, nyluna_staking_addr: string) {
+    let rewards_earned_resp = await lcd_client.wasm.contractQuery(nyluna_staking_addr, {
         rewards: {
             address: sender.key.accAddress
         }
@@ -334,6 +344,7 @@ async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, nex
     console.log("rewards \n\t", rewards_earned_resp);
     return rewards_earned_resp
 }
+
 
 async function claim_all_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, _nexprism_token_addr: string, nexprism_staking_addr: string) {
     try {
@@ -571,7 +582,7 @@ export async function test_changing_reward_ratios(
         sender.key.accAddress,
         deploy_split_evenly_info.prism_market_info.prism_token_addr,
     )
-    await get_token_balance_and_log(
+    const yluna_bal = await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
         deploy_split_evenly_info.prism_market_info.yluna_token_addr,
@@ -585,7 +596,7 @@ export async function test_changing_reward_ratios(
         deploy_split_evenly_info.prism_market_info.prism_gov_addr,
         prism_bal / 2
     )
-    await get_token_balance_and_log(
+    const xprism_bal = await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
         deploy_split_evenly_info.prism_market_info.xprism_token_addr,
@@ -599,6 +610,103 @@ export async function test_changing_reward_ratios(
         "prism",
         ""
     )
+
+    // stake same amounts into vault and see why 
+    // STEVENDEBUG
+    console.log("Depositing xprism for nexprism");
+    const nexprismAmt = xprism_bal / 2
+    await deposit_xprism_to_nexprism_vault(
+        lcd_client,
+        sender,
+        deploy_split_evenly_info.prism_market_info.xprism_token_addr,
+        deploy_split_evenly_info.nex_prism_info.vault_deployment_addr,
+        nexprismAmt
+    )
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        deploy_split_evenly_info.nex_prism_info.nexprism_token_addr,
+        "nexprism",
+        ""
+    )
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        deploy_split_evenly_info.prism_market_info.xprism_token_addr,
+        "xprism",
+        ""
+    )
+
+    console.log("Staking nexprism");
+    await stake_nexprism(
+        lcd_client,
+        sender,
+        deploy_split_evenly_info.nex_prism_info.nexprism_token_addr,
+        deploy_split_evenly_info.nex_prism_info.nexprism_staking_addr,
+        nexprismAmt
+    )
+    const new_nexprism_bal = await get_token_balance(
+        lcd_client,
+        sender.key.accAddress,
+        deploy_split_evenly_info.nex_prism_info.nexprism_token_addr,
+    )
+    assert(new_nexprism_bal == nexprismAmt);
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        deploy_split_evenly_info.prism_market_info.xprism_token_addr,
+        "xprism",
+        "now: "
+    )
+
+    console.log("Depositing yluna for nyluna");
+    const nylunaAmt = yluna_bal / 2
+    await deposit_yluna(
+        lcd_client,
+        sender,
+        deploy_split_evenly_info.prism_market_info.yluna_token_addr,
+        deploy_split_evenly_info.nex_prism_info.vault_deployment_addr,
+        nylunaAmt
+    )
+    await stake_nyluna(
+        lcd_client, 
+        sender, 
+        deploy_split_evenly_info.nex_prism_info.nyluna_token_addr,
+        deploy_split_evenly_info.nex_prism_info.nyluna_staking_addr,
+        nylunaAmt
+    );
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        deploy_split_evenly_info.prism_market_info.yluna_token_addr,
+        "yluna",
+        "remaining: "
+    )
+    await get_token_balance_and_log(
+        lcd_client,
+        sender.key.accAddress,
+        deploy_split_evenly_info.nex_prism_info.nyluna_token_addr,
+        "nyluna",
+        "new balance: "
+    )
+
+    // check rewards
+    const nexprism_rewards = await check_nexprism_rewards(
+        lcd_client,
+        sender,
+        deploy_split_evenly_info.nex_prism_info.nexprism_staking_addr,
+    )
+    const nyluna_rewards = await check_nyluna_rewards(
+        lcd_client,
+        sender,
+        deploy_split_evenly_info.nex_prism_info.nyluna_staking_addr,
+    )
+
+    // assert()
+
+
+    console.log("Staking psi");
+
 
     // await stake_prism_for_xprism(
     //     lcd_client,

@@ -63,6 +63,5 @@ async function run_stake_nyluna_test(nex_prism_addrs_and_info: NexPrismAddrsAndI
 async function run_test_changing_reward_ratios() {
     // changes reward ratios on the nex-prism-convex contracts
     const [lcd_client, sender] = await get_lcd_config_with_wallet_for_integration_tests_only();
-
     await test_changing_reward_ratios(lcd_client, sender);
 }
