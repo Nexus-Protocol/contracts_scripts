@@ -325,19 +325,19 @@ export async function deposit_yluna(lcd_client: LCDClient, sender: Wallet, yluna
     return send_result;
 }
 
-async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, nexprism_staking_addr: string, log: boolean = true) {
+interface RewardsResponse { 
+    real_rewards: string, 
+    virtual_rewards: string,
+}
+
+async function check_nexprism_rewards(lcd_client: LCDClient, sender: Wallet, nexprism_staking_addr: string, log: boolean = true): Promise<RewardsResponse> {
     let rewards_earned_resp = await lcd_client.wasm.contractQuery(nexprism_staking_addr, {
         rewards: {
             address: sender.key.accAddress
         }
     });
     log && console.log("rewards \n\t", rewards_earned_resp);
-    return rewards_earned_resp
-}
-
-interface RewardsResponse { 
-    real_rewards: string, 
-    virtual_rewards: string,
+    return rewards_earned_resp as RewardsResponse
 }
 
 async function check_nyluna_rewards(lcd_client: LCDClient, sender: Wallet, nyluna_staking_addr: string): Promise<RewardsResponse> {
@@ -565,22 +565,7 @@ export async function stake_nyluna_test(
     console.log("Staked nyluna successfully");
 }
 
-export async function test_changing_reward_ratios(
-    lcd_client: LCDClient,
-    sender: Wallet,
-) {
-    const use_default = undefined;
-
-    console.log("Start changing nex-prism-convex reward ratios test");
-
-    const split_rewards_evenly = VaultRewardRatios(
-        use_default,
-        "0.34",
-        "0.33",
-        "0.33",
-    )
-    const deploy_split_evenly_info = await prism_nexprism_full_init(lcd_client, sender, split_rewards_evenly);
-
+async function stake_equal_amts_xprism_yluna(lcd_client: LCDClient, sender: Wallet, deploy_split_evenly_info: NexPrismAddrsAndInfo) {
     // get some xprism, nexprism, yluna etc
     const prism_bal = await get_token_balance(
         lcd_client,
@@ -655,7 +640,6 @@ export async function test_changing_reward_ratios(
         sender.key.accAddress,
         deploy_split_evenly_info.nex_prism_info.nexprism_token_addr,
     )
-    assert(new_nexprism_bal == nexprismAmt);
     await get_token_balance_and_log(
         lcd_client,
         sender.key.accAddress,
@@ -695,6 +679,32 @@ export async function test_changing_reward_ratios(
         "new balance: "
     )
 
+    return ""
+}
+
+export async function test_changing_reward_ratios(
+    lcd_client: LCDClient,
+    sender: Wallet,
+) {
+    const use_default = undefined;
+
+    console.log("Start changing nex-prism-convex reward ratios test");
+
+    const split_rewards_evenly = VaultRewardRatios(
+        use_default,
+        "0.34",
+        "0.33",
+        "0.33",
+    )
+    const deploy_split_evenly_info = await prism_nexprism_full_init(lcd_client, sender, split_rewards_evenly);
+
+    // stake and setup the tokens
+    await stake_equal_amts_xprism_yluna(
+        lcd_client,
+        sender,
+        deploy_split_evenly_info,
+    )
+
     // check rewards
     const nexprism_rewards = await check_nexprism_rewards(
         lcd_client,
@@ -707,8 +717,15 @@ export async function test_changing_reward_ratios(
         deploy_split_evenly_info.nex_prism_info.nyluna_staking_addr,
     )
 
-    // assert()
-    assert(precise(nexprism_rewards.real_rewards, 4) == precise(nyluna_rewards.real_rewards, 4));
+    // check rewards
+    const nexprism_rewards_rounded = precise(nexprism_rewards["real_rewards"], 1)
+    const nyluna_rewards_rounded = precise(nyluna_rewards["real_rewards"], 1)
+    assert(nexprism_rewards_rounded == nyluna_rewards_rounded,
+        `rewards should be about evenly split but aren't, nexprism rewards ${precise(nexprism_rewards["real_rewards"], 1)} / nyluna ${precise(nyluna_rewards.real_rewards, 1)}`
+    );
+    if (nexprism_rewards_rounded == nyluna_rewards_rounded) {
+        console.log("rewards are evenly split");
+    }
 
     // check state and configs in the vault
     const config_res = await lcd_client.wasm.contractQuery(
@@ -720,15 +737,5 @@ export async function test_changing_reward_ratios(
     console.log("config_res: ", config_res);
     
 
-    console.log("Staking psi");
-
-
-    // await stake_prism_for_xprism(
-    //     lcd_client,
-    //     sender,
-    //     deploy_split_evenly_info.prism_market_info.prism_token_addr,
-    //     deploy_split_evenly_info.prism_market_info.prism_staking_addr,
-    // )
-
-    // TODO:
+    // TODO: stake psi and check as well to be about 1/3
 }
