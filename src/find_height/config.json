@@ -1,11 +1,7 @@
 {
 	"lcd_client": {
 		"localterra": false,
-		"url": "https://columbus-lcd.terra.dev",
-		"chain_id": "columbus-5",
-		"aws_secrets": {
-			"region": "eu-west-1",
-			"secret_name": "seeds/mainnet"
-		}
+		"url": "http://columbus-lcd.terra.dev",
+		"chain_id": "columbus-5"
 	}
 }

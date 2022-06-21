@@ -13,7 +13,6 @@ import {
 	MsgExecuteContract,
 	MsgInstantiateContract,
 	MsgStoreCode,
-	StdFee,
 	Wallet
 } from '@terra-money/terra.js';
 import {BassetVaultConfig} from './config';
@@ -278,47 +277,58 @@ export async function init_basset_vault(lcd_client: LCDClient, sender: Wallet, c
 // ============================================================
 // ============================================================
 export async function calc_fee_and_send_tx(lcd_client: LCDClient, sender: Wallet, messages: Msg[], tax?: Coin[]): Promise<BlockTxBroadcastResult | undefined> {
-	try {
-		const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);
-		if (estimated_tx_fee === undefined) {
-			return undefined;
-		}
-
-		const signed_tx = await sender.createAndSignTx({
-			msgs: messages,
-			fee: estimated_tx_fee,
-		});
-
-		const tx_result = await lcd_client.tx.broadcast(signed_tx);
-		return tx_result;
-	} catch (err) {
-		console.error(`calc_fee_and_send_tx return err: ${err}`)
-		return undefined;
-	}
+	// try {
+	// 	const estimated_tx_fee = await get_tx_fee(lcd_client, sender, messages, tax);
+	// 	if (estimated_tx_fee === undefined) {
+	// 		return undefined;
+	// 	}
+	//
+	// 	const signed_tx = await sender.createAndSignTx({
+	// 		msgs: messages,
+	// 		fee: estimated_tx_fee,
+	// 	});
+	//
+	// 	const tx_result = await lcd_client.tx.broadcast(signed_tx);
+	// 	return tx_result;
+	// } catch (err) {
+	// 	console.error(`calc_fee_and_send_tx return err: ${err}`)
+	// 	return undefined;
+	// }
+	let some = lcd_client;
+	let some2 = sender;
+	let some3 = messages;
+	let some5 = tax;
+	return undefined;
 }
 
-async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[], tax?: Coin[]): Promise<StdFee | undefined> {
-	try {
-		const estimated_fee_res = await lcd_client.tx.estimateFee(sender.key.accAddress, msgs, {
-			gasPrices: new Coins([new Coin("uusd", 0.15)]),
-			gasAdjustment: 1.2,
-			feeDenoms: ["uusd"],
-		});
+async function get_tx_fee(lcd_client: LCDClient, sender: Wallet, msgs: Msg[], tax?: Coin[]): Promise<undefined> {
+	// try {
+	// 	const estimated_fee_res = await lcd_client.tx.estimateFee(sender.key.accAddress, msgs, {
+	// 		gasPrices: new Coins([new Coin("uusd", 0.15)]),
+	// 		gasAdjustment: 1.2,
+	// 		feeDenoms: ["uusd"],
+	// 	});
+	//
+	// 	if (tax !== undefined) {
+	// 		let fee_coins: Coins = estimated_fee_res.amount;
+	// 		for (const tax_coin of tax) {
+	// 			fee_coins.add(tax_coin);
+	// 		}
+	// 		const fee_with_tax = new StdFee(estimated_fee_res.gas, fee_coins);
+	// 		return fee_with_tax;
+	// 	}
+	//
+	// 	return estimated_fee_res;
+	// } catch (err) {
+	// 	console.error(`get_tax_rate return err: ${err}`)
+	// 	return undefined;
+	// }
+	let some = lcd_client;
+	let some2 = sender;
+	let some3 = msgs;
+	let some5 = tax;
 
-		if (tax !== undefined) {
-			let fee_coins: Coins = estimated_fee_res.amount;
-			for (const tax_coin of tax) {
-				fee_coins.add(tax_coin);
-			}
-			const fee_with_tax = new StdFee(estimated_fee_res.gas, fee_coins);
-			return fee_with_tax;
-		}
-
-		return estimated_fee_res;
-	} catch (err) {
-		console.error(`get_tax_rate return err: ${err}`)
-		return undefined;
-	}
+	return undefined;
 }
 
 // ============================================================

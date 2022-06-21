@@ -14,7 +14,8 @@
     "claim-lp-rewards": "ts-node src/claim_lp_rewards/executor.ts",
     "deploy-anchor": "ts-node src/integration_tests/deploy_anchor/executor.ts",
     "psi-distr-integration-tests": "ts-node src/integration_tests/psi_distribution/executor.ts",
-    "bvault-integration-tests": "ts-node src/integration_tests/basset_vault/executor.ts"
+    "bvault-integration-tests": "ts-node src/integration_tests/basset_vault/executor.ts",
+    "liquidation_search": "ts-node src/find_height/executor.ts"
   },
   "devDependencies": {
     "@types/express": "^4.17.11",
@@ -27,7 +28,7 @@
     "@aws-sdk/types": "^3.29.0"
   },
   "dependencies": {
-    "@terra-money/terra.js": "^2.0.8",
+    "@terra-money/terra.js": "3.1.3",
     "axios": "^0.21.1",
     "commander": "^7.2.0",
     "express": "^4.17.1",
