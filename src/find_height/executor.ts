@@ -37,7 +37,7 @@ async function run_program() {
 async function run(config_path: string) {
     const config: Config = JSON.parse(readFileSync(config_path, 'utf-8'))
     const [lcd_client, _] = await get_lcd_config_with_wallet(config.lcd_client);
-    let block_height = await vault_liquidation_search(lcd_client, BATOM_VAULT_ADDR);
+    let block_height = await vault_liquidation_search(lcd_client);
 }
 
 async function vault_liquidation_search(lcd_client: LCDClient){
