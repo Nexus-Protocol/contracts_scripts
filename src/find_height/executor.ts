@@ -14,7 +14,7 @@ const PRE_ATTACK_HEIGHT: number = 7544910;
 const POST_ATTACK_HEIGHT: number = 7790000;
 const MAY_11_LAST_BLOCK_HEIGHT: number = 7596270;
 const BATOM_VAULT_ADDR: string = "terra1lh3h7l5vsul2pxlevraucwev42ar6kyx33u4c8";
-const VASAVAX_VAULT_ADDR: string = "terra1hn9rzu66s422rl9kg0a7j2yxdjef0szkqvy7ws";
+const WASAVAX_VAULT_ADDR: string = "terra1hn9rzu66s422rl9kg0a7j2yxdjef0szkqvy7ws";
 
 async function run_program() {
     const program = new Command();
@@ -67,7 +67,7 @@ async function vault_liquidation_search(lcd_client: LCDClient){
                             console.log(`------> batom vault liquidation found!!!! block height: ${current_height}`);
                             atom = true;
                         }
-                        if (some.includes("liquidate_collateral") && some.includes(VASAVAX_VAULT_ADDR)) {
+                        if (some.includes("liquidate_collateral") && some.includes(WASAVAX_VAULT_ADDR)) {
                             console.log(`------>  wasavax vault liquidation found!!!! block height: ${current_height}`);
                             avax = true;
                         }
