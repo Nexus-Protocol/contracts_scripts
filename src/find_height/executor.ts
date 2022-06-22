@@ -12,7 +12,6 @@ const DEFAULT_CONFIG_PATH: string = 'src/find_height/config.json';
 const ANCHOR_OVERSEER_ADDR: string = "terra1tmnqgvg567ypvsvk6rwsga3srp7e3lg6u0elp8";
 const PRE_ATTACK_HEIGHT: number = 7544910;
 const POST_ATTACK_HEIGHT: number = 7790000;
-const MAY_8_LAST_BLOCK_HEIGHT:number = 7562590;
 const MAY_11_LAST_BLOCK_HEIGHT: number = 7596270;
 const BATOM_VAULT_ADDR: string = "terra1lh3h7l5vsul2pxlevraucwev42ar6kyx33u4c8";
 const VASAVAX_VAULT_ADDR: string = "terra1hn9rzu66s422rl9kg0a7j2yxdjef0szkqvy7ws";
@@ -43,13 +42,19 @@ async function run(config_path: string) {
 async function vault_liquidation_search(lcd_client: LCDClient){
     let atom = false;
     let avax = false;
-    let current_height = MAY_8_LAST_BLOCK_HEIGHT;
+    let current_height = PRE_ATTACK_HEIGHT;
     while (!atom || !avax) {
         if (current_height > MAY_11_LAST_BLOCK_HEIGHT) {
             return;
         }
-        const tx_infos = await lcd_client.tx.txInfosByHeight(current_height);
-        console.log(`------> block_height : ${current_height}`);
+        let tx_infos;
+        try{
+            tx_infos = await lcd_client.tx.txInfosByHeight(current_height);
+        } catch (e) {
+            console.log(`-> Failed to get block: ${current_height}`);
+            continue;
+        }
+        console.log(`Block_height : ${current_height}`);
 
         for (const tx_info of tx_infos) {
             let msgs = tx_info.tx.body.messages;
@@ -58,11 +63,11 @@ async function vault_liquidation_search(lcd_client: LCDClient){
                 if (msg instanceof MsgExecuteContract) {
                     if (msg.contract == ANCHOR_OVERSEER_ADDR) {
                         let some = JSON.stringify(msg.execute_msg);
-                        if (some.includes(BATOM_VAULT_ADDR)){
+                        if (some.includes("liquidate_collateral") && some.includes(BATOM_VAULT_ADDR)){
                             console.log(`------> batom vault liquidation found!!!! block height: ${current_height}`);
                             atom = true;
                         }
-                        if (some.includes(VASAVAX_VAULT_ADDR)) {
+                        if (some.includes("liquidate_collateral") && some.includes(VASAVAX_VAULT_ADDR)) {
                             console.log(`------>  wasavax vault liquidation found!!!! block height: ${current_height}`);
                             avax = true;
                         }
